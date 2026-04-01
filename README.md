@@ -17,9 +17,9 @@ This project is purely educational and non-commercial — built to sharpen Andro
 <p align="center">
   <img src="screenshots/home.png" width="23%" alt="Home Screen" />
   &nbsp;
-  <img src="screenshots/library.png" width="23%" alt="Search Screen" />
+  <img src="screenshots/library.png" width="23%" alt="Library Screen" />
   &nbsp;
-  <img src="screenshots/search.png" width="23%" alt="Player Screen" />
+  <img src="screenshots/search.png" width="23%" alt="Search Screen" />
   &nbsp;
   <img src="screenshots/queue.png" width="23%" alt="Queue Screen" />
 </p>
