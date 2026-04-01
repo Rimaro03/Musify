@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Musify</string>
+    <string name="action_settings">Settings</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="email_hint">Email</string>
+    <string name="email_placeholder">example@gmail.com</string>
+    <string name="continue_">Continue</string>
+    <string name="sign_up_with_google">Sign up with Google</string>
+    <string name="continue_with_google">Continue with Google</string>
+    <string name="or">or</string>
+    <string name="google_logo">Google Logo</string>
+    <string name="sign_up_to_start_listening">Sign up to start listening</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="sign_in">Sign in</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="sign_up">Sign up</string>
+    <string name="password">Password</string>
+    <string name="create_a_password">Create a password</string>
+    <string name="include_special_symbols">- include special symbols</string>
+    <string name="include_numbers">- include numbers</string>
+    <string name="include_uppercase_and_lowercase_letters">- include uppercase and lowercase letters</string>
+    <string name="be_at_least_10_characters_long">- be at least 10 characters long</string>
+    <string name="the_password_must">The password must:</string>
+    <string name="how_should_we_call_you">How should we call you?</string>
+    <string name="sign_up_with_email">Sign up with email</string>
+    <string name="create_account">Create account</string>
+    <string name="your_email">Your email</string>
+    <string name="home">Home</string>
+    <string name="library">Library</string>
+    <string name="search">Search</string>
+    <string name="profile">Profile</string>
+    <string name="track_thumbnail">Track thumbnail</string>
+    <string name="recent_searches">Recent searches</string>
+    <string name="history_empty">History empty</string>
+    <string name="history_icon">history icon</string>
+    <string name="delete_icon">delete icon</string>
+    <string name="search_songs_and_more">Search songs and more</string>
+    <string name="album_thumbnail">album thumbnail</string>
+    <string name="song">Song</string>
+    <string name="center_dot">·</string>
+    <string name="album">Album</string>
+    <string name="artist_thumbnail">artist thumbnail</string>
+    <string name="artist">Artist</string>
+</resources>

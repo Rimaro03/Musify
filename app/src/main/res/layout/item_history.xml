@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/history_24px"
+        android:contentDescription="@string/history_icon"/>
+
+    <TextView
+        android:id="@+id/item_history_query"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="Canzone bellissima"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+
+    <Space
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content" />
+
+    <ImageButton
+        android:id="@+id/item_history_remove_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:src="@drawable/delete_24px"
+        android:contentDescription="@string/delete_icon"
+        style="@style/Widget.Material3.Button.IconButton"/>
+
+</LinearLayout>

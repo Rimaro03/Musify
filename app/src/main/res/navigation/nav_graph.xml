@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/authCheckFragment">
+    <fragment
+        android:id="@+id/signinFragment"
+        android:name="com.rimaro.musify.ui.signin.SigninFragment"
+        tools:layout="@layout/fragment_signin"
+        android:label="">
+        <action
+            android:id="@+id/action_signinFragment_to_signupSplashFragment"
+            app:destination="@id/signupSplashFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out" />
+        <action
+            android:id="@+id/action_signinFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/signupSplashFragment"
+        android:name="com.rimaro.musify.ui.signup.SignupSplashFragment"
+        android:label=""
+        tools:layout="@layout/fragment_signup_splash" >
+        <action
+            android:id="@+id/action_signupSplashFragment_to_signinFragment"
+            app:destination="@id/signinFragment"
+            app:enterAnim="@anim/slide_in_rev"
+            app:exitAnim="@anim/slide_out_rev" />
+        <action
+            android:id="@+id/action_signupSplashFragment_to_signupEmailFragment"
+            app:destination="@id/signupEmailFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/slide_in_rev"
+            app:popExitAnim="@anim/slide_out_rev" />
+    </fragment>
+    <fragment
+        android:id="@+id/signupEmailFragment"
+        android:name="com.rimaro.musify.ui.signup.SignupEmailFragment"
+        android:label="Create account"
+        tools:layout="@layout/fragment_signup_email" >
+        <action
+            android:id="@+id/action_signupEmailFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.rimaro.musify.ui.home.HomeFragment"
+        android:label=""
+        tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/libraryFragment"
+        android:name="com.rimaro.musify.ui.library.LibraryFragment"
+        android:label=""
+        tools:layout="@layout/fragment_library" />
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.rimaro.musify.ui.search.SearchFragment"
+        android:label=""
+        tools:layout="@layout/fragment_search">
+
+        <argument
+            android:name="focusSearchbar"
+            app:argType="boolean"
+            android:defaultValue="false"/>
+
+    </fragment>
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.rimaro.musify.ui.profile.ProfileFragment"
+        android:label=""
+        tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/authCheckFragment"
+        android:name="com.rimaro.musify.ui.auth_check.AuthCheckFragment"
+        android:label="fragment_auth_check"
+        tools:layout="@layout/fragment_auth_check" >
+        <action
+            android:id="@+id/action_authCheckFragment_to_signinFragment"
+            app:destination="@id/signinFragment" />
+        <action
+            android:id="@+id/action_authCheckFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+</navigation>

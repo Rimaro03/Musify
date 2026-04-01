@@ -1,0 +1,31 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Musify" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="actionOverflowButtonStyle">@style/AppbarMenuCustomIcon</item>
+
+        <!-- Backgrounds -->
+        <item name="android:colorBackground">#FF000000</item>
+        <item name="colorSurface">#FF0D0D0D</item>
+        <item name="colorSurfaceVariant">#FF1A1A1A</item>
+
+        <!-- Primary (buttons, highlights) -->
+        <item name="colorPrimary">#FFFFFFFF</item>
+        <item name="colorOnPrimary">#FF000000</item>
+
+        <!-- Text on backgrounds -->
+        <item name="colorOnBackground">#FFFFFFFF</item>
+        <item name="colorOnSurface">#FFFFFFFF</item>
+        <item name="colorOnSurfaceVariant">#FFB3B3B3</item>
+
+        <!-- Outlines / Dividers -->
+        <item name="colorOutline">#FF3D3D3D</item>
+
+        <!-- SearchBar and SearchView -->
+        <item name="materialSearchBarStyle">@style/Custom.Searchbar</item>
+        <item name="materialSearchViewStyle">@style/Custom.SearchView</item>
+    </style>
+
+    <style name="AppbarMenuCustomIcon" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/account_circle_24px</item>
+    </style>
+</resources>

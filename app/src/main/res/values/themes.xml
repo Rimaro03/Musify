@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Musify" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="actionOverflowButtonStyle">@style/AppbarMenuCustomIcon</item>
+    </style>
+
+    <style name="Theme.Musify" parent="Base.Theme.Musify" />
+
+    <style name="AppbarMenuCustomIcon" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:src">@drawable/account_circle_24px</item>
+    </style>
+</resources>
