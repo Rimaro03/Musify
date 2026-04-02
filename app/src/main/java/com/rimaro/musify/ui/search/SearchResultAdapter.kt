@@ -2,6 +2,7 @@ package com.rimaro.musify.ui.search
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -13,16 +14,32 @@ import com.rimaro.musify.domain.dto.DeezerTrack
 import com.rimaro.musify.databinding.ItemSearchAlbumBinding
 import com.rimaro.musify.databinding.ItemSearchArtistBinding
 import com.rimaro.musify.databinding.ItemSearchTrackBinding
+import com.rimaro.musify.ui.search.SearchResultItem.AlbumItem
+import com.rimaro.musify.ui.search.SearchResultItem.ArtistItem
+import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
 
 class SearchResultAdapter (
     private val onTrackClick: (DeezerTrack) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
     private val onAlbumClick: (DeezerAlbum) -> Unit
-): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(SearchResultItem.DIFF_CALLBACK) {
+): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         const val TYPE_TRACK = 0
         const val TYPE_ARTIST = 1
         const val TYPE_ALBUM = 2
+
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SearchResultItem>() {
+            override fun areItemsTheSame(old: SearchResultItem, new: SearchResultItem) =
+                when (old) {
+                    is TrackItem if new is TrackItem -> old.track.id == new.track.id
+                    is ArtistItem if new is ArtistItem -> old.artist.id == new.artist.id
+                    is AlbumItem if new is AlbumItem -> old.album.id == new.album.id
+                    else -> false
+                }
+
+            override fun areContentsTheSame(old: SearchResultItem, new: SearchResultItem) =
+                old == new
+        }
     }
 
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :

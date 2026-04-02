@@ -44,4 +44,9 @@
     <string name="album">Album</string>
     <string name="artist_thumbnail">artist thumbnail</string>
     <string name="artist">Artist</string>
+    <string name="trendin_up_icon">trendin up icon</string>
+    <string name="trending_artists">Trending artists</string>
+    <string name="browse">Browse</string>
+    <string name="artist_pfp">artist pfp</string>
+    <string name="genre_card_background">genre card background</string>
 </resources>

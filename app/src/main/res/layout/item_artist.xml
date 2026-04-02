@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/item_artist_clickable"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginEnd="15dp">
+
+    <ImageView
+        android:id="@+id/item_artist_pic"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:contentDescription="@string/artist_pfp"
+        android:src="@drawable/musify_logo"/>
+
+    <TextView
+        android:id="@+id/item_artist_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Childish \n Gambino"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:lines="2"
+        android:maxLines="2"
+        android:layout_marginTop="5dp"/>
+
+</LinearLayout>

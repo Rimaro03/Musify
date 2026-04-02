@@ -1,0 +1,35 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_margin="6dp"
+    android:id="@+id/genre_clickable">
+
+    <ImageView
+        android:id="@+id/genre_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/genre_card_background"
+        android:scaleType="centerCrop"
+        android:background="@drawable/rounded_genre_bg"
+        android:clipToOutline="true"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_overlay"
+        android:outlineProvider="background" />
+
+    <TextView
+        android:id="@+id/genre_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:gravity="center"
+        android:padding="8dp"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:shadowDx="0"
+        android:shadowDy="1"
+        android:shadowRadius="4"/>
+
+</FrameLayout>

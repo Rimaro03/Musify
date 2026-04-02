@@ -1,14 +1,11 @@
 package com.rimaro.musify.ui.search
 
 import android.annotation.SuppressLint
-import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -19,6 +16,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchBar
@@ -53,6 +51,21 @@ class SearchFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        /* TRENDINGS/GENRES LOGIC */
+        val trendingArtistsRv = binding.searchTrendingArtistsRv
+        val trendingArtistsAdapter = TrendingArtistsAdapter({})
+        trendingArtistsRv.adapter = trendingArtistsAdapter
+        trendingArtistsRv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+
+        val genresRv = binding.searchGenresRv
+        val genresAdapter = GenreAdapter({})
+        genresRv.adapter = genresAdapter
+        genresRv.layoutManager = GridLayoutManager(requireContext(), 2)
+
+        observeTrendingUiState(trendingArtistsAdapter, genresAdapter)
+
+
+
         /* HISTORY LOGIC */
         val historyContainer = requireActivity().findViewById<LinearLayout>(R.id.searchview_history_container)
         val historyLayout = requireActivity().findViewById<LinearLayout>(R.id.searchview_history)
@@ -79,17 +92,50 @@ class SearchFragment : Fragment() {
             false
         }
 
+        /* SEARCH LOGIC */
         val searchResultsRv = binding.searchResultsRv
         val searchResultAdapter = SearchResultAdapter(viewModel::onClick, {}, {})
         searchResultsRv.adapter = searchResultAdapter
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
-        observeUiState(searchResultAdapter)
+        observeSearchUiState(searchResultAdapter)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
         clearSearchBar()
+    }
+
+    private fun observeTrendingUiState(
+        artistAdapter: TrendingArtistsAdapter,
+        genreAdapter: GenreAdapter
+    ) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.trendingUiState.collect { uiState ->
+                when (uiState) {
+                    is TrendingUiState.Idle -> {
+                        binding.searchProgress.visibility = View.GONE
+                        binding.searchArtistGenreContainer.visibility = View.GONE
+                    }
+                    is TrendingUiState.Loading -> {
+                        binding.searchProgress.visibility = View.VISIBLE
+                    }
+                    is TrendingUiState.Success -> {
+                        binding.searchProgress.visibility = View.GONE
+                        binding.searchArtistGenreContainer.visibility = View.VISIBLE
+                        artistAdapter.submitList(uiState.artists)
+                        artistAdapter.notifyItemRangeChanged(0, uiState.artists.size)
+                        genreAdapter.submitList(uiState.genres)
+                        genreAdapter.notifyItemRangeChanged(0, uiState.genres.size)
+                    }
+                    is TrendingUiState.Error -> {
+                        binding.searchProgress.visibility = View.GONE
+                        Snackbar.make(binding.root, uiState.message, Snackbar.LENGTH_LONG)
+                            .show()
+                    }
+                }
+            }
+        }
     }
 
     private fun initSearchBar() {
@@ -127,23 +173,25 @@ class SearchFragment : Fragment() {
         navHostFragment.requestLayout()
     }
 
-    private fun observeUiState(adapter: SearchResultAdapter) {
+    private fun observeSearchUiState(adapter: SearchResultAdapter) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { uiState ->
+                viewModel.searchUiState.collect { uiState ->
                     when (uiState) {
                         is SearchUiState.Idle -> {
-                            binding.searchProgress.visibility = View.GONE
+                            binding.searchResultsRv.visibility = View.GONE
                         }
 
                         is SearchUiState.Loading -> {
                             binding.searchProgress.visibility = View.VISIBLE
                             binding.searchResultsRv.visibility = View.GONE
+                            binding.searchArtistGenreContainer.visibility = View.GONE
                         }
 
                         is SearchUiState.Success -> {
                             binding.searchProgress.visibility = View.GONE
                             binding.searchResultsRv.visibility = View.VISIBLE
+                            binding.searchArtistGenreContainer.visibility = View.GONE
                             adapter.submitList(uiState.searchResultLis)
                             adapter.notifyItemRangeChanged(0, uiState.searchResultLis.size)
                         }
@@ -151,6 +199,7 @@ class SearchFragment : Fragment() {
                         is SearchUiState.Error -> {
                             binding.searchProgress.visibility = View.GONE
                             binding.searchResultsRv.visibility = View.GONE
+                            binding.searchArtistGenreContainer.visibility = View.GONE
                             Snackbar.make(binding.root, uiState.message, Snackbar.LENGTH_LONG)
                                 .show()
                         }
