@@ -1,6 +1,6 @@
 package com.rimaro.musify.data.remote
 
-import com.rimaro.musify.domain.dto.MusicBrainzRecordinRes
+import com.rimaro.musify.domain.model.MusicBrainzRecordinRes
 import retrofit2.http.GET
 import retrofit2.http.Query
 

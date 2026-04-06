@@ -1,10 +1,10 @@
-package com.rimaro.musify.domain.dto
+package com.rimaro.musify.domain.model
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class DeezerChartArtistRes (
-    val data: List<DeezerArtist>,
+data class DeezerSearchRes (
+    val data: List<DeezerTrack>,
     val total: Int,
     val next: String? = null
 )

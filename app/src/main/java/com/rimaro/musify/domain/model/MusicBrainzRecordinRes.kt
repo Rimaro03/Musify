@@ -1,6 +1,5 @@
-package com.rimaro.musify.domain.dto
+package com.rimaro.musify.domain.model
 
-import com.rimaro.musify.domain.model.Track
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.Locale
@@ -82,29 +81,29 @@ data class TagDTO(
     val name: String
 )
 
-fun RecordingDTO.toDomain(): Track {
-    val artistName = artistCredit?.firstOrNull()?.name ?: "Unknown Artist"
-
-    val albumTitle = releaseGroup?.title ?: "Single"
-
-    val imageUrl = releases?.get(0)?.releaseGroup?.id?.let { mbid ->
-        "https://coverartarchive.org/release-group/$mbid/front-250"
-    }
-
-    // Format Duration (ms to MM:SS)
-    val formattedDuration = length?.let { ms ->
-        val minutes = (ms / 1000) / 60
-        val seconds = (ms / 1000) % 60
-        String.format(Locale.getDefault(),"%d:%02d", minutes, seconds)
-    } ?: "--:--"
-
-    return Track(
-        id = this.id,
-        title = this.title ?: "Unknown title",
-        artistName = artistName,
-        albumTitle = albumTitle,
-        durationText = formattedDuration,
-        thumbnailUrl = imageUrl,
-        score = this.score?.toInt() ?: 0
-    )
-}
+//fun RecordingDTO.toDomain(): Track {
+//    val artistName = artistCredit?.firstOrNull()?.name ?: "Unknown Artist"
+//
+//    val albumTitle = releaseGroup?.title ?: "Single"
+//
+//    val imageUrl = releases?.get(0)?.releaseGroup?.id?.let { mbid ->
+//        "https://coverartarchive.org/release-group/$mbid/front-250"
+//    }
+//
+//    // Format Duration (ms to MM:SS)
+//    val formattedDuration = length?.let { ms ->
+//        val minutes = (ms / 1000) / 60
+//        val seconds = (ms / 1000) % 60
+//        String.format(Locale.getDefault(),"%d:%02d", minutes, seconds)
+//    } ?: "--:--"
+//
+//    return Track(
+//        id = this.id,
+//        title = this.title ?: "Unknown title",
+//        artistName = artistName,
+//        albumTitle = albumTitle,
+//        durationText = formattedDuration,
+//        thumbnailUrl = imageUrl,
+//        score = this.score?.toInt() ?: 0
+//    )
+//}

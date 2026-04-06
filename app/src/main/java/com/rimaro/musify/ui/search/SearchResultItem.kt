@@ -1,8 +1,8 @@
 package com.rimaro.musify.ui.search
 
-import com.rimaro.musify.domain.dto.DeezerAlbum
-import com.rimaro.musify.domain.dto.DeezerArtist
-import com.rimaro.musify.domain.dto.DeezerTrack
+import com.rimaro.musify.domain.model.DeezerAlbum
+import com.rimaro.musify.domain.model.DeezerArtist
+import com.rimaro.musify.domain.model.DeezerTrack
 
 sealed class SearchResultItem {
     data class TrackItem(val track: DeezerTrack) : SearchResultItem()

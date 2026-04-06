@@ -5,14 +5,12 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.local.preferences.SearchHistoryManager
-import com.rimaro.musify.domain.dto.DeezerArtist
-import com.rimaro.musify.domain.dto.DeezerAutocompleteRes
-import com.rimaro.musify.domain.dto.DeezerTrack
+import com.rimaro.musify.domain.model.DeezerAutocompleteRes
+import com.rimaro.musify.domain.model.DeezerTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -115,8 +113,7 @@ class SearchViewModel @Inject constructor(
 
     fun onClick(track: DeezerTrack) {
         viewModelScope.launch {
-            Log.d("SearchViewModel", "Received track: ${track.title}")
-            val url = trackUrlResolver.resolve(track.id.toString(), track.title, track.artist?.name ?: "")
+            val url = trackUrlResolver.resolve(track)
             Log.d("SearchViewModel", "Resolved URL: $url")
         }
     }

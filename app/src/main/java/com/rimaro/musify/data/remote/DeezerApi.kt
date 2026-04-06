@@ -1,11 +1,9 @@
 package com.rimaro.musify.data.remote
 
-import com.rimaro.musify.domain.dto.DeezerArtist
-import com.rimaro.musify.domain.dto.DeezerAutocompleteRes
-import com.rimaro.musify.domain.dto.DeezerChartArtistRes
-import com.rimaro.musify.domain.dto.DeezerGenre
-import com.rimaro.musify.domain.dto.DeezerGenreRes
-import com.rimaro.musify.domain.dto.DeezerSearchRes
+import com.rimaro.musify.domain.model.DeezerAutocompleteRes
+import com.rimaro.musify.domain.model.DeezerChartArtistRes
+import com.rimaro.musify.domain.model.DeezerGenreRes
+import com.rimaro.musify.domain.model.DeezerSearchRes
 import retrofit2.http.GET
 import retrofit2.http.Query
 

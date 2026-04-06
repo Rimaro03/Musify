@@ -6,6 +6,7 @@ import com.rimaro.musify.data.extractor.TrackExtractor
 import com.rimaro.musify.data.local.db.CachedTrack
 import com.rimaro.musify.data.local.db.TrackDao
 import com.rimaro.musify.data.local.db.TrackStatus
+import com.rimaro.musify.domain.model.DeezerTrack
 import org.schabi.newpipe.extractor.exceptions.ExtractionException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +16,11 @@ class TrackUrlResolver @Inject constructor(
     private val dao: TrackDao,
     private val extractor: TrackExtractor
 ) {
-    suspend fun resolve(trackId: String, title: String, artist: String): String {
+    suspend fun resolve(track: DeezerTrack): String {
+        val trackId = track.id.toString()
+        val title = track.title
+        val artist = track.artist?.name ?: "Unknown artist"
+
         val cached = dao.getTrack(trackId)
 
         // Return cached URL if still valid

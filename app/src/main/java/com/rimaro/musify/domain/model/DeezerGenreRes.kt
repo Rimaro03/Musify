@@ -1,4 +1,4 @@
-package com.rimaro.musify.domain.dto
+package com.rimaro.musify.domain.model
 
 import kotlinx.serialization.Serializable
 

@@ -1,10 +1,10 @@
 package com.rimaro.musify.domain.repository
 
 import com.rimaro.musify.data.remote.DeezerApi
-import com.rimaro.musify.domain.dto.DeezerArtist
-import com.rimaro.musify.domain.dto.DeezerAutocompleteRes
-import com.rimaro.musify.domain.dto.DeezerGenre
-import com.rimaro.musify.domain.dto.DeezerSearchRes
+import com.rimaro.musify.domain.model.DeezerArtist
+import com.rimaro.musify.domain.model.DeezerAutocompleteRes
+import com.rimaro.musify.domain.model.DeezerGenre
+import com.rimaro.musify.domain.model.DeezerSearchRes
 import javax.inject.Inject
 
 class DeezerRepository @Inject constructor(
