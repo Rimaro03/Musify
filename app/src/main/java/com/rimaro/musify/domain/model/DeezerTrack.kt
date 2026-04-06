@@ -28,3 +28,14 @@ data class DeezerTrack (
     val album: DeezerAlbum? = null, // Note: recursive reference possible in some endpoints
     val type: String = "track"
 )
+
+fun DeezerTrack.toTrack(streamUrl: String): Track = Track(
+    id = id,
+    title = title,
+    artist = artist?.name ?: "Unknown Artist",
+    album = album?.title ?: "Unknown Album",
+    durationMs = duration * 1000L,
+    genre = album?.genres?.joinToString(", "),
+    artworkUrl = album?.coverMedium,
+    streamUrl = streamUrl,
+)

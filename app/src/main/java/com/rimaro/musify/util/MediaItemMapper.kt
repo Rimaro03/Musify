@@ -1,12 +1,13 @@
 package com.rimaro.musify.util
 
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import com.rimaro.musify.domain.model.DeezerTrack
+import com.rimaro.musify.domain.model.Track
 
 object MediaItemMapper {
 
-    fun fromTrack(track: DeezerTrack): MediaItem {
+    fun fromTrack(track: Track): MediaItem {
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
             .setArtist(track.artist)
@@ -14,11 +15,10 @@ object MediaItemMapper {
             .setArtworkUri(track.artworkUrl?.toUri())
             .setDurationMs(track.durationMs)
             .setGenre(track.genre)
-            .setTrackNumber(track.trackNumber)
             .build()
 
         return MediaItem.Builder()
-            .setMediaId(track.id)
+            .setMediaId(track.id.toString())
             .setUri(track.streamUrl)
             .setMediaMetadata(metadata)
             .setRequestMetadata(
@@ -29,19 +29,18 @@ object MediaItemMapper {
             .build()
     }
 
-    fun fromTracks(tracks: List<DeezerTrack>): List<MediaItem> = tracks.map { fromTrack(it) }
+    fun fromTracks(tracks: List<Track>): List<MediaItem> = tracks.map { fromTrack(it) }
 
-    fun toTrack(mediaItem: MediaItem): DeezerTrack {
+    fun toTrack(mediaItem: MediaItem): Track {
         val meta = mediaItem.mediaMetadata
-        return DeezerTrack(
-            id          = mediaItem.mediaId,
+        return Track(
+            id          = mediaItem.mediaId.toLong(),
             title       = meta.title?.toString()       ?: "Unknown title",
             artist      = meta.artist?.toString()      ?: "Unknown artist",
             album       = meta.albumTitle?.toString()  ?: "Unknown album",
             artworkUrl  = meta.artworkUri?.toString(),
             durationMs  = meta.durationMs              ?: 0L,
             genre       = meta.genre?.toString(),
-            trackNumber = meta.trackNumber,
             streamUrl   = mediaItem.requestMetadata.mediaUri?.toString() ?: ""
         )
     }
