@@ -64,8 +64,6 @@ class SearchFragment : Fragment() {
 
         observeTrendingUiState(trendingArtistsAdapter, genresAdapter)
 
-
-
         /* HISTORY LOGIC */
         val historyContainer = requireActivity().findViewById<LinearLayout>(R.id.searchview_history_container)
         val historyLayout = requireActivity().findViewById<LinearLayout>(R.id.searchview_history)
@@ -84,7 +82,6 @@ class SearchFragment : Fragment() {
                     searchView.hide()
 
                     viewModel.onSearch(query)
-                    viewModel.performSearch(query)
 
                     return@setOnEditorActionListener true
                 }
@@ -233,7 +230,6 @@ class SearchFragment : Fragment() {
                             searchView.hide()
 
                             viewModel.onSearch(query)
-                            viewModel.performSearch(query)
                         }
                         historyContainer.addView(item)
                     }

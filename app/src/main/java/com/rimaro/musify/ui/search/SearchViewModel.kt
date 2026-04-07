@@ -7,10 +7,14 @@ import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.local.preferences.SearchHistoryManager
 import com.rimaro.musify.domain.model.DeezerAutocompleteRes
 import com.rimaro.musify.domain.model.DeezerTrack
+import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.repository.DeezerRepository
+import com.rimaro.musify.player.repository.MusicRepository
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +27,8 @@ class SearchViewModel @Inject constructor(
     application: Application,
     private val deezerRepository: DeezerRepository,
     private val historyManager: SearchHistoryManager,
-    private val trackUrlResolver: TrackUrlResolver
+    private val trackUrlResolver: TrackUrlResolver,
+    private val musicRepository: MusicRepository
 ) : AndroidViewModel(application) {
     private val _searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     val searchUiState = _searchUiState.asStateFlow()
@@ -31,39 +36,52 @@ class SearchViewModel @Inject constructor(
     private val _trendingUiState = MutableStateFlow<TrendingUiState>(TrendingUiState.Idle)
     val trendingUiState = _trendingUiState.asStateFlow()
 
+    var tracks: List<Track> = emptyList()
+
     init {
         getTrendingArtistsAndGenres()
     }
 
-    /* TRENDING ARTISTS/GENRES LOGIC */
-    fun getTrendingArtistsAndGenres() {
-        viewModelScope.launch {
-            _trendingUiState.value = TrendingUiState.Loading
-            try {
-                val artists = async { deezerRepository.getTopArtists() }
-                val genres = async { deezerRepository.getGenres() }
+    /* HISTORY LOGIC */
+    val history = historyManager.history
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-                _trendingUiState.value = TrendingUiState.Success(
-                    artists.await(),
-                    genres.await()
-                )
-                Log.d("SearchViewModel", "Received ${artists.await().size} artists" +
-                        "and ${genres.await().size} genres")
-            } catch (e: Exception) {
-                _trendingUiState.value = TrendingUiState.Error(e.message ?: "Unknown error")
-                Log.e("SearchViewModel", "Error getting trending artists", e)
+    fun onSearch(query: String) {
+        viewModelScope.launch { historyManager.add(query) }
+        performSearch(query)
+    }
+
+    fun removeQuery(query: String) {
+        viewModelScope.launch { historyManager.remove(query) }
+    }
+
+    fun clearHistory() {
+        viewModelScope.launch { historyManager.clearAll() }
+    }
+
+    fun onClick(deezerTrack: DeezerTrack) {
+        viewModelScope.launch {
+            val track = tracks.find { it.id == deezerTrack.id }
+            if (track == null) {
+                Log.e("SearchViewModel", "Track not found in tracks list")
+                return@launch
             }
+            Log.d("SearchViewModel", "Enqueueing track: $track")
+
+            musicRepository.playTracks(listOf(track))
         }
     }
 
     /* SEARCH LOGIC */
-    fun performSearch(query: String) {
+    private fun performSearch(query: String) {
         if(query.isBlank()) return
 
         viewModelScope.launch {
             _searchUiState.value = SearchUiState.Loading
             try {
                 val res = deezerRepository.autocomplete(query)
+                tracks = fetchStreamUrl(res.tracks.data)
+
                 val searchResultList = buildSearchItemsList(res)
                 if(searchResultList.isEmpty()) {
                     _searchUiState.value = SearchUiState.Error("No track found")
@@ -95,26 +113,34 @@ class SearchViewModel @Inject constructor(
         return searchResultList
     }
 
-    /* HISTORY LOGIC */
-    val history = historyManager.history
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    fun onSearch(query: String) {
-        viewModelScope.launch { historyManager.add(query) }
-    }
-
-    fun removeQuery(query: String) {
-        viewModelScope.launch { historyManager.remove(query) }
-    }
-
-    fun clearHistory() {
-        viewModelScope.launch { historyManager.clearAll() }
-    }
-
-    fun onClick(track: DeezerTrack) {
+    /* TRENDING ARTISTS/GENRES LOGIC */
+    fun getTrendingArtistsAndGenres() {
         viewModelScope.launch {
-            val url = trackUrlResolver.resolve(track)
-            Log.d("SearchViewModel", "Resolved URL: $url")
+            _trendingUiState.value = TrendingUiState.Loading
+            try {
+                val artistsFuture = async { deezerRepository.getTopArtists() }
+                val genresFuture = async { deezerRepository.getGenres() }
+
+                val artists = artistsFuture.await()
+                val genres = genresFuture.await()
+
+                _trendingUiState.value = TrendingUiState.Success(
+                    artists,
+                    genres
+                )
+                Log.d("SearchViewModel", "Received ${artists.size} artists" +
+                        "and ${genres.size} genres")
+            } catch (e: Exception) {
+                _trendingUiState.value = TrendingUiState.Error(e.message ?: "Unknown error")
+                Log.e("SearchViewModel", "Error getting trending artists", e)
+            }
         }
+    }
+
+    /* TRACK STREAM URL FETCHING */
+    suspend fun fetchStreamUrl(deezerTracks: List<DeezerTrack>): List<Track> = coroutineScope {
+        deezerTracks.map {
+            async { trackUrlResolver.resolve(it) }
+        }.awaitAll().filterNotNull()
     }
 }

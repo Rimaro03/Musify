@@ -1,8 +1,8 @@
 package com.rimaro.musify.player.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.media3.common.MediaItem
 import com.rimaro.musify.domain.model.PlayerState
+import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.player.repository.MusicRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,12 +18,15 @@ class PlayerViewModel @Inject constructor(
     private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
     val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
 
+    private val _shuffleEnabled = MutableStateFlow<Boolean>(false)
+    val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled.asStateFlow()
+
     init {
         repository.connect()
     }
 
-    fun play(tracks: List<MediaItem>, startIndex: Int = 0) {
-        repository.play(tracks, startIndex)
+    fun play(tracks: List<Track>) {
+        repository.playTracks(tracks)
         _playerState.value = PlayerState.Playing
     }
 
@@ -39,8 +42,14 @@ class PlayerViewModel @Inject constructor(
     fun skipPrevious() = repository.skipPrev()
     fun seekTo(positionMs: Long) = repository.seekTo(positionMs)
 
+    fun enqueueTracks(tracks: List<Track>, position: Int? = null) =
+        repository.enqueueTracks(tracks, position)
+
+    fun toggleShuffle() = repository.toggleShuffle()
+
     override fun onCleared() {
         repository.disconnect()
         super.onCleared()
     }
+
 }
