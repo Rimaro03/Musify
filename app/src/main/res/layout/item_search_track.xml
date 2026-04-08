@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:padding="5dp"
+    android:layout_marginBottom="10dp">
 
     <LinearLayout
-        android:id="@+id/search_track_clickable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:layout_marginBottom="10dp"
         android:orientation="horizontal">
 
         <ImageView
@@ -18,13 +16,18 @@
             android:layout_height="50dp"
             android:contentDescription="@string/track_thumbnail"
             android:src="@drawable/ic_launcher_foreground"
+            android:scaleType="centerCrop"
+            android:background="@drawable/rounded_track_bg"
+            android:clipToOutline="true"
             android:layout_marginEnd="10dp"/>
 
         <LinearLayout
+            android:id="@+id/search_track_clickable"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
+            android:layout_marginEnd="10dp"
             android:layout_gravity="center_vertical">
 
             <TextView
@@ -76,6 +79,15 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/search_track_menu_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:src="@drawable/more_vert_24px"
+            android:contentDescription="@string/menu_icon"
+            style="@style/Widget.Material3.Button.IconButton"/>
 
     </LinearLayout>
 

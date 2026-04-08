@@ -22,7 +22,8 @@ import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
 class SearchResultAdapter (
     private val onTrackClick: (Track) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
-    private val onAlbumClick: (DeezerAlbum) -> Unit
+    private val onAlbumClick: (DeezerAlbum) -> Unit,
+    private val onMenuClick: (Track) -> Unit
 ): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         const val TYPE_TRACK = 0
@@ -45,7 +46,8 @@ class SearchResultAdapter (
 
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
-            fun bind(track: Track, onTrackClick: (Track) -> Unit) {
+            fun bind(track: Track, onTrackClick: (Track) -> Unit, onMenuClick: ((Track) -> Unit)) {
+                // track metadata
                 binding.searchTrackName.text = track.title
                 binding.searchTrackArtist.text = track.artist
                 Glide.with(binding.root)
@@ -53,10 +55,15 @@ class SearchResultAdapter (
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(binding.searchTrackThumbnail)
                 binding.searchTrackClickable.setOnClickListener { onTrackClick(track) }
+                // dark shadow
                 binding.loadingOverlay.visibility = if (track.streamUrl == null) {
                     View.VISIBLE
                 } else {
                     View.GONE
+                }
+                // menu btn
+                binding.searchTrackMenuBtn.setOnClickListener {
+                    onMenuClick(track)
                 }
             }
     }
@@ -104,7 +111,7 @@ class SearchResultAdapter (
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is SearchResultItem.TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick)
+            is SearchResultItem.TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick, onMenuClick)
             is SearchResultItem.ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)
             is SearchResultItem.AlbumItem  -> (holder as AlbumViewHolder).bind(item.album)
         }

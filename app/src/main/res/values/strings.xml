@@ -49,4 +49,5 @@
     <string name="browse">Browse</string>
     <string name="artist_pfp">artist pfp</string>
     <string name="genre_card_background">genre card background</string>
+    <string name="menu_icon">menu icon</string>
 </resources>

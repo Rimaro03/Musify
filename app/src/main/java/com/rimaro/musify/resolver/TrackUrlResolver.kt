@@ -7,7 +7,6 @@ import com.rimaro.musify.data.local.db.CachedTrack
 import com.rimaro.musify.data.local.db.TrackDao
 import com.rimaro.musify.data.local.db.TrackStatus
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.domain.model.toTrack
 import org.schabi.newpipe.extractor.exceptions.ExtractionException
 import javax.inject.Inject
 import javax.inject.Singleton

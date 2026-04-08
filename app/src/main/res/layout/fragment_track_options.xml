@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="8dp">
+
+    <TextView
+        android:id="@+id/optionPlayNext"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Play next"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"/>
+
+    <TextView
+        android:id="@+id/optionAddToQueue"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Add to queue"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"/>
+
+    <TextView
+        android:id="@+id/optionSaveToPlaylist"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Save to playlist"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"/>
+
+</LinearLayout>

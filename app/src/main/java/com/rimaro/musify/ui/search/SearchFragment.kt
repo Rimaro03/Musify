@@ -2,6 +2,7 @@ package com.rimaro.musify.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,9 @@ import com.google.android.material.search.SearchView
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
+import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.SharedViewModel
+import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -91,7 +94,10 @@ class SearchFragment : Fragment() {
 
         /* SEARCH LOGIC */
         val searchResultsRv = binding.searchResultsRv
-        val searchResultAdapter = SearchResultAdapter(viewModel::onClick, {}, {})
+        val searchResultAdapter = SearchResultAdapter(
+            viewModel::onClick,
+            {}, {},
+            ::showTrackMenu)
         searchResultsRv.adapter = searchResultAdapter
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
         observeSearchUiState(searchResultAdapter)
@@ -102,6 +108,11 @@ class SearchFragment : Fragment() {
         super.onDestroyView()
         _binding = null
         clearSearchBar()
+    }
+
+    private fun showTrackMenu(track: Track) {
+        TrackOptionsBottomSheet.newInstance(track)
+            .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 
     private fun observeTrendingUiState(
