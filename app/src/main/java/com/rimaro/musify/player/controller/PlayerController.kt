@@ -1,4 +1,4 @@
-package com.rimaro.musify.player.repository
+package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MusicRepository @Inject constructor(
+class PlayerController @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null

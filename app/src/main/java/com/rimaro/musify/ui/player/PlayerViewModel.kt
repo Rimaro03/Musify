@@ -1,9 +1,9 @@
-package com.rimaro.musify.player.viewmodel
+package com.rimaro.musify.ui.player
 
 import androidx.lifecycle.ViewModel
 import com.rimaro.musify.domain.model.PlayerState
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.player.repository.MusicRepository
+import com.rimaro.musify.player.controller.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val repository: MusicRepository
+    private val repository: PlayerController
 ) : ViewModel() {
 
     private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)

@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.search
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -10,16 +11,16 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.rimaro.musify.R
 import com.rimaro.musify.domain.model.DeezerAlbum
 import com.rimaro.musify.domain.model.DeezerArtist
-import com.rimaro.musify.domain.model.DeezerTrack
 import com.rimaro.musify.databinding.ItemSearchAlbumBinding
 import com.rimaro.musify.databinding.ItemSearchArtistBinding
 import com.rimaro.musify.databinding.ItemSearchTrackBinding
+import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.search.SearchResultItem.AlbumItem
 import com.rimaro.musify.ui.search.SearchResultItem.ArtistItem
 import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
 
 class SearchResultAdapter (
-    private val onTrackClick: (DeezerTrack) -> Unit,
+    private val onTrackClick: (Track) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
     private val onAlbumClick: (DeezerAlbum) -> Unit
 ): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
@@ -44,14 +45,19 @@ class SearchResultAdapter (
 
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
-            fun bind(track: DeezerTrack, onTrackClick: (DeezerTrack) -> Unit) {
+            fun bind(track: Track, onTrackClick: (Track) -> Unit) {
                 binding.searchTrackName.text = track.title
-                binding.searchTrackArtist.text = track.artist?.name ?: "Unknown Artist"
+                binding.searchTrackArtist.text = track.artist
                 Glide.with(binding.root)
-                    .load(track.album?.coverMedium)
+                    .load(track.artworkUrl)
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(binding.searchTrackThumbnail)
                 binding.searchTrackClickable.setOnClickListener { onTrackClick(track) }
+                binding.loadingOverlay.visibility = if (track.streamUrl == null) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
             }
     }
 

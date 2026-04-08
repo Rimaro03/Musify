@@ -8,5 +8,5 @@ data class Track (
     val durationMs: Long,
     val genre: String?,
     val artworkUrl: String?,
-    val streamUrl: String,
+    var streamUrl: String?,
 )

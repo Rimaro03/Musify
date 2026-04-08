@@ -23,7 +23,7 @@ object MediaItemMapper {
             .setMediaMetadata(metadata)
             .setRequestMetadata(
                 MediaItem.RequestMetadata.Builder()
-                    .setMediaUri(track.streamUrl.toUri())
+                    .setMediaUri(track.streamUrl?.toUri())
                     .build()
             )
             .build()

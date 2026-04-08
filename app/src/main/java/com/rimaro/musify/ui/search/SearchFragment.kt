@@ -43,7 +43,7 @@ class SearchFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -95,6 +95,7 @@ class SearchFragment : Fragment() {
         searchResultsRv.adapter = searchResultAdapter
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
         observeSearchUiState(searchResultAdapter)
+
     }
 
     override fun onDestroyView() {
@@ -172,7 +173,7 @@ class SearchFragment : Fragment() {
 
     private fun observeSearchUiState(adapter: SearchResultAdapter) {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.searchUiState.collect { uiState ->
                     when (uiState) {
                         is SearchUiState.Idle -> {
@@ -189,8 +190,7 @@ class SearchFragment : Fragment() {
                             binding.searchProgress.visibility = View.GONE
                             binding.searchResultsRv.visibility = View.VISIBLE
                             binding.searchArtistGenreContainer.visibility = View.GONE
-                            adapter.submitList(uiState.searchResultLis)
-                            adapter.notifyItemRangeChanged(0, uiState.searchResultLis.size)
+                            adapter.submitList(uiState.searchResultList.toList())
                         }
 
                         is SearchUiState.Error -> {
@@ -238,4 +238,5 @@ class SearchFragment : Fragment() {
             }
         }
     }
+
 }
