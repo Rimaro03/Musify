@@ -19,7 +19,7 @@ class WorkScheduler @Inject constructor(
 
     fun schedulePeriodicRefresh() {
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.UNMETERED)
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .setRequiresBatteryNotLow(true)
             .build()
 
@@ -32,7 +32,7 @@ class WorkScheduler @Inject constructor(
 
         workManager.enqueueUniquePeriodicWork(
             "url_refresh",
-            ExistingPeriodicWorkPolicy.KEEP,
+            ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
     }

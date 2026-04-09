@@ -1,6 +1,7 @@
 package com.rimaro.musify.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -8,6 +9,7 @@ import com.rimaro.musify.data.local.db.TrackDao
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import okio.IOException
 
 @HiltWorker
 class UrlRefreshWorker @AssistedInject constructor(
@@ -34,9 +36,16 @@ class UrlRefreshWorker @AssistedInject constructor(
             )
             expiringTracks.forEach { track ->
                 val newUrl = trackUrlResolver.getFreshUrl(track.id, track.title, track.artist)
-                trackDao.upsert(track.copy(streamUrl = newUrl))
+                if(newUrl.isNotBlank()) {
+                    trackDao.upsert(track.copy(streamUrl = newUrl))
+                }
             }
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+            Log.d("UrlRefreshWorker", "Error refreshing tracks, retrying", e)
+            return Result.retry()
+        }
+        catch (e: Exception) {
+            Log.d("UrlRefreshWorker", "Error refreshing tracks", e)
             return Result.failure()
         }
         return Result.success()
@@ -44,6 +53,6 @@ class UrlRefreshWorker @AssistedInject constructor(
 
     companion object {
         const val COLD_TRACKS_INTERVAL: Long = 28 * 24 * 3600 * 1000L // 4 weeks before track goes cold
-        const val REFRESH_INTERVAL: Long = (303600 / 2) * 1000L // 30 minutes
+        const val REFRESH_INTERVAL: Long = 30 * 60 * 1000L // 30 minutes
     }
 }
