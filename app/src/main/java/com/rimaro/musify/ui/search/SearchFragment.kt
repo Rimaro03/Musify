@@ -11,6 +11,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -18,7 +19,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
@@ -27,6 +30,7 @@ import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.SharedViewModel
+import com.rimaro.musify.ui.common.SwipeToQueueCallback
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -100,6 +104,7 @@ class SearchFragment : Fragment() {
             ::showTrackMenu)
         searchResultsRv.adapter = searchResultAdapter
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
+        setupSearchAdapter(searchResultAdapter, searchResultsRv)
         observeSearchUiState(searchResultAdapter)
 
     }
@@ -109,6 +114,7 @@ class SearchFragment : Fragment() {
         _binding = null
         clearSearchBar()
     }
+
 
     private fun showTrackMenu(track: Track) {
         TrackOptionsBottomSheet.newInstance(track)
@@ -180,6 +186,27 @@ class SearchFragment : Fragment() {
         val params = navHostFragment.layoutParams as? CoordinatorLayout.LayoutParams
         params?.behavior = null
         navHostFragment.requestLayout()
+    }
+
+    private fun setupSearchAdapter(adapter: SearchResultAdapter, recyclerView: RecyclerView) {
+        val queueIcon = ContextCompat.getDrawable(requireContext(), R.drawable.low_priority_24px)
+
+        val swipeCallback = SwipeToQueueCallback(
+            onSwiped = { position ->
+                val track = (adapter.currentList[position] as SearchResultItem.TrackItem).track
+                viewModel.enqueueTracks(listOf(track))
+
+                // Snap the item back instead of removing it
+                adapter.notifyItemChanged(position)
+
+                // Optional: show a Snackbar confirmation
+                //Snackbar.make(view, "\"${track.title}\" added to queue", Snackbar.LENGTH_SHORT).show()
+            },
+            queueIcon = queueIcon,
+            requireContext()
+        )
+
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(recyclerView)
     }
 
     private fun observeSearchUiState(adapter: SearchResultAdapter) {

@@ -29,7 +29,8 @@ class SearchViewModel @Inject constructor(
     private val deezerRepository: DeezerRepository,
     private val historyManager: SearchHistoryManager,
     private val trackUrlResolver: TrackUrlResolver,
-    private val musicRepository: PlayerController
+    private val musicRepository: PlayerController,
+    private val playerController: PlayerController
 ) : AndroidViewModel(application) {
     private val _searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     val searchUiState = _searchUiState.asStateFlow()
@@ -147,4 +148,7 @@ class SearchViewModel @Inject constructor(
             }
         }.awaitAll()
     }
+
+    /* PLAYER LOGIC */
+    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks)
 }
