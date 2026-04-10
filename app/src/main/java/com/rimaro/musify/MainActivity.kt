@@ -159,6 +159,9 @@ class MainActivity : AppCompatActivity() {
 //                findNavController(R.id.nav_host_fragment)
 //                    .navigate(R.id.action_global_playerFragment)
             }
+
+            setOnSwipeLeft { playerViewModel.skipNext() }
+            setOnSwipeRight { playerViewModel.skipPrevious() }
         }
     }
 
