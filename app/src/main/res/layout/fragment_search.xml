@@ -23,7 +23,9 @@
             android:id="@+id/search_results_rv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:paddingBottom="@dimen/miniplayer_height"
+            android:clipToPadding="false"/>
 
         <LinearLayout
             android:id="@+id/search_artist_genre_container"
@@ -76,7 +78,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:nestedScrollingEnabled="false" />
+                android:nestedScrollingEnabled="false"
+                android:paddingBottom="@dimen/miniplayer_height"
+                android:clipToPadding="false"/>
 
         </LinearLayout>
 
