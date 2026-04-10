@@ -41,7 +41,8 @@ object MediaItemMapper {
             artworkUrl  = meta.artworkUri?.toString(),
             durationMs  = meta.durationMs              ?: 0L,
             genre       = meta.genre?.toString(),
-            streamUrl   = mediaItem.requestMetadata.mediaUri?.toString() ?: ""
+            streamUrl   = mediaItem.requestMetadata.mediaUri?.toString() ?: "",
+            sourceUrl   = null
         )
     }
 }

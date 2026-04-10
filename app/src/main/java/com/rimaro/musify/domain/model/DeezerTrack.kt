@@ -29,7 +29,7 @@ data class DeezerTrack (
     val type: String = "track"
 )
 
-fun DeezerTrack.toTrack(streamUrl: String? = null): Track = Track(
+fun DeezerTrack.toTrack(streamUrl: String? = null, sourceUrl: String? = null): Track = Track(
     id = id,
     title = title,
     artist = artist?.name ?: "Unknown Artist",
@@ -38,4 +38,5 @@ fun DeezerTrack.toTrack(streamUrl: String? = null): Track = Track(
     genre = album?.genres?.joinToString(", "),
     artworkUrl = album?.coverMedium,
     streamUrl = streamUrl,
+    sourceUrl = sourceUrl
 )

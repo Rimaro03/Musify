@@ -1,5 +1,6 @@
 package com.rimaro.musify.ui.common
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -21,7 +22,6 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     @Inject lateinit var playerController: PlayerController
 
-    // pass the track via companion object
     companion object {
         private const val ARG_TRACK = "track"
         fun newInstance(track: Track) = TrackOptionsBottomSheet().apply {
@@ -36,32 +36,42 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val track = arguments?.getParcelable<Track>(ARG_TRACK, Track::class.java) ?: return
+        val track = arguments?.getParcelable(ARG_TRACK, Track::class.java) ?: return
 
+        // track metadata
+        binding.trackOptTrackName.text = track.title
+        binding.trackOptTrackArtist.text = track.artist
+
+        // top buttons
         binding.trackOptPlayNext.setOnClickListener {
             playerController.enqueueTracks(listOf(track), 1)
             dismiss()
         }
-
         binding.trackOptLike.setOnClickListener {  }
+        binding.trackOptShare.setOnClickListener {
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "Check out this track: ${track.sourceUrl}")
+                type = "text/plain"
+            }
 
-        binding.trackOptShare.setOnClickListener {  }
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
 
+            dismiss()
+        }
+
+        // list buttons
         binding.trackOptAddToQueue.setOnClickListener {
             playerController.enqueueTracks(listOf(track))
             dismiss()
         }
-
         binding.trackOptSaveToPlaylist.setOnClickListener {  }
-
         binding.trackOptGotoAlbum.setOnClickListener {  }
-
         binding.trackOptGotoArtist.setOnClickListener {  }
-
         binding.trackOptDismissBtn.setOnClickListener {
             dismiss()
         }
-
     }
 
     override fun onDestroyView() {

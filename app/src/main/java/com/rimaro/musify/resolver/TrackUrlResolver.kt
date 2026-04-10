@@ -24,13 +24,13 @@ class TrackUrlResolver @Inject constructor(
         val cached = dao.getTrack(trackId.toString())
 
         // Return cached URL if still valid
-        val streamUrl = if (cached != null &&
+        val res = if (cached != null &&
             cached.status == TrackStatus.ACTIVE &&
             cached.expiresAt > System.currentTimeMillis() + 5 * 60 * 1000L &&
             cached.failureCount < 5
         ) {
             dao.updateLastPlayed(trackId.toString())
-            cached.streamUrl
+            listOf(cached.streamUrl, cached.sourceUrl)
         } else {
             try {
                 getFreshUrl(trackId.toString(), title, artist, cached)
@@ -40,11 +40,14 @@ class TrackUrlResolver @Inject constructor(
             }
         }
 
-        val fetchedTrack = track.copy(streamUrl = streamUrl)
+        val fetchedTrack = track.copy(
+            streamUrl = res[0],
+            sourceUrl = res[1]
+        )
         return fetchedTrack
     }
 
-    suspend fun getFreshUrl(trackId: String, title: String, artist: String, cached: CachedTrack? = null): String {
+    suspend fun getFreshUrl(trackId: String, title: String, artist: String, cached: CachedTrack? = null): List<String> {
         // Try to extract a fresh URL
         val sourceUrl = cached?.sourceUrl
 
@@ -69,7 +72,7 @@ class TrackUrlResolver @Inject constructor(
                         status = TrackStatus.ACTIVE
                     )
                 )
-                result.streamUrl
+                listOf(result.streamUrl, result.sourceUrl)
             }
             is ExtractorResult.Failure -> {
                 val newCount = (cached?.failureCount ?: 0) + 1

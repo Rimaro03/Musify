@@ -35,7 +35,7 @@ class UrlRefreshWorker @AssistedInject constructor(
                 threshold = System.currentTimeMillis() + REFRESH_INTERVAL,
             )
             expiringTracks.forEach { track ->
-                val newUrl = trackUrlResolver.getFreshUrl(track.id, track.title, track.artist)
+                val newUrl = trackUrlResolver.getFreshUrl(track.id, track.title, track.artist)[0]
                 if(newUrl.isNotBlank()) {
                     trackDao.upsert(track.copy(streamUrl = newUrl))
                 }
