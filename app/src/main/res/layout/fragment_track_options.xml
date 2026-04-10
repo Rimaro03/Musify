@@ -1,33 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:paddingVertical="8dp">
+    android:padding="20dp"
+    android:background="?attr/colorSurface">
 
-    <TextView
-        android:id="@+id/optionPlayNext"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Play next"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"/>
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/optionAddToQueue"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Add to queue"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="10dp"
+            android:layout_gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/optionSaveToPlaylist"
+            <TextView
+                android:id="@+id/track_opt_track_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:text="End of Beginning"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/track_opt_track_artist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:text="Djo"
+                android:textColor="@color/gray_light"
+                android:textSize="16sp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/track_opt_dismiss_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                app:icon="@drawable/close_24px"
+                android:contentDescription="@string/menu_icon"
+                style="@style/Widget.Material3.Button.IconButton"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="Save to playlist"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"/>
+        android:layout_height="2dp"
+        android:background="?attr/colorSurfaceVariant"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/track_opt_play_next"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/track_opts_button_height"
+                android:layout_gravity="end"
+                android:background="@drawable/rounded_button_bg"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/playlist_play_24px"
+                android:contentDescription="@string/play_next_icon"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/play_next"
+                android:textAlignment="center"
+                android:layout_marginTop="5dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp">
+
+            <ImageButton
+                android:id="@+id/track_opt_like"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/track_opts_button_height"
+                android:layout_gravity="end"
+                android:background="@drawable/rounded_button_bg"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/media3_icon_heart_unfilled"
+                android:contentDescription="@string/add_to_favourite_icon"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/save_to_liked"
+                android:textAlignment="center"
+                android:layout_marginTop="5dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/track_opt_share"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/track_opts_button_height"
+                android:layout_gravity="end"
+                android:background="@drawable/rounded_button_bg"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/share_24px"
+                android:contentDescription="@string/share_icon"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/share"
+                android:textAlignment="center"
+                android:layout_marginTop="5dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp">
+
+        <LinearLayout
+            android:id="@+id/track_opt_add_to_queue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:layout_marginTop="5dp">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:src="@drawable/low_priority_24px"
+                android:contentDescription="@string/add_to_queue_icon"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/text_enlarged"
+                android:text="@string/add_to_queue" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/track_opt_save_to_playlist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:src="@drawable/bookmark_24px"
+                android:contentDescription="@string/save_to_playlist_icon"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/text_enlarged"
+                android:text="@string/save_to_playlist" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/track_opt_goto_album"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:src="@drawable/album_24px"
+                android:contentDescription="@string/album_icon"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/text_enlarged"
+                android:text="@string/go_to_album" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/track_opt_goto_artist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <ImageButton
+                style="@style/Widget.Material3.Button.IconButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:contentDescription="@string/artist_icon"
+                android:src="@drawable/artist_24px" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:text="@string/go_to_artist"
+                android:textSize="@dimen/text_enlarged" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

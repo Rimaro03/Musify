@@ -50,4 +50,19 @@
     <string name="artist_pfp">artist pfp</string>
     <string name="genre_card_background">genre card background</string>
     <string name="menu_icon">menu icon</string>
+    <string name="play_next_icon">play next icon</string>
+    <string name="add_to_favourite_icon">add to favourite icon</string>
+    <string name="share_icon">share icon</string>
+    <string name="add_to_queue_icon">add to queue icon</string>
+    <string name="album_icon">album icon</string>
+    <string name="save_to_playlist">Save to playlist</string>
+    <string name="go_to_album">Go to album</string>
+    <string name="go_to_artist">Go to artist</string>
+    <string name="artist_icon">artist icon</string>
+    <string name="save_to_playlist_icon">save to playlist icon</string>
+    <string name="add_to_queue">Add to queue</string>
+    <string name="play_next">Play next</string>
+    <string name="save_to_liked">Save to liked</string>
+    <string name="share">Share</string>
+    <string name="play_pause_icon">play/pause icon</string>
 </resources>

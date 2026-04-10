@@ -65,6 +65,10 @@ class SearchResultAdapter (
                 binding.searchTrackMenuBtn.setOnClickListener {
                     onMenuClick(track)
                 }
+                binding.searchTrackClickable.setOnLongClickListener {
+                    onMenuClick(track)
+                    true
+                }
             }
     }
 
@@ -93,9 +97,9 @@ class SearchResultAdapter (
     }
 
     override fun getItemViewType(position: Int) = when(getItem(position)) {
-        is SearchResultItem.TrackItem  -> TYPE_TRACK
-        is SearchResultItem.ArtistItem -> TYPE_ARTIST
-        is SearchResultItem.AlbumItem  -> TYPE_ALBUM
+        is TrackItem  -> TYPE_TRACK
+        is ArtistItem -> TYPE_ARTIST
+        is AlbumItem  -> TYPE_ALBUM
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -111,9 +115,9 @@ class SearchResultAdapter (
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is SearchResultItem.TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick, onMenuClick)
-            is SearchResultItem.ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)
-            is SearchResultItem.AlbumItem  -> (holder as AlbumViewHolder).bind(item.album)
+            is TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick, onMenuClick)
+            is ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)
+            is AlbumItem  -> (holder as AlbumViewHolder).bind(item.album)
         }
     }
 }

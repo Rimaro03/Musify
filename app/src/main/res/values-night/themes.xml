@@ -17,6 +17,9 @@
         <item name="colorOnSurface">#FFFFFFFF</item>
         <item name="colorOnSurfaceVariant">#FFB3B3B3</item>
 
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">@dimen/text_enlarged</item>
+
         <!-- Outlines / Dividers -->
         <item name="colorOutline">#FF3D3D3D</item>
 

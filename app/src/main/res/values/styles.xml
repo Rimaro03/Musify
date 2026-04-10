@@ -19,4 +19,5 @@
     <style name="Custom.SearchView" parent="Widget.Material3.SearchView">
         <item name="backgroundTint">@color/black</item>
     </style>
+
 </resources>

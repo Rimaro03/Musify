@@ -88,6 +88,19 @@
         app:navGraph="@navigation/nav_graph"
         android:layout_marginBottom="@dimen/nav_bar_height"/>
 
+    <com.rimaro.musify.ui.player.MiniPlayerView
+        android:id="@+id/miniplayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="@dimen/miniplayer_margin_bottom"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:cardBackgroundColor="?attr/colorSurfaceVariant"
+        android:visibility="visible" />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"

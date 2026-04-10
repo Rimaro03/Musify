@@ -2,7 +2,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp"
     android:layout_marginBottom="10dp">
 
@@ -81,12 +80,12 @@
 
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
+        <ImageButton
             android:id="@+id/search_track_menu_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
-            app:icon="@drawable/more_vert_24px"
+            android:src="@drawable/more_vert_24px"
             android:contentDescription="@string/menu_icon"
             style="@style/Widget.Material3.Button.IconButton"/>
 

@@ -1,4 +1,8 @@
 <resources>
-    <dimen name="fab_margin">16dp</dimen>
-    <dimen name="nav_bar_height">56dp</dimen>
+    <dimen name="nav_bar_height">80dp</dimen>
+    <dimen name="miniplayer_margin_bottom">86dp</dimen>
+    <dimen name="miniplayer_height">64dp</dimen>
+    <dimen name="nav_miniplayer_height">144dp</dimen>
+    <dimen name="track_opts_button_height">65dp</dimen>
+    <dimen name="text_enlarged">16sp</dimen>
 </resources>

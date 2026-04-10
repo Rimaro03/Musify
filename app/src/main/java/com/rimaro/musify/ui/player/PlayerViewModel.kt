@@ -1,54 +1,53 @@
 package com.rimaro.musify.ui.player
 
-import androidx.lifecycle.ViewModel
-import com.rimaro.musify.domain.model.PlayerState
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.media3.common.Player
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.player.controller.PlayerController
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val repository: PlayerController
-) : ViewModel() {
+    application: Application,
+    private val playerController: PlayerController
+) : AndroidViewModel(application) {
 
-    private val _playerState = MutableStateFlow<PlayerState>(PlayerState.Idle)
-    val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
+    val playerState: StateFlow<Int> = playerController.playerState
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Player.STATE_IDLE)
 
-    private val _shuffleEnabled = MutableStateFlow<Boolean>(false)
-    val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled.asStateFlow()
+    val isPlaying: StateFlow<Boolean> = playerController.isPlaying
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val currentTrack: StateFlow<Track?> = playerController.currentTrack
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
-        repository.connect()
-    }
-
-    fun play(tracks: List<Track>) {
-        repository.playTracks(tracks)
-        _playerState.value = PlayerState.Playing
+        playerController.connect()
     }
 
     fun pause() {
-        repository.pause()
-        _playerState.value = PlayerState.Paused
+        playerController.pause()
     }
     fun resume() {
-        repository.resume()
-        _playerState.value = PlayerState.Playing
+        playerController.resume()
     }
-    fun skipNext() = repository.skipNext()
-    fun skipPrevious() = repository.skipPrev()
-    fun seekTo(positionMs: Long) = repository.seekTo(positionMs)
+    fun skipNext() = playerController.skipNext()
+    fun skipPrevious() = playerController.skipPrev()
+    fun seekTo(positionMs: Long) = playerController.seekTo(positionMs)
 
     fun enqueueTracks(tracks: List<Track>, position: Int? = null) =
-        repository.enqueueTracks(tracks, position)
+        playerController.enqueueTracks(tracks, position)
 
-    fun toggleShuffle() = repository.toggleShuffle()
+    fun toggleShuffle() = playerController.toggleShuffle()
 
     override fun onCleared() {
-        repository.disconnect()
+        playerController.disconnect()
         super.onCleared()
     }
 

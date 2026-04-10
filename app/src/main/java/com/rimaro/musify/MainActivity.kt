@@ -7,21 +7,22 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import com.rimaro.musify.databinding.ActivityMainBinding
 import com.rimaro.musify.ui.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.core.view.size
-import androidx.core.view.get
+import androidx.core.view.isVisible
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.rimaro.musify.ui.player.PlayerViewModel
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -30,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private val viewModel: SharedViewModel by viewModels()
+    private val playerViewModel: PlayerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +52,9 @@ class MainActivity : AppCompatActivity() {
         forceDarkMode()
 
         setupSearchbar()
+
+        setupMiniplayer()
+        observePlayer()
 
         //hide menu on auth, login fragments
         navController.addOnDestinationChangedListener { _, _, _ ->
@@ -136,4 +141,52 @@ class MainActivity : AppCompatActivity() {
         val searchView = findViewById<SearchView>(R.id.search_view)
         searchView.setupWithSearchBar(searchBar) // only ever call this once
     }
+
+    private fun setupMiniplayer() {
+        binding.miniplayer.apply {
+            setOnPlayPauseClick {
+                if(playerViewModel.isPlaying.value) {
+                    playerViewModel.pause()
+                } else {
+                    playerViewModel.resume()
+                }
+            }
+
+            setOnSkipClick { playerViewModel.skipNext() }
+
+            setOnClick {
+                // Open the full player
+//                findNavController(R.id.nav_host_fragment)
+//                    .navigate(R.id.action_global_playerFragment)
+            }
+        }
+    }
+
+    private fun observePlayer() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    playerViewModel.currentTrack.collect { track ->
+                        val visible = track != null
+                        binding.miniplayer.isVisible = visible
+                        // Push nav host up when miniplayer appears
+                    }
+                }
+
+                launch {
+                    playerViewModel.currentTrack.collect { track ->
+                        Log.d("MainActivity", "track: $track")
+                        track?.let { binding.miniplayer.bind(it) }
+                    }
+                }
+
+                launch {
+                    playerViewModel.isPlaying.collect { state ->
+                        binding.miniplayer.setPlaying(state)
+                    }
+                }
+            }
+        }
+    }
+
 }
