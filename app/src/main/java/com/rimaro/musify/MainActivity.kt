@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         setupSearchbar()
 
-        setupMiniplayer()
+        setupMiniplayer(navController)
         observePlayer()
 
         //hide menu on auth, login fragments
@@ -99,7 +99,8 @@ class MainActivity : AppCompatActivity() {
         val fragmentsNoNav = listOf(
             R.id.signinFragment,
             R.id.signupSplashFragment,
-            R.id.signupEmailFragment
+            R.id.signupEmailFragment,
+            R.id.playerFragment
         )
         navController.addOnDestinationChangedListener { _, destination, _ ->
             if(destination.id in fragmentsNoNav) {
@@ -127,7 +128,8 @@ class MainActivity : AppCompatActivity() {
             R.id.homeFragment,
             R.id.libraryFragment,
             R.id.searchFragment,
-            R.id.profileFragment
+            R.id.profileFragment,
+            R.id.playerFragment
         ))
         setupActionBarWithNavController(navController, appBarConfiguration)
     }
@@ -142,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         searchView.setupWithSearchBar(searchBar) // only ever call this once
     }
 
-    private fun setupMiniplayer() {
+    private fun setupMiniplayer(navController: NavController) {
         binding.miniplayer.apply {
             setOnPlayPauseClick {
                 if(playerViewModel.isPlaying.value) {
@@ -155,13 +157,22 @@ class MainActivity : AppCompatActivity() {
             setOnSkipClick { playerViewModel.skipNext() }
 
             setOnClick {
-                // Open the full player
-//                findNavController(R.id.nav_host_fragment)
-//                    .navigate(R.id.action_global_playerFragment)
+                findNavController(R.id.nav_host_fragment_content_main)
+                    .navigate(R.id.action_global_playerFragment)
             }
 
             setOnSwipeLeft { playerViewModel.skipNext() }
             setOnSwipeRight { playerViewModel.skipPrevious() }
+        }
+
+        // hide/show miniplayer
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            if(destination.id == R.id.playerFragment) {
+                binding.miniplayer.isVisible = false
+            } else {
+                val currentTrack = playerViewModel.currentTrack.value
+                binding.miniplayer.isVisible = currentTrack != null
+            }
         }
     }
 

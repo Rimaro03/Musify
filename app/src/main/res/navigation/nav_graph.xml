@@ -4,6 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/authCheckFragment">
+    <action
+        android:id="@+id/action_global_playerFragment"
+        app:destination="@id/playerFragment"
+        app:enterAnim="@anim/slide_up"
+        app:exitAnim="@anim/fade_out"
+        app:popEnterAnim="@anim/fade_in"
+        app:popExitAnim="@anim/slide_up_rev" />
     <fragment
         android:id="@+id/signinFragment"
         android:name="com.rimaro.musify.ui.signin.SigninFragment"
@@ -84,4 +91,9 @@
             android:id="@+id/action_authCheckFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/playerFragment"
+        android:name="com.rimaro.musify.ui.player.PlayerFragment"
+        android:label=""
+        tools:layout="@layout/fragment_player" />
 </navigation>

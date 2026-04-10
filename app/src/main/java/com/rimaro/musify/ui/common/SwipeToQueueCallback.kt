@@ -60,7 +60,7 @@ class SwipeToQueueCallback(
             background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
             background.draw(c)
             queueIcon?.setBounds(
-                itemView.right - iconMargin - (queueIcon?.intrinsicWidth ?: 0),
+                itemView.right - iconMargin - (queueIcon.intrinsicWidth ?: 0),
                 itemView.top + iconMargin,
                 itemView.right - iconMargin,
                 itemView.bottom - iconMargin
