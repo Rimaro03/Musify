@@ -65,4 +65,12 @@
     <string name="save_to_liked">Save to liked</string>
     <string name="share">Share</string>
     <string name="play_pause_icon">play/pause icon</string>
+    <string name="new_playlist">New playlist</string>
+    <string name="create_new">Create new</string>
+    <string name="create_icon">create icon</string>
+    <string name="download_icon">download icon</string>
+    <string name="download_offline_icon">download offline icon</string>
+    <string name="import_from_spotify">Import from spotify</string>
+    <string name="import_multiple_from_spotify">Import multiple from spotify</string>
+    <string name="new_playlist_fab">new playlist FAB</string>
 </resources>
