@@ -4,7 +4,6 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.rimaro.musify.data.extractor.DownloaderImpl
 import com.rimaro.musify.data.remote.DeezerApi
 import com.rimaro.musify.data.remote.MusicBrainzApi
-import com.rimaro.musify.data.remote.interceptors.UserAgentInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,21 +27,6 @@ object NetworkModule {
         coerceInputValues = true
         isLenient = true
     }
-
-//    @Provides
-//    @Singleton
-//    fun provideOkHttpClient(): OkHttpClient {
-//        return OkHttpClient.Builder()
-//            .addInterceptor { chain ->
-//                val request = chain.request().newBuilder()
-//                    .header("User-Agent", "MyMusicApp/1.0.0 (contact@example.com)")
-//                    .build()
-//                chain.proceed(request)
-//            }
-//            .addInterceptor(UserAgentInterceptor())
-//            .connectTimeout(15, TimeUnit.SECONDS)
-//            .build()
-//    }
 
     @Provides
     @Singleton

@@ -1,7 +1,6 @@
 package com.rimaro.musify.di
 
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.LocalCacheSettings
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.persistentCacheSettings
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao

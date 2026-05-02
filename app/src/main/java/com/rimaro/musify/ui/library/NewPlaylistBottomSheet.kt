@@ -13,7 +13,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.databinding.FragmentNewPlaylistBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.apache.commons.csv.CSVFormat
 
 @AndroidEntryPoint
 class NewPlaylistBottomSheet : BottomSheetDialogFragment() {
