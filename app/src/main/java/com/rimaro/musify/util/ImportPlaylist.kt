@@ -2,9 +2,12 @@ package com.rimaro.musify.util
 
 import android.app.Application
 import android.content.Context
+import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
+import androidx.core.net.toUri
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
 import com.rimaro.musify.domain.repository.DeezerRepository
@@ -16,6 +19,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,34 +49,35 @@ class ImportPlaylist @Inject constructor(
                 emit(ImportResult.Error("Could not open file")); return@flow
             }
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        if (userId == null) {
-            emit(ImportResult.Error("UserId is null"))
+        val playlistId = createPlaylist(uri)
+        if (playlistId == null) {
+            emit(ImportResult.Error("Error creating the playlist"))
             return@flow
         }
-        val fileName = uri.getFileName(application)?.split(".csv")[0] ?: "New Playlist"
-        val playlistId =  firestorePlaylistDao.createPlaylist(
-            ownerId = userId,
-            name = fileName
-        )
 
         var processed = 0
         var failed = 0
         val resolvedIds = mutableListOf<Long>()
+        val covers = mutableListOf<String>()
 
         parseCsvStream(inputStream)
             .chunked(50)
             .forEach { chunk ->
-                val ids = coroutineScope {
+                val tracks = coroutineScope {
                     chunk.map { track ->
                         val query = "${track.title} - ${track.artist}"
                         Log.d("NewPlaylist", "Query: $query")
-                        async { deezerRepository.searchTrack(query, limit = 1).data.firstOrNull()?.id }
+                        async { deezerRepository.searchTrack(query, limit = 1).data.firstOrNull() }
                     }.awaitAll()
                 }
 
-                ids.forEach { id ->
-                    if (id != null) resolvedIds.add(id) else failed++
+                tracks.forEach { track ->
+                    if (track != null) resolvedIds.add(track.id) else failed++
+                    if(covers.size < 4) {
+                        track?.album?.coverXl?.let {
+                            covers.add(it)
+                        }
+                    }
                 }
 
                 processed += chunk.size
@@ -92,7 +97,58 @@ class ImportPlaylist @Inject constructor(
             Log.d("NewPlaylist", "Flushing to firestore")
         }
 
+        // create thumbnail
+        val thumbnailPath = createPlaylistThumbnail(covers, playlistId)
+        if(thumbnailPath == null){
+            emit(ImportResult.Error("Error creating playliust"))
+            return@flow
+        }
+
+        // update playlist with thumbnail
+        firestorePlaylistDao.updatePlaylistThumbnail(playlistId, thumbnailPath)
+
         emit(ImportResult.Success(imported = processed - failed, skipped = failed))
     }.flowOn(Dispatchers.IO)
+
+    private suspend fun createPlaylist(uri: Uri): String? {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
+        val fileName = uri.getFileName(application)?.split(".csv")[0] ?: "New Playlist"
+        val playlistId =  firestorePlaylistDao.createPlaylist(
+            ownerId = userId,
+            name = fileName
+        )
+
+        return playlistId
+    }
+
+    // TODO: when adding new tracks, and number of tracks >= 4, build combined playlist thumbnail
+    private suspend fun createPlaylistThumbnail(covers: List<String>, fileName: String): String? {
+        val bitmaps = coroutineScope {
+            covers.take(4)
+                .map { uri -> async { loadBitmapFromUri(application, uri.toUri()) } }
+                .awaitAll()
+                .filterNotNull()
+        }
+
+        // if less than 4 tracks, use the first track cover
+        val thumbnailBitmap = if (bitmaps.size < 4) {
+            bitmaps[0]
+        } else {
+            ThumbnailCreator.createPlaylistThumbnail(bitmaps)
+        }
+        val thumbnailPath = ImageStorage.save(application, thumbnailBitmap, fileName)
+
+        return thumbnailPath
+    }
+
+    private suspend fun loadBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+        return withContext(Dispatchers.IO) {
+            Glide.with(context)
+                .asBitmap()
+                .load(uri)
+                .submit()
+                .get()
+        }
+    }
 
 }

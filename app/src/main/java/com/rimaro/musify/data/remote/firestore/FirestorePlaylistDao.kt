@@ -28,6 +28,7 @@ class FirestorePlaylistDao @Inject constructor(
             "trackIds"   to emptyList<String>(),
             "createdAt"  to FieldValue.serverTimestamp(),
             "updatedAt"  to FieldValue.serverTimestamp(),
+            "thumbnailPath" to ""
         )
         docRef.set(data).await()
         return docRef.id
@@ -58,6 +59,15 @@ class FirestorePlaylistDao @Inject constructor(
         firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
             .delete()
+            .await()
+    }
+
+    suspend fun updatePlaylistThumbnail(playlistId: String, thumbnailPath: String) {
+        firestore.collection((PLAYLISTS_COLLECTION))
+            .document(playlistId)
+            .update(
+                "thumbnailPath", thumbnailPath
+            )
             .await()
     }
 
