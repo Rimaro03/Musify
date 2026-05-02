@@ -4,5 +4,6 @@ data class FirestorePlaylist(
     val id: String,
     val ownerId: String,
     val name: String,
-    val trackIds: List<String>
+    val trackIds: List<String>,
+    val thumbnailPath: String
 )

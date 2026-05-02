@@ -1,5 +1,6 @@
 package com.rimaro.musify.data.remote.firestore
 
+import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -48,6 +49,7 @@ class FirestorePlaylistDao @Inject constructor(
         val snapshot = firestore
             .collection(PLAYLISTS_COLLECTION)
             .whereEqualTo("ownerId", userId)
+            //.whereNotEqualTo("placeholder", true)
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .get()
             .await()
@@ -119,6 +121,7 @@ class FirestorePlaylistDao @Inject constructor(
                 trackIds = (get("trackIds") as? List<*>)
                     ?.mapNotNull { (it as? String) }
                     ?: emptyList(),
+                thumbnailPath = getString("thumbnailPath") ?: return null
             )
         } catch (e: Exception) {
             null

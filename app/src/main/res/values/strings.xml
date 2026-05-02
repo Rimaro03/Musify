@@ -73,4 +73,6 @@
     <string name="import_from_spotify">Import from spotify</string>
     <string name="import_multiple_from_spotify">Import multiple from spotify</string>
     <string name="new_playlist_fab">new playlist FAB</string>
+    <string name="your_library">Your Library</string>
+    <string name="library_playlist_cover">library playlist cover</string>
 </resources>
