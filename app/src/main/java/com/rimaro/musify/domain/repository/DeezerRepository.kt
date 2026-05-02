@@ -5,6 +5,7 @@ import com.rimaro.musify.domain.model.DeezerArtist
 import com.rimaro.musify.domain.model.DeezerAutocompleteRes
 import com.rimaro.musify.domain.model.DeezerGenre
 import com.rimaro.musify.domain.model.DeezerSearchRes
+import com.rimaro.musify.domain.model.DeezerSearchTrackRes
 import javax.inject.Inject
 
 class DeezerRepository @Inject constructor(
@@ -12,6 +13,18 @@ class DeezerRepository @Inject constructor(
 ) {
     suspend fun search(query: String) : DeezerSearchRes {
         return deezerApi.search(query)
+    }
+
+    suspend fun searchTrack(
+        query: String,
+        limit: Int = 25,
+        offset: Int = 0
+    ) : DeezerSearchTrackRes {
+        return deezerApi.searchTrack(
+            query,
+            limit,
+            offset
+        )
     }
 
     suspend fun autocomplete(query: String) : DeezerAutocompleteRes {

@@ -3,10 +3,11 @@ activityKtx = "1.13.0"
 agp = "9.0.1"
 annotationExperimental = "1.5.1"
 coilCompose = "2.7.0"
+commonsCsv = "1.14.1"
 compiler = "5.0.5"
 coreKtx = "1.10.1"
 datastorePreferences = "1.2.1"
-firebaseBom = "34.9.0"
+firebaseBom = "34.12.0"
 fragmentKtx = "1.8.9"
 fragmentKtxVersion = "1.8.5"
 glide = "5.0.5"
@@ -32,6 +33,8 @@ googleid = "1.2.0"
 newpipeextractor = "v0.26.0"
 playServicesAuth = "21.5.1"
 playServicesAuthVersion = "21.0.0"
+playServicesBase = "18.10.0"
+protoGoogleCommonProtos = "2.70.0"
 retrofit = "3.0.0"
 retrofit2KotlinxSerializationConverter = "1.0.0"
 roomRuntime = "2.8.4"
@@ -61,6 +64,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRunt
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+commons-csv = { module = "org.apache.commons:commons-csv", version.ref = "commonsCsv" }
 compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "compiler" }
 firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
@@ -83,6 +87,8 @@ googleid = { group = "com.google.android.libraries.identity.googleid", name = "g
 newpipeextractor = { module = "com.github.teamnewpipe:NewPipeExtractor", version.ref = "newpipeextractor" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 play-services-auth-v2100 = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuthVersion" }
+play-services-base = { module = "com.google.android.gms:play-services-base", version.ref = "playServicesBase" }
+proto-google-common-protos = { module = "com.google.api.grpc:proto-google-common-protos", version.ref = "protoGoogleCommonProtos" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit2-kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofit2KotlinxSerializationConverter" }
 

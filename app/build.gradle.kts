@@ -48,12 +48,23 @@ android {
         }
     }
 
-    configurations.all {
-        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
-    }
+//    configurations.all {
+//        exclude(group = "com.google.firebase", module = "protolite-well-known-types")
+//    }
 }
 
 dependencies {
+    //implementation("com.google.api.grpc:proto-google-common-protos:2.70.0")
+    implementation(libs.newpipeextractor) {
+        exclude(group = "com.google.protobuf")
+        exclude(group = "com.google.api.grpc")
+
+    }
+//    {
+//        exclude(group = "com.google.protobuf", module = "protobuf-java")
+//
+//    }
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -96,6 +107,7 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
 
+
     // GMS for sign in with google button
     implementation(libs.play.services.auth.v2100)
 
@@ -113,7 +125,6 @@ dependencies {
     ksp(libs.compiler)
     
     // New Pipe Extractor
-    implementation(libs.newpipeextractor)
 
     // Work Manager and hilt
     implementation(libs.androidx.work.runtime.ktx)
@@ -125,5 +136,8 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
     implementation(libs.androidx.media3.session)
+
+    // CSV processing
+    implementation(libs.commons.csv)
 
 }
