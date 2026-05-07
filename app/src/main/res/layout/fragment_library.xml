@@ -5,7 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.library.LibraryFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="20dp">
 
     <ProgressBar
         android:id="@+id/library_progress"
@@ -15,30 +16,23 @@
         android:visibility="gone"/>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/library_content"
         android:fitsSystemWindows="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:visibility="visible"
-        android:padding="10dp">
+        android:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/your_library"
-                android:textStyle="bold"
-                android:textSize="30sp"/>
-
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/library_rv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="gone"/>
+                android:paddingBottom="@dimen/miniplayer_height"/>
 
         </LinearLayout>
 

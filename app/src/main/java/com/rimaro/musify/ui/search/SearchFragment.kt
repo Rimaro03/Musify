@@ -2,7 +2,6 @@ package com.rimaro.musify.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -99,7 +98,7 @@ class SearchFragment : Fragment() {
         /* SEARCH LOGIC */
         val searchResultsRv = binding.searchResultsRv
         val searchResultAdapter = SearchResultAdapter(
-            viewModel::onClick,
+            viewModel::playTrack,
             {}, {},
             ::showTrackMenu)
         searchResultsRv.adapter = searchResultAdapter

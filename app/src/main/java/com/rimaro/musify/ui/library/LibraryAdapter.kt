@@ -12,7 +12,7 @@ import com.rimaro.musify.domain.model.FirestorePlaylist
 import java.io.File
 
 class LibraryAdapter (
-    private val onClick: (FirestorePlaylist) -> Unit
+    private val onClick: (String) -> Unit
 ) : ListAdapter<FirestorePlaylist, RecyclerView.ViewHolder>(DIFF_CALLBACK)  {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<FirestorePlaylist>() {
@@ -28,7 +28,7 @@ class LibraryAdapter (
 
     inner class LibraryViewHolder(val binding: ItemLibraryPlaylistBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(playlist: FirestorePlaylist, onClick: (FirestorePlaylist) -> Unit) {
+        fun bind(playlist: FirestorePlaylist, onClick: (String) -> Unit) {
             Glide.with(binding.root)
                 .load(File(playlist.thumbnailPath))
                 .centerCrop()
@@ -37,7 +37,11 @@ class LibraryAdapter (
             binding.libraryName.text = playlist.name
             binding.libraryPlaylistOrAlbum.text = "Playlist"
             val trackCount = this@LibraryAdapter.itemCount
-            binding.libraryTrackNum.text = "$trackCount tracks"
+            //binding.libraryTrackNum.text = "$trackCount tracks"
+            binding.libraryPlayBtn.setOnClickListener {
+                Log.d("play", "play func called with id ${playlist.id}")
+                onClick(playlist.id)
+            }
         }
     }
 

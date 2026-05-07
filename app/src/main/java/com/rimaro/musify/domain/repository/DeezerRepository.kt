@@ -6,6 +6,7 @@ import com.rimaro.musify.domain.model.DeezerAutocompleteRes
 import com.rimaro.musify.domain.model.DeezerGenre
 import com.rimaro.musify.domain.model.DeezerSearchRes
 import com.rimaro.musify.domain.model.DeezerSearchTrackRes
+import com.rimaro.musify.domain.model.DeezerTrack
 import javax.inject.Inject
 
 class DeezerRepository @Inject constructor(
@@ -37,5 +38,9 @@ class DeezerRepository @Inject constructor(
 
     suspend fun getGenres(): List<DeezerGenre> {
         return deezerApi.genres().data
+    }
+
+    suspend fun getTrackById(trackId: Long): DeezerTrack {
+        return deezerApi.track(trackId.toString())
     }
 }

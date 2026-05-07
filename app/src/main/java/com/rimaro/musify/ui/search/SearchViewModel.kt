@@ -59,7 +59,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch { historyManager.clearAll() }
     }
 
-    fun onClick(track: Track) {
+    fun playTrack(track: Track) {
         viewModelScope.launch {
             track.streamUrl?.let {
                 musicRepository.playTracks(listOf(track))

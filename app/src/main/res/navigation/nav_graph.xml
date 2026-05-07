@@ -60,7 +60,7 @@
     <fragment
         android:id="@+id/libraryFragment"
         android:name="com.rimaro.musify.ui.library.LibraryFragment"
-        android:label=""
+        android:label="@string/your_library"
         tools:layout="@layout/fragment_library" />
     <fragment
         android:id="@+id/searchFragment"

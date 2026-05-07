@@ -2,7 +2,6 @@ package com.rimaro.musify.ui.library
 
 import android.app.Application
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +17,7 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     application: Application,
     private val importPlaylist: ImportPlaylist,
-    private val firestorePlaylistDao: FirestorePlaylistDao
+    private val firestorePlaylistDao: FirestorePlaylistDao,
 ) : AndroidViewModel(application) {
     private val _libraryUiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Idle)
     val libraryUiState: StateFlow<LibraryUiState> = _libraryUiState
@@ -36,6 +35,7 @@ class LibraryViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
+            _libraryUiState.value = LibraryUiState.Loading
             val playlists = firestorePlaylistDao.getUserPlaylists(userId)
             _libraryUiState.value = LibraryUiState.Success(playlists)
         }
@@ -49,4 +49,5 @@ class LibraryViewModel @Inject constructor(
                 }
         }
     }
+
 }

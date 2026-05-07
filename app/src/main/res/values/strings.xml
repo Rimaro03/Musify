@@ -75,4 +75,5 @@
     <string name="new_playlist_fab">new playlist FAB</string>
     <string name="your_library">Your Library</string>
     <string name="library_playlist_cover">library playlist cover</string>
+    <string name="library_play_button">library play button</string>
 </resources>

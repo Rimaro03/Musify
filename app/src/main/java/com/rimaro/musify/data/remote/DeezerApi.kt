@@ -5,7 +5,9 @@ import com.rimaro.musify.domain.model.DeezerChartArtistRes
 import com.rimaro.musify.domain.model.DeezerGenreRes
 import com.rimaro.musify.domain.model.DeezerSearchRes
 import com.rimaro.musify.domain.model.DeezerSearchTrackRes
+import com.rimaro.musify.domain.model.DeezerTrack
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface DeezerApi {
@@ -33,4 +35,9 @@ interface DeezerApi {
 
     @GET("/genre/")
     suspend fun genres() : DeezerGenreRes
+
+    @GET("/track/{track_id}")
+    suspend fun track(
+        @Path("track_id") trackId: String
+    ) : DeezerTrack
 }

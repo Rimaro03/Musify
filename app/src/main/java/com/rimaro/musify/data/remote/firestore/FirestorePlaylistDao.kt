@@ -42,7 +42,7 @@ class FirestorePlaylistDao @Inject constructor(
             .get()
             .await()
 
-        return snapshot.toPlaylist()
+        return snapshot.toObject(FirestorePlaylist::class.java)
     }
 
     suspend fun getUserPlaylists(userId: String): List<FirestorePlaylist> {
@@ -118,9 +118,7 @@ class FirestorePlaylistDao @Inject constructor(
                 id       = getString("id") ?: return null,
                 ownerId  = getString("ownerId") ?: return null,
                 name     = getString("name") ?: return null,
-                trackIds = (get("trackIds") as? List<*>)
-                    ?.mapNotNull { (it as? String) }
-                    ?: emptyList(),
+                trackIds = (get("trackIds") as? List<Long>) ?: emptyList(),
                 thumbnailPath = getString("thumbnailPath") ?: return null
             )
         } catch (e: Exception) {

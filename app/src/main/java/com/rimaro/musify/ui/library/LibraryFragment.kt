@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.databinding.FragmentLibraryBinding
+import com.rimaro.musify.ui.PlaybackViewmodel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.getValue
@@ -24,6 +25,7 @@ class LibraryFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: LibraryViewModel by activityViewModels()
+    private val playbackViewmodel: PlaybackViewmodel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,7 +43,7 @@ class LibraryFragment : Fragment() {
         }
 
         val libraryRv = binding.libraryRv
-        val libraryAdapter = LibraryAdapter({})
+        val libraryAdapter = LibraryAdapter(playbackViewmodel::playPlaylist)
         libraryRv.adapter = libraryAdapter
         libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)
         observeLibraryUiState(libraryAdapter)
@@ -55,17 +57,17 @@ class LibraryFragment : Fragment() {
                 when(state) {
                     is LibraryUiState.Success -> {
                         binding.libraryProgress.isVisible = false
-                        binding.libraryRv.isVisible = true
+                        binding.libraryContent.isVisible = true
                         libraryAdapter.submitList(state.res)
                     }
                     is LibraryUiState.Error -> {
                         binding.libraryProgress.isVisible = false
-                        binding.libraryRv.isVisible = false
+                        binding.libraryContent.isVisible = false
                         Toast.makeText(requireContext(), "Failed to load playlists", Toast.LENGTH_SHORT).show()
                     }
                     is LibraryUiState.Loading -> {
                         binding.libraryProgress.isVisible = true
-                        binding.libraryRv.isVisible = false
+                        binding.libraryContent.isVisible = false
                     }
                     else -> {}
                 }
@@ -94,6 +96,7 @@ class LibraryFragment : Fragment() {
             }
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
