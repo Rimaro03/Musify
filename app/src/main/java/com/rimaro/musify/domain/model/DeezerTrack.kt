@@ -36,7 +36,7 @@ fun DeezerTrack.toTrack(streamUrl: String? = null, sourceUrl: String? = null): T
     album = album?.title ?: "Unknown Album",
     durationMs = duration * 1000L,
     genre = album?.genres?.joinToString(", "),
-    artworkUrl = album?.coverMedium,
+    artworkUrl = album?.coverXl,
     streamUrl = streamUrl,
     sourceUrl = sourceUrl
 )
