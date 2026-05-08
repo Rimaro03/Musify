@@ -140,4 +140,7 @@ dependencies {
     // CSV processing
     implementation(libs.commons.csv)
 
+    // circular spinning icon
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
+
 }

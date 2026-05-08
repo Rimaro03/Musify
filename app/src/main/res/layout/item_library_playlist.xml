@@ -97,7 +97,7 @@
             android:layout_gravity="center_vertical"
             app:rippleColor="?attr/colorControlHighlight">
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/library_play_btn"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

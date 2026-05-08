@@ -9,10 +9,9 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.media3.common.Player
 import androidx.recyclerview.widget.GridLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.databinding.FragmentLibraryBinding
 import com.rimaro.musify.ui.PlaybackViewmodel
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,6 +46,7 @@ class LibraryFragment : Fragment() {
         libraryRv.adapter = libraryAdapter
         libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)
         observeLibraryUiState(libraryAdapter)
+        observePlayerState(libraryAdapter)
 
         observeImportStatus()
     }
@@ -70,6 +70,16 @@ class LibraryFragment : Fragment() {
                         binding.libraryContent.isVisible = false
                     }
                     else -> {}
+                }
+            }
+        }
+    }
+
+    private fun observePlayerState(libraryAdapter: LibraryAdapter) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            playbackViewmodel.fetchingTracks.collect { fetchingTracks ->
+                playbackViewmodel.playingPlaylistId?.let { playlistId ->
+                    libraryAdapter.setPlayerLoading(fetchingTracks, playlistId)
                 }
             }
         }

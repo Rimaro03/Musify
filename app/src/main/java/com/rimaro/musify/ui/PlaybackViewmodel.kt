@@ -1,10 +1,8 @@
 package com.rimaro.musify.ui
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.Player
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
@@ -12,16 +10,12 @@ import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -35,10 +29,14 @@ class PlaybackViewmodel @Inject constructor(
     private val deezerRepository: DeezerRepository,
     private val playerController: PlayerController
 ) : AndroidViewModel(application) {
-    val playerState: StateFlow<Int> = playerController.playerState
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Player.STATE_IDLE)
+    private var _fetchingTracks = MutableStateFlow(false)
+    val fetchingTracks: StateFlow<Boolean> = _fetchingTracks
+
+    var playingPlaylistId: String? = null
 
     fun playPlaylist(playlistId: String) {
+        playingPlaylistId = playlistId
+        _fetchingTracks.value = true
         viewModelScope.launch {
             val playlist = firestorePlaylistDao.getPlaylist(playlistId) ?: return@launch
             val semaphore = Semaphore(5)
@@ -59,6 +57,7 @@ class PlaybackViewmodel @Inject constructor(
                 }.awaitAll().mapNotNull { it }
                 if (index == 0) {
                     playerController.playTracks(tracks)
+                    _fetchingTracks.value = false
                 } else {
                     playerController.enqueueTracks(tracks)
                 }
