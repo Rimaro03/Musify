@@ -21,6 +21,7 @@ kotlinxCoroutinesAndroid = "1.10.2"
 kotlinxSerializationJson = "1.10.0"
 lifecycleViewmodelKtx = "2.10.0"
 lifecycleViewmodelKtxVersion = "2.8.7"
+loggingInterceptor = "5.3.2"
 material = "1.10.0"
 constraintlayout = "2.1.4"
 media3Common = "1.10.0"
@@ -38,6 +39,7 @@ protoGoogleCommonProtos = "2.70.0"
 retrofit = "3.0.0"
 retrofit2KotlinxSerializationConverter = "1.0.0"
 roomRuntime = "2.8.4"
+swiperefreshlayout = "1.2.0"
 workRuntimeKtx = "2.11.2"
 
 [libraries]
@@ -62,6 +64,7 @@ androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "medi
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 commons-csv = { module = "org.apache.commons:commons-csv", version.ref = "commonsCsv" }
@@ -79,6 +82,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }

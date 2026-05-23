@@ -16,7 +16,8 @@ import com.rimaro.musify.domain.model.FirestorePlaylist
 import java.io.File
 
 class LibraryAdapter (
-    private val onClick: (String) -> Unit
+    private val onClick: (String) -> Unit,
+    private val onPlaylistClick: (String) -> Unit
 ) : ListAdapter<FirestorePlaylist, RecyclerView.ViewHolder>(DIFF_CALLBACK)  {
     private var fetchingTracks = false
 
@@ -52,7 +53,10 @@ class LibraryAdapter (
             start()
         }
 
-        fun bind(playlist: FirestorePlaylist, onClick: (String) -> Unit) {
+        fun bind(playlist: FirestorePlaylist,
+                 onClick: (String) -> Unit,
+                 onPlaylistClick: (String) -> Unit
+        ) {
             Glide.with(binding.root)
                 .load(File(playlist.thumbnailPath))
                 .centerCrop()
@@ -75,6 +79,7 @@ class LibraryAdapter (
             )
 
             binding.libraryPlayBtn.isEnabled = !fetchingTracks
+            binding.root.setOnClickListener { onPlaylistClick(playlist.id) }
         }
     }
 
@@ -87,7 +92,7 @@ class LibraryAdapter (
 
     override fun onBindViewHolder(p0: RecyclerView.ViewHolder, p1: Int) {
         if (p0 is LibraryViewHolder) {
-            p0.bind(getItem(p1), onClick)
+            p0.bind(getItem(p1), onClick, onPlaylistClick)
         }
     }
 }

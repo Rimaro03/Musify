@@ -10,7 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.media3.common.Player
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.rimaro.musify.databinding.FragmentLibraryBinding
 import com.rimaro.musify.ui.PlaybackViewmodel
@@ -42,7 +42,9 @@ class LibraryFragment : Fragment() {
         }
 
         val libraryRv = binding.libraryRv
-        val libraryAdapter = LibraryAdapter(playbackViewmodel::playPlaylist)
+        val libraryAdapter = LibraryAdapter(
+            playbackViewmodel::playPlaylist,
+            ::navigateToPlaylist)
         libraryRv.adapter = libraryAdapter
         libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)
         observeLibraryUiState(libraryAdapter)
@@ -107,6 +109,13 @@ class LibraryFragment : Fragment() {
         }
     }
 
+    private fun navigateToPlaylist(playlistId: String) {
+        val action = LibraryFragmentDirections
+            .actionLibraryFragmentToPlaylistFragment2(
+                playlistId = playlistId
+            )
+        findNavController().navigate(action)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

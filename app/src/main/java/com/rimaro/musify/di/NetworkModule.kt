@@ -11,6 +11,7 @@ import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.schabi.newpipe.extractor.downloader.Downloader
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
@@ -68,6 +69,9 @@ object NetworkModule {
         @Singleton
         fun provideOkHttpClient(): OkHttpClient {
             return OkHttpClient.Builder()
+                .addInterceptor(HttpLoggingInterceptor().apply {
+                    level = HttpLoggingInterceptor.Level.BODY
+                })
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .build()

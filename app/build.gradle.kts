@@ -107,7 +107,6 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
 
-
     // GMS for sign in with google button
     implementation(libs.play.services.auth.v2100)
 
@@ -141,6 +140,9 @@ dependencies {
     implementation(libs.commons.csv)
 
     // circular spinning icon
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
+    implementation(libs.androidx.swiperefreshlayout)
+
+    // OkHttp logging
+    implementation(libs.logging.interceptor)
 
 }
