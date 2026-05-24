@@ -78,6 +78,7 @@
     <string name="library_play_button">library play button</string>
     <string name="playlist_cover">playlist cover</string>
     <string name="track_count">%d tracks</string>
-    <string name="minutes_count">%d hr %d min</string>
+    <string name="track_hours">%d hr </string>
+    <string name="track_mins">%d min</string>
     <string name="playlist_like_button">playlist like button</string>
 </resources>

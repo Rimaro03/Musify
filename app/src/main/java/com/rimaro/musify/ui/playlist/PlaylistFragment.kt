@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -11,8 +12,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
+import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
+import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,18 +64,54 @@ class PlaylistFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.playlistUiState.collect { uiState ->
+                    val progress = binding.playlistProgress
+                    val container = binding.libraryContainer
+
                     when (uiState) {
                         is PlaylistUiState.Error -> {
+                            progress.isVisible = false
+                            container.isVisible = false
                             Snackbar.make(binding.root, uiState.message, Snackbar.LENGTH_LONG)
                                 .show()
                         }
                         is PlaylistUiState.Success -> {
+                            progress.isVisible = false
+                            container.isVisible = true
+                            setupPlaylistHeader(uiState.playlist, uiState.trackList)
                             adapter.submitList(uiState.trackList)
+                        }
+                        is PlaylistUiState.Loading -> {
+                            progress.isVisible = true
+                            container.isVisible = false
                         }
                         else -> {}
                     }
                 }
             }
+        }
+    }
+
+    private fun setupPlaylistHeader(playlist: FirestorePlaylist, tracks: List<Track>) {
+        val cover = binding.playlistCover
+        val title = binding.playlistTitle
+        Glide.with(requireContext())
+            .load(playlist.thumbnailPath)
+            .centerCrop()
+            .into(cover)
+        title.text = playlist.name
+
+        val tracksCount = binding.playlistTrackCount
+        val trackHr = binding.playlistTrackHr
+        val trackMin = binding.playlistTrackMin
+        tracksCount.text = getString(R.string.track_count, playlist.trackIds.size)
+
+        val tracksTotalMillis = tracks.sumOf { it.durationMs }
+        val hours = tracksTotalMillis / 3600000
+        val minutes = (tracksTotalMillis % 3600000) / 60000
+        trackHr.text = getString(R.string.track_hours, hours)
+        trackMin.text = getString(R.string.track_mins, minutes)
+        if(hours == 0L) {
+            trackHr.isVisible = false
         }
     }
 

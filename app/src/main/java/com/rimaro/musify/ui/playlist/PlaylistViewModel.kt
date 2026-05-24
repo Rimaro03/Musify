@@ -12,11 +12,14 @@ import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -45,24 +48,30 @@ class PlaylistViewModel @Inject constructor(
                 }
             }.awaitAll()
             val tracks = deezerTracks.map { it.toTrack() }
-            _playlistUiState.value = PlaylistUiState.Success(tracks)
+            _playlistUiState.value = PlaylistUiState.Success(firestorePlaylist, tracks)
 
             fetchStreamUrl(tracks).collect { fetchedTrack ->
                 val currentTracks = (_playlistUiState.value as PlaylistUiState.Success).trackList.toMutableList()
                 val position = currentTracks.indexOfFirst { it.id == fetchedTrack.id  }
                 if(position != -1) {
                     currentTracks[position] = fetchedTrack
-                    _playlistUiState.value = PlaylistUiState.Success(currentTracks.toList())
+                    _playlistUiState.value = PlaylistUiState.Success(firestorePlaylist, currentTracks.toList())
                 }
             }
         }
     }
 
+    //TODO: 3 tracce per volta + delay rende tutto troppo lento
+
     private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
-        tracks.map { track ->
+        val semaphore = Semaphore(3)
+        tracks.mapIndexed { index, track ->
+            delay(index * 300L)
             async {
-                val fetchedTrack = trackUrlResolver.resolve(track)
-                fetchedTrack?.let { send(it) }
+                semaphore.withPermit {
+                    val fetchedTrack = trackUrlResolver.resolve(track)
+                    fetchedTrack?.let { send(it) }
+                }
             }
         }.awaitAll()
     }

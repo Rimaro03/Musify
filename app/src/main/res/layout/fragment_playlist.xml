@@ -1,147 +1,175 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".ui.playlist.PlaylistFragment">
 
-    <LinearLayout
+    <ProgressBar
+        android:id="@+id/playlist_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/library_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:visibility="visible">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/playlist_cover_container"
-            android:layout_width="match_parent"
-            android:layout_height="190dp">
-
-            <ImageView
-                android:id="@+id/playlist_cover"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_launcher_background"
-                android:contentDescription="@string/playlist_cover"
-                android:scaleType="fitXY"/>
-
-            <TextView
-                android:id="@+id/playlist_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="John Wick Chapter 4"
-                app:layout_constraintStart_toStartOf="@id/playlist_cover_container"
-                app:layout_constraintEnd_toEndOf="@id/playlist_cover_container"
-                app:layout_constraintTop_toTopOf="@id/playlist_cover_container"
-                app:layout_constraintBottom_toBottomOf="@id/playlist_cover_container"
-                app:layout_constraintVertical_bias="0.7"
-                android:textStyle="bold"
-                android:textSize="24sp"
-                android:textColor="@color/white"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Playlist"
-                android:layout_margin="15dp"
-                app:layout_constraintStart_toStartOf="@id/playlist_cover_container"
-                app:layout_constraintBottom_toBottomOf="@id/playlist_cover_container" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-        
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_margin="15dp">
+            android:orientation="vertical">
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/playlist_cover_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="250dp">
+
+                <ImageView
+                    android:id="@+id/playlist_cover"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_launcher_background"
+                    android:contentDescription="@string/playlist_cover"
+                    android:scaleType="fitXY"/>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#99000000" />
 
                 <TextView
-                    android:id="@+id/playlist_track_count"
+                    android:id="@+id/playlist_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/track_count" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/center_dot"
+                    android:text="John Wick Chapter 4"
+                    app:layout_constraintStart_toStartOf="@id/playlist_cover_container"
+                    app:layout_constraintEnd_toEndOf="@id/playlist_cover_container"
+                    app:layout_constraintTop_toTopOf="@id/playlist_cover_container"
+                    app:layout_constraintBottom_toBottomOf="@id/playlist_cover_container"
+                    app:layout_constraintVertical_bias="0.7"
                     android:textStyle="bold"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"/>
+                    android:textSize="24sp"
+                    android:textColor="@color/white"/>
 
                 <TextView
-                    android:id="@+id/playlist_time_count"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/minutes_count" />
+                    android:text="Playlist"
+                    android:layout_margin="15dp"
+                    app:layout_constraintStart_toStartOf="@id/playlist_cover_container"
+                    app:layout_constraintBottom_toBottomOf="@id/playlist_cover_container" />
 
-            </LinearLayout>
-            
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
-                
-                <ImageButton
-                    android:id="@+id/playlist_like_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/media3_icon_heart_unfilled"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:contentDescription="@string/playlist_like_button"
-                    android:paddingStart="0dp"/>
-
-                <ImageButton
-                    android:id="@+id/playlist_download_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/download_for_offline_24px"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:contentDescription="@string/playlist_like_button"
-                    android:paddingStart="0dp"/>
-
-                <ImageButton
-                    android:id="@+id/playlist_share_btn"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/share_24px"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:contentDescription="@string/playlist_like_button"
-                    android:paddingStart="0dp"/>
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="match_parent" />
-
-                <com.google.android.material.button.MaterialButton
-                    style="@style/Widget.Material3.Button.IconButton.Filled"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    app:icon="@drawable/play_arrow_24px"
-                    app:iconSize="28dp"
-                    app:iconGravity="textStart"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle" />
-                
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/playlist_track_rv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:paddingBottom="@dimen/miniplayer_height"
-                android:clipToPadding="false"/>
-            
+                android:orientation="vertical"
+                android:layout_margin="15dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/playlist_track_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/track_count" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/center_dot"
+                        android:textStyle="bold"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginEnd="8dp"/>
+
+                    <TextView
+                        android:id="@+id/playlist_track_hr"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/track_hours"
+                        android:layout_marginEnd="5dp"/>
+
+                    <TextView
+                        android:id="@+id/playlist_track_min"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/track_mins" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <ImageButton
+                        android:id="@+id/playlist_like_btn"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/media3_icon_heart_unfilled"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:contentDescription="@string/playlist_like_button"
+                        android:paddingStart="0dp"/>
+
+                    <ImageButton
+                        android:id="@+id/playlist_download_btn"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/download_for_offline_24px"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:contentDescription="@string/playlist_like_button"
+                        android:paddingStart="0dp"/>
+
+                    <ImageButton
+                        android:id="@+id/playlist_share_btn"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/share_24px"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:contentDescription="@string/playlist_like_button"
+                        android:paddingStart="0dp"/>
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        style="@style/Widget.Material3.Button.IconButton.Filled"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        app:icon="@drawable/play_arrow_24px"
+                        app:iconSize="28dp"
+                        app:iconGravity="textStart"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle" />
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/playlist_track_rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:paddingBottom="@dimen/miniplayer_height"
+                    android:clipToPadding="false"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
-    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
-</androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
