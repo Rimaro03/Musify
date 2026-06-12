@@ -122,8 +122,6 @@ dependencies {
     // Glide
     implementation(libs.glide)
     ksp(libs.compiler)
-    
-    // New Pipe Extractor
 
     // Work Manager and hilt
     implementation(libs.androidx.work.runtime.ktx)
