@@ -99,6 +99,7 @@ class SearchFragment : Fragment() {
         val searchResultsRv = binding.searchResultsRv
         val searchResultAdapter = SearchResultAdapter(
             viewModel::playTrack,
+            viewModel::playPreview,
             {}, {},
             ::showTrackMenu)
         searchResultsRv.adapter = searchResultAdapter

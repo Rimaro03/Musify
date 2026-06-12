@@ -10,6 +10,7 @@ import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -29,7 +30,8 @@ class SearchViewModel @Inject constructor(
     private val deezerRepository: DeezerRepository,
     private val historyManager: SearchHistoryManager,
     private val trackUrlResolver: TrackUrlResolver,
-    private val playerController: PlayerController
+    private val playerController: PlayerController,
+    private val previewPlayerController: PreviewPlayerController
 ) : AndroidViewModel(application) {
     private val _searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     val searchUiState = _searchUiState.asStateFlow()
@@ -60,10 +62,22 @@ class SearchViewModel @Inject constructor(
 
     fun playTrack(track: Track) {
         viewModelScope.launch {
+            previewPlayerController.stop()
             track.streamUrl?.let {
                 playerController.playTracks(listOf(track))
             }
         }
+    }
+
+    fun playPreview(track: Track) {
+        playerController.pause()
+        track.previewUrl?.let {
+            previewPlayerController.playPreview(track.id.toString(), it)
+        }
+    }
+
+    fun stopPreview() {
+        previewPlayerController.stop()
     }
 
     /* SEARCH LOGIC */
@@ -139,7 +153,7 @@ class SearchViewModel @Inject constructor(
     }
 
     /* TRACK STREAM URL FETCHING */
-    fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
+    private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
         tracks.map { track ->
             async {
                 val fetchedTrack = trackUrlResolver.resolve(track)
@@ -150,4 +164,10 @@ class SearchViewModel @Inject constructor(
 
     /* PLAYER LOGIC */
     fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks)
+
+    override fun onCleared() {
+        super.onCleared()
+        previewPlayerController.stop()
+        playerController.stop()
+    }
 }

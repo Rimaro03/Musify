@@ -21,6 +21,7 @@ import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
 
 class SearchResultAdapter (
     private val onTrackClick: (Track) -> Unit,
+    private val onTrackLongClick: (Track) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
     private val onAlbumClick: (DeezerAlbum) -> Unit,
     private val onMenuClick: (Track) -> Unit
@@ -46,7 +47,11 @@ class SearchResultAdapter (
 
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
-            fun bind(track: Track, onTrackClick: (Track) -> Unit, onMenuClick: ((Track) -> Unit)) {
+            fun bind(track: Track,
+                     onTrackClick: (Track) -> Unit,
+                     onTrackLongClick: (Track) -> Unit,
+                     onMenuClick: ((Track) -> Unit)
+            ) {
                 // track metadata
                 binding.searchTrackName.text = track.title
                 binding.searchTrackArtist.text = track.artist
@@ -66,7 +71,7 @@ class SearchResultAdapter (
                     onMenuClick(track)
                 }
                 binding.searchTrackClickable.setOnLongClickListener {
-                    onMenuClick(track)
+                    onTrackLongClick(track)
                     true
                 }
             }
@@ -115,7 +120,9 @@ class SearchResultAdapter (
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick, onMenuClick)
+            is TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick,
+                onTrackLongClick, onMenuClick
+            )
             is ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)
             is AlbumItem  -> (holder as AlbumViewHolder).bind(item.album)
         }

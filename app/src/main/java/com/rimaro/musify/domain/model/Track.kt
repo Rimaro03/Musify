@@ -13,5 +13,6 @@ data class Track (
     val genre: String?,
     val artworkUrl: String?,
     var streamUrl: String?,
-    val sourceUrl: String?
+    val sourceUrl: String?,
+    var previewUrl: String?
 ) : Parcelable

@@ -110,7 +110,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp">
+                    android:layout_marginTop="10dp"
+                    android:gravity="center_vertical">
 
                     <ImageButton
                         android:id="@+id/playlist_like_btn"
@@ -146,6 +147,16 @@
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="match_parent" />
+
+                    <ImageButton
+                        android:id="@+id/playlist_shuffle_btn"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:scaleType="fitCenter"
+                        android:layout_marginEnd="10dp"
+                        android:src="@drawable/media3_icon_shuffle_off"
+                        style="@style/Widget.Material3.Button.IconButton"
+                        android:contentDescription="@string/playlist_like_button" />
 
                     <com.google.android.material.button.MaterialButton
                         style="@style/Widget.Material3.Button.IconButton.Filled"

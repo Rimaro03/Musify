@@ -110,4 +110,11 @@ class PlayerController @Inject constructor(
 
     fun getCurrentMediaItem(): MediaItem? = controller?.currentMediaItem
     fun isPlaying(): Boolean = controller?.isPlaying ?: false
+
+    fun stop() {
+        controller?.stop()
+        controller?.clearMediaItems()
+        _currentTrack.value = null
+        _isPlaying.value = false
+    }
 }
