@@ -48,7 +48,8 @@ class PlaylistFragment : Fragment() {
         val trackRv = binding.playlistTrackRv
         val trackAdapter = PlaylistTrackAdapter(
             viewModel::playTrack,
-            ::showTrackMenu
+            ::showTrackMenu,
+            viewModel::playPreview,
         )
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())

@@ -8,6 +8,7 @@ import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -28,7 +29,8 @@ class PlaylistViewModel @Inject constructor(
     private val firestorePlaylistDao: FirestorePlaylistDao,
     private val deezerRepository: DeezerRepository,
     private val trackUrlResolver: TrackUrlResolver,
-    private val playerController: PlayerController
+    private val playerController: PlayerController,
+    private val previewPlayerController: PreviewPlayerController
 ) : AndroidViewModel(application) {
     private val _playlistUiState = MutableStateFlow<PlaylistUiState>(PlaylistUiState.Idle)
     val playlistUiState = _playlistUiState.asStateFlow()
@@ -61,12 +63,9 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
-    //TODO: 3 tracce per volta + delay rende tutto troppo lento
-
     private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
-        val semaphore = Semaphore(3)
-        tracks.mapIndexed { index, track ->
-            delay(index * 300L)
+        val semaphore = Semaphore(5)
+        tracks.map { track ->
             async {
                 semaphore.withPermit {
                     val fetchedTrack = trackUrlResolver.resolve(track)
@@ -81,6 +80,13 @@ class PlaylistViewModel @Inject constructor(
             track.streamUrl?.let {
                 playerController.playTracks(listOf(track))
             }
+        }
+    }
+
+    fun playPreview(track: Track) {
+        playerController.pause()
+        track.previewUrl?.let {
+            previewPlayerController.playPreview(track.id.toString(), it)
         }
     }
 

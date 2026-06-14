@@ -13,8 +13,8 @@ import com.rimaro.musify.domain.model.Track
 
 class PlaylistTrackAdapter (
     private val onTrackClick: (Track) -> Unit,
-    private val onMenuClick: (Track) -> Unit
-
+    private val onMenuClick: (Track) -> Unit,
+    private val onTrackLongClick: (Track) -> Unit
 ): ListAdapter<Track, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Track>() {
@@ -28,7 +28,11 @@ class PlaylistTrackAdapter (
 
     class ViewHolder(private val binding: ItemPlaylistTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(track: Track, onTrackClick: (Track) -> Unit, onMenuClick: ((Track) -> Unit)) {
+        fun bind(
+            track: Track,
+            onTrackClick: (Track) -> Unit,
+            onMenuClick: ((Track) -> Unit),
+            onTrackLongClick: (Track) -> Unit) {
             // track metadata
             binding.playlistTrackName.text = track.title
             binding.playlistTrackArtist.text = track.artist
@@ -48,7 +52,7 @@ class PlaylistTrackAdapter (
                 onMenuClick(track)
             }
             binding.playlistTrackClickable.setOnLongClickListener {
-                onMenuClick(track)
+                onTrackLongClick(track)
                 true
             }
         }
@@ -64,6 +68,6 @@ class PlaylistTrackAdapter (
         position: Int,
     ) {
         val item = getItem(position)
-        (holder as ViewHolder).bind(item, onTrackClick, onMenuClick)
+        (holder as ViewHolder).bind(item, onTrackClick, onMenuClick, onTrackLongClick)
     }
 }
