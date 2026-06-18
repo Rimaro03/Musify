@@ -56,10 +56,10 @@ class PlaybackViewmodel @Inject constructor(
                     }
                 }.awaitAll().mapNotNull { it }
                 if (index == 0) {
-                    playerController.playTracks(tracks)
+                    playerController.playTracks(tracks, playlistId)
                     _fetchingTracks.value = false
                 } else {
-                    playerController.enqueueTracks(tracks)
+                    playerController.enqueueTracks(tracks, playlistId = playlistId)
                 }
             }
         }

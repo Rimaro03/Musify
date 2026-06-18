@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,6 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
@@ -47,17 +50,25 @@ class PlaylistFragment : Fragment() {
 
         val trackRv = binding.playlistTrackRv
         val trackAdapter = PlaylistTrackAdapter(
-            viewModel::playTrack,
-            ::showTrackMenu,
+            {track -> viewModel.playTrack(track, playlistId)},
+            {track -> showTrackMenu(track, playlistId)},
             viewModel::playPreview,
         )
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())
         observePlayerUiState(trackAdapter)
+
+        val shuffleBtn = binding.playlistShuffleBtn
+        shuffleBtn.setOnClickListener { viewModel.toggleShuffle() }
+        observeShuffleMode(shuffleBtn)
+
+        val playPlaylistBtn = binding.playlistPlayBtn
+        playPlaylistBtn.setOnClickListener { viewModel.togglePlayButton(playlistId) }
+        observePlayerState(playPlaylistBtn, playlistId)
     }
 
-    private fun showTrackMenu(track: Track) {
-        TrackOptionsBottomSheet.newInstance(track)
+    private fun showTrackMenu(track: Track, playlistId: String?) {
+        TrackOptionsBottomSheet.newInstance(track, playlistId)
             .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 
@@ -113,6 +124,37 @@ class PlaylistFragment : Fragment() {
         trackMin.text = getString(R.string.track_mins, minutes)
         if(hours == 0L) {
             trackHr.isVisible = false
+        }
+    }
+
+    private fun observeShuffleMode(shuffleBtn: ImageButton) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.shuffleEnabled.collect { enabled ->
+                    val icon = if (enabled) {
+                        androidx.media3.session.R.drawable.media3_icon_shuffle_on
+                    } else {
+                        androidx.media3.session.R.drawable.media3_icon_shuffle_off
+                    }
+                    shuffleBtn.setImageResource(icon)
+                }
+            }
+        }
+    }
+
+    private fun observePlayerState(playPlaylistBtn: MaterialButton, playlistId: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isPlaying.collect { isPlaying ->
+                    playPlaylistBtn.icon = AppCompatResources.getDrawable(
+                        requireContext(),
+                        if(isPlaying && playlistId == viewModel.playingPlaylistId.value) {
+                            R.drawable.pause_24px
+                        }
+                        else R.drawable.play_arrow_24px
+                    )
+                }
+            }
         }
     }
 

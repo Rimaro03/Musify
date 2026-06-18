@@ -24,8 +24,12 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         private const val ARG_TRACK = "track"
-        fun newInstance(track: Track) = TrackOptionsBottomSheet().apply {
-            arguments = Bundle().apply { putParcelable(ARG_TRACK, track) }
+        private const val ARG_PLAYLIST_ID = "playlist_id"
+        fun newInstance(track: Track, playlistId: String?) = TrackOptionsBottomSheet().apply {
+            arguments = Bundle().apply {
+                putParcelable(ARG_TRACK, track)
+                putString(ARG_PLAYLIST_ID, playlistId)
+            }
         }
     }
 
@@ -37,6 +41,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val track = arguments?.getParcelable(ARG_TRACK, Track::class.java) ?: return
+        val playlistId = arguments?.getString(ARG_PLAYLIST_ID)
 
         // track metadata
         binding.trackOptTrackName.text = track.title
@@ -44,7 +49,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // top buttons
         binding.trackOptPlayNext.setOnClickListener {
-            playerController.enqueueTracks(listOf(track), 1)
+            playerController.enqueueTracks(listOf(track), 1, playlistId = playlistId)
             dismiss()
         }
         binding.trackOptLike.setOnClickListener {  }
@@ -63,7 +68,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // list buttons
         binding.trackOptAddToQueue.setOnClickListener {
-            playerController.enqueueTracks(listOf(track))
+            playerController.enqueueTracks(listOf(track), playlistId = playlistId)
             dismiss()
         }
         binding.trackOptSaveToPlaylist.setOnClickListener {  }

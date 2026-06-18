@@ -33,8 +33,14 @@ class PlayerController @Inject constructor(
     private val _isPlaying = MutableStateFlow<Boolean>(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
 
+    private val _shuffleEnabled = MutableStateFlow<Boolean>(false)
+    val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled
+
     private val _currentTrack = MutableStateFlow<Track?>(null)
     val currentTrack: StateFlow<Track?> = _currentTrack
+
+    private val _playingPlaylistId = MutableStateFlow<String?>("1")
+    val playingPlaylistId: StateFlow<String?> = _playingPlaylistId
 
     init {
         Log.d("PlayerController", "init")
@@ -54,6 +60,10 @@ class PlayerController @Inject constructor(
             mediaItem?.let {
                 _currentTrack.value =  MediaItemMapper.toTrack(it)
             }
+        }
+
+        override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+            _shuffleEnabled.value = shuffleModeEnabled
         }
     }
 
@@ -80,8 +90,9 @@ class PlayerController @Inject constructor(
         controllerFuture?.let { MediaController.releaseFuture(it) }
     }
 
-    fun playTracks(tracks: List<Track>) {
+    fun playTracks(tracks: List<Track>, fromPlaylistId: String?) {
         controller?.run {
+            _playingPlaylistId.value = fromPlaylistId
             setMediaItems(MediaItemMapper.fromTracks(tracks))
             if(controller?.playbackState == Player.STATE_IDLE) prepare()
             play()
@@ -94,8 +105,9 @@ class PlayerController @Inject constructor(
     fun skipPrev() = controller?.seekToPreviousMediaItem()
     fun seekTo(position: Long) = controller?.seekTo(position)
 
-    fun enqueueTracks(tracks: List<Track>, position: Int? = null) {
+    fun enqueueTracks(tracks: List<Track>, position: Int? = null, playlistId: String?) {
         controller?.run {
+            _playingPlaylistId.value = playlistId
             addMediaItems(
                 position ?: mediaItemCount ,
                 MediaItemMapper.fromTracks(tracks)
@@ -116,5 +128,7 @@ class PlayerController @Inject constructor(
         controller?.clearMediaItems()
         _currentTrack.value = null
         _isPlaying.value = false
+        _playingPlaylistId.value = null
     }
+
 }

@@ -159,6 +159,7 @@
                         android:contentDescription="@string/playlist_like_button" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/playlist_play_btn"
                         style="@style/Widget.Material3.Button.IconButton.Filled"
                         android:layout_width="56dp"
                         android:layout_height="56dp"

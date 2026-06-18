@@ -117,7 +117,7 @@ class SearchFragment : Fragment() {
 
 
     private fun showTrackMenu(track: Track) {
-        TrackOptionsBottomSheet.newInstance(track)
+        TrackOptionsBottomSheet.newInstance(track, null)
             .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 

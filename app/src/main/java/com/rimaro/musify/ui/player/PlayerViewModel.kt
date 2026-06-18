@@ -41,8 +41,7 @@ class PlayerViewModel @Inject constructor(
     fun skipPrevious() = playerController.skipPrev()
     fun seekTo(positionMs: Long) = playerController.seekTo(positionMs)
 
-    fun enqueueTracks(tracks: List<Track>, position: Int? = null) =
-        playerController.enqueueTracks(tracks, position)
+
 
     fun toggleShuffle() = playerController.toggleShuffle()
 

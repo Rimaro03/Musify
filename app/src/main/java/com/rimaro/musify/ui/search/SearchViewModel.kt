@@ -64,7 +64,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             previewPlayerController.stop()
             track.streamUrl?.let {
-                playerController.playTracks(listOf(track))
+                playerController.playTracks(listOf(track), null)
             }
         }
     }
@@ -163,7 +163,7 @@ class SearchViewModel @Inject constructor(
     }
 
     /* PLAYER LOGIC */
-    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks)
+    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks, playlistId = null)
 
     override fun onCleared() {
         super.onCleared()
