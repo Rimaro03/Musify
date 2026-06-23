@@ -44,7 +44,8 @@ class LibraryFragment : Fragment() {
         val libraryRv = binding.libraryRv
         val libraryAdapter = LibraryAdapter(
             playbackViewmodel::playPlaylist,
-            ::navigateToPlaylist)
+            ::navigateToPlaylist
+        )
         libraryRv.adapter = libraryAdapter
         libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)
         observeLibraryUiState(libraryAdapter)
@@ -81,7 +82,7 @@ class LibraryFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             playbackViewmodel.fetchingTracks.collect { fetchingTracks ->
                 playbackViewmodel.playingPlaylistId?.let { playlistId ->
-                    libraryAdapter.setPlayerLoading(fetchingTracks, playlistId)
+                    libraryAdapter.setPlayingPlaylistId(playlistId, fetchingTracks)
                 }
             }
         }

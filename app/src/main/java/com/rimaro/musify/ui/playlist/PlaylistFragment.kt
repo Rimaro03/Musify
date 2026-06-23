@@ -1,6 +1,8 @@
 package com.rimaro.musify.ui.playlist
 
+import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +14,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.common.Player
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
@@ -21,6 +25,7 @@ import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
 import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -46,11 +51,10 @@ class PlaylistFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val playlistId = args.playlistId
-        viewModel.retrieveTrackIds(playlistId)
 
         val trackRv = binding.playlistTrackRv
         val trackAdapter = PlaylistTrackAdapter(
-            {track -> viewModel.playTrack(track, playlistId)},
+            {track -> viewModel.playTrack(track)},
             {track -> showTrackMenu(track, playlistId)},
             viewModel::playPreview,
         )
@@ -63,8 +67,8 @@ class PlaylistFragment : Fragment() {
         observeShuffleMode(shuffleBtn)
 
         val playPlaylistBtn = binding.playlistPlayBtn
-        playPlaylistBtn.setOnClickListener { viewModel.togglePlayButton(playlistId) }
-        observePlayerState(playPlaylistBtn, playlistId)
+        playPlaylistBtn.setOnClickListener { viewModel.togglePlayButton() }
+        observePlayerState(playPlaylistBtn)
     }
 
     private fun showTrackMenu(track: Track, playlistId: String?) {
@@ -142,17 +146,36 @@ class PlaylistFragment : Fragment() {
         }
     }
 
-    private fun observePlayerState(playPlaylistBtn: MaterialButton, playlistId: String) {
+    private fun observePlayerState(playPlaylistBtn: MaterialButton) {
+        val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
+            setStyle(CircularProgressDrawable.DEFAULT)
+            setColorSchemeColors(Color.BLACK)
+            strokeWidth = 5f
+            centerRadius = 20f
+            start()
+        }
+
         viewLifecycleOwner.lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.isPlaying.collect { isPlaying ->
-                    playPlaylistBtn.icon = AppCompatResources.getDrawable(
-                        requireContext(),
-                        if(isPlaying && playlistId == viewModel.playingPlaylistId.value) {
+                viewModel.playButtonState.collect { buttonState ->
+                    playPlaylistBtn.icon = when(buttonState) {
+                        PlayButtonState.Idle -> AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.play_arrow_24px
+                        )
+
+                        PlayButtonState.Buffering -> progressDrawable
+
+                        PlayButtonState.PlayingThis -> AppCompatResources.getDrawable(
+                            requireContext(),
                             R.drawable.pause_24px
-                        }
-                        else R.drawable.play_arrow_24px
-                    )
+                        )
+
+                        PlayButtonState.PlayingOther -> AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.play_arrow_24px
+                        )
+                    }
                 }
             }
         }

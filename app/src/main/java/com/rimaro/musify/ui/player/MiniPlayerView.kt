@@ -58,9 +58,10 @@ class MiniPlayerView @JvmOverloads constructor(
     private var onSwipeLeft: (() -> Unit)? = null
     private var onSwipeRight: (() -> Unit)? = null
 
+    private var isSwipeDetected = false
+
     private val gestureDetector = GestureDetector(context,
         object : GestureDetector.SimpleOnGestureListener() {
-
             private val SWIPE_THRESHOLD = 100
             private val SWIPE_VELOCITY_THRESHOLD = 100
 
@@ -73,38 +74,47 @@ class MiniPlayerView @JvmOverloads constructor(
                 val diffX = e2.x - (e1?.x ?: 0f)
                 val diffY = e2.y - (e1?.y ?: 0f)
 
-                // make sure it's a horizontal swipe, not vertical
                 if (abs(diffX) > abs(diffY) &&
                     abs(diffX) > SWIPE_THRESHOLD &&
                     abs(velocityX) > SWIPE_VELOCITY_THRESHOLD
                 ) {
-                    if (diffX < 0) onSwipeLeft?.invoke()   // swipe left → skip next
-                    else onSwipeRight?.invoke()             // swipe right → skip previous
+                    isSwipeDetected = true  // Flag the swipe
+                    if (diffX < 0) onSwipeLeft?.invoke()
+                    else onSwipeRight?.invoke()
                     return true
                 }
                 return false
             }
 
-            override fun onDown(e: MotionEvent) = true
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                // Only allow click if no swipe was detected
+                if (!isSwipeDetected) {
+                    performClick()
+                }
+                return true
+            }
 
+            override fun onDown(e: MotionEvent) = true
         }
     )
 
     private var initialX = 0f
+
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        Log.d("MiniPlayer", "onTouchEvent: ${event.action}")
         gestureDetector.onTouchEvent(event)
+
         when (event.action) {
             MotionEvent.ACTION_MOVE -> {
                 val diffX = event.x - initialX
-                // only translate horizontally, with some resistance
                 translationX = diffX * 0.4f
             }
             MotionEvent.ACTION_DOWN -> {
                 initialX = event.x
+                isSwipeDetected = false  // Reset flag on new touch
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                // snap back
+                // Reset flag and snap back
+                isSwipeDetected = false
                 animate()
                     .translationX(0f)
                     .setDuration(300)
@@ -112,7 +122,7 @@ class MiniPlayerView @JvmOverloads constructor(
                     .start()
             }
         }
-        return super.onTouchEvent(event)
+        return true  // Consume the event
     }
 
     fun setOnSwipeLeft(action: () -> Unit) { onSwipeLeft = action }

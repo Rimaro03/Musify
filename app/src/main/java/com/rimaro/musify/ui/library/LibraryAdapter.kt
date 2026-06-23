@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.media3.common.Player
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -19,10 +20,14 @@ class LibraryAdapter (
     private val onClick: (String) -> Unit,
     private val onPlaylistClick: (String) -> Unit
 ) : ListAdapter<FirestorePlaylist, RecyclerView.ViewHolder>(DIFF_CALLBACK)  {
-    private var fetchingTracks = false
+    private var playingPlaylistId: String? = null
+    private var isFetching: Boolean = false
 
-    fun setPlayerLoading(isFetching: Boolean, playlistId: String) = run {
-        fetchingTracks = isFetching
+    fun setPlayingPlaylistId(playlistId: String, fetching: Boolean) = run {
+        Log.d("LibraryAdapter", "$playlistId - $fetching")
+        playingPlaylistId = playlistId
+        isFetching = fetching
+
         val item = currentList.find { it.id == playlistId }
         item?.let {
             val position = currentList.indexOf(item)
@@ -67,18 +72,21 @@ class LibraryAdapter (
             val trackCount = this@LibraryAdapter.itemCount
             //binding.libraryTrackNum.text = "$trackCount tracks"
             binding.libraryPlayBtn.setOnClickListener {
-                Log.d("play", "play func called with id ${playlist.id}")
                 onClick(playlist.id)
             }
             binding.libraryPlayBtn.icon = (
-                if (fetchingTracks) {
-                    progressDrawable
+                if(playingPlaylistId == playlist.id) {
+                    if(isFetching) {
+                        progressDrawable
+                    } else {
+                        ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
+                    }
                 } else {
                     ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
                 }
             )
 
-            binding.libraryPlayBtn.isEnabled = !fetchingTracks
+            binding.libraryPlayBtn.isEnabled = !isFetching
             binding.root.setOnClickListener { onPlaylistClick(playlist.id) }
         }
     }

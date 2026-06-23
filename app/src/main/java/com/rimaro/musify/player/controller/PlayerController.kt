@@ -101,6 +101,11 @@ class PlayerController @Inject constructor(
 
     fun pause() = controller?.pause()
     fun resume() = controller?.play()
+    fun togglePlayPause() = controller?.let {
+        if(it.isPlaying) it.pause()
+        else it.play()
+    }
+
     fun skipNext() = controller?.seekToNextMediaItem()
     fun skipPrev() = controller?.seekToPreviousMediaItem()
     fun seekTo(position: Long) = controller?.seekTo(position)
@@ -122,6 +127,7 @@ class PlayerController @Inject constructor(
 
     fun getCurrentMediaItem(): MediaItem? = controller?.currentMediaItem
     fun isPlaying(): Boolean = controller?.isPlaying ?: false
+    fun clearQueue() = controller?.clearMediaItems()
 
     fun stop() {
         controller?.stop()

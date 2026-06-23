@@ -38,7 +38,10 @@ class PlaybackViewmodel @Inject constructor(
         playingPlaylistId = playlistId
         _fetchingTracks.value = true
         viewModelScope.launch {
+            // get playlist from Firestore
             val playlist = firestorePlaylistDao.getPlaylist(playlistId) ?: return@launch
+
+            // get deezer tracks
             val semaphore = Semaphore(5)
             val deezerTracks = playlist.trackIds.map { trackId ->
                 async {
@@ -48,29 +51,18 @@ class PlaybackViewmodel @Inject constructor(
                 }
             }.awaitAll()
 
+            // get audio url from deezer track
             val chunkedDeezerTracks = deezerTracks.chunked(5)
+            playerController.clearQueue()
             chunkedDeezerTracks.forEachIndexed  { index, chunk ->
                 val tracks = chunk.map { deezerTrack ->
                     async {
                         trackUrlResolver.resolve(deezerTrack.toTrack())
                     }
                 }.awaitAll().mapNotNull { it }
-                if (index == 0) {
-                    playerController.playTracks(tracks, playlistId)
-                    _fetchingTracks.value = false
-                } else {
-                    playerController.enqueueTracks(tracks, playlistId = playlistId)
-                }
+                _fetchingTracks.value = false
+                playerController.enqueueTracks(tracks, playlistId = playlistId)
             }
         }
-    }
-
-    private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
-        tracks.map { track ->
-            async {
-                val fetchedTrack = trackUrlResolver.resolve(track)
-                fetchedTrack?.let { send(it) }
-            }
-        }.awaitAll()
     }
 }
