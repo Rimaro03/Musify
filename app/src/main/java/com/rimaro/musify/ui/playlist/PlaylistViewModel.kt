@@ -1,7 +1,6 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -15,7 +14,6 @@ import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
 import com.rimaro.musify.ui.common.PlayButtonState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -40,7 +37,7 @@ class PlaylistViewModel @Inject constructor(
     private val deezerRepository: DeezerRepository,
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
-    private val previewPlayerController: PreviewPlayerController
+    private val previewPlayerController: PreviewPlayerController,
 ) : AndroidViewModel(application) {
     private val currPlaylistId: String = checkNotNull(savedStateHandle["playlistId"])
 
@@ -140,39 +137,44 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
-    private fun playNextTracks(startIndex: Int = 0) =
-        viewModelScope.launch(Dispatchers.Main) {
-            val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
-                .subList(startIndex, startIndex + TRACKS_TO_PLAY)
-
-            /* For each of the next TRACKS_TO_PLAY tracks
-            Iff it has stream url, play
-            if not, try to fetch it one more time
-            If succeed play, otherwise skip
-            * */
-            tracksToPlay.forEach { track ->
-                if (track.streamUrl != null) {
-                    playerController.enqueueTracks(listOf(track), playlistId = currPlaylistId)
-                } else {
-                    Log.e("PlaylistViewModel", "No stream url found, retrying, for track ${track.title}")
-                    val fetchedTrack = trackUrlResolver.resolve(track)
-                    if(fetchedTrack != null && fetchedTrack.streamUrl != null) {
-                        _playlistUiState.update { state ->
-                            if (state !is PlaylistUiState.Success) return@update state
-                            state.copy(
-                                trackList = state.trackList.map { item ->
-                                    if(item.id == fetchedTrack.id) item.copy(streamUrl = fetchedTrack.streamUrl)
-                                    else item
-                                }
-                            )
-                        }
-                        playerController.enqueueTracks(listOf(fetchedTrack), playlistId = currPlaylistId)
-                    } else {
-                        Log.e("PlaylistViewModel", "Error trying to re-fetch url for track ${track.title}")
-                    }
-                }
-            }
+    private fun playNextTracks(startIndex: Int = 0) {
+        val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
+        playerController.playPlaylist(tracksToPlay, currPlaylistId)
     }
+
+//    private fun playNextTracks(startIndex: Int = 0) =
+//        viewModelScope.launch(Dispatchers.Main) {
+//            val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
+//                .subList(startIndex, startIndex + TRACKS_TO_PLAY)
+//
+//            /* For each of the next TRACKS_TO_PLAY tracks
+//            Iff it has stream url, play
+//            if not, try to fetch it one more time
+//            If succeed play, otherwise skip
+//            * */
+//            tracksToPlay.forEach { track ->
+//                if (track.streamUrl != null) {
+//                    playerController.enqueueTracks(listOf(track), playlistId = currPlaylistId)
+//                } else {
+//                    Log.e("PlaylistViewModel", "No stream url found, retrying, for track ${track.title}")
+//                    val fetchedTrack = trackUrlResolver.resolve(track)
+//                    if(fetchedTrack != null && fetchedTrack.streamUrl != null) {
+//                        _playlistUiState.update { state ->
+//                            if (state !is PlaylistUiState.Success) return@update state
+//                            state.copy(
+//                                trackList = state.trackList.map { item ->
+//                                    if(item.id == fetchedTrack.id) item.copy(streamUrl = fetchedTrack.streamUrl)
+//                                    else item
+//                                }
+//                            )
+//                        }
+//                        playerController.enqueueTracks(listOf(fetchedTrack), playlistId = currPlaylistId)
+//                    } else {
+//                        Log.e("PlaylistViewModel", "Error trying to re-fetch url for track ${track.title}")
+//                    }
+//                }
+//            }
+//    }
 
     companion object {
         private const val TRACKS_TO_PLAY = 5
