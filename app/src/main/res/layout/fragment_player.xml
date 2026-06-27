@@ -4,11 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".ui.player.PlayerFragment">
+    tools:context=".ui.player.PlayerFragment"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ciao" />
+    <ImageView
+        android:layout_width="350dp"
+        android:layout_height="350dp"
+        android:src="@drawable/ic_launcher_foreground" />
 
 </LinearLayout>
