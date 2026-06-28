@@ -8,9 +8,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,16 +22,24 @@ class QueueManager @Inject constructor(
     @AppScope private val coroutineScope: CoroutineScope,
     private val trackUrlResolver: TrackUrlResolver,
 ) {
-    private val originalQueue = mutableListOf<Track>()
-    private val shuffledQueue = mutableListOf<Track>()
-    private var shuffleEnabled = false
+    private val originalQueue = MutableStateFlow<List<Track>>(emptyList())
+    private val shuffledQueue = MutableStateFlow<List<Track>>(emptyList())
+    private val shuffleEnabled = MutableStateFlow(false)
 
-    private val activeQueue get() = if (!shuffleEnabled) originalQueue else shuffledQueue
+    private val activeQueue
+        get() = if(shuffleEnabled.value) shuffledQueue.value else originalQueue.value
 
-    private val _queue = MutableStateFlow<List<Track>>(emptyList())
-    val queue: StateFlow<List<Track>> = _queue.asStateFlow()
+    val queue: StateFlow<List<Track>> = combine(
+        originalQueue, shuffledQueue, shuffleEnabled
+    ) { original, shuffled, enabled ->
+        if (enabled) shuffled else original
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = originalQueue.value
+    )
 
-    private val resolvedTracks = mutableListOf<Track>() // trackId -> url
+    private val resolvedTracks = mutableListOf<Track>()
     private val pendingResolution = mutableSetOf<Long>()
 
     private val _tracksReady = MutableSharedFlow<List<Track>>(extraBufferCapacity = 64)
@@ -49,14 +59,24 @@ class QueueManager @Inject constructor(
 
     fun loadQueue(tracks: List<Track>, shuffle: Boolean) {
         reset()
-        originalQueue.addAll(tracks)
-        setShuffleEnabled(shuffle)
-        windowStartTrackId = activeQueue.first().id
+        val shuffledTracks = tracks.shuffled()
+        val queueToUse = if(shuffle) shuffledTracks else tracks
+
+        originalQueue.value = tracks
+        shuffledQueue.value = shuffledTracks
+        shuffleEnabled.value = shuffle
+        windowStartTrackId = queueToUse.first().id
+        addedUpToId = null
+
         advanceWindow()
     }
 
     fun onCurrentTrackChange(trackId: Long) {
         val currTrackPos = activeQueue.indexOfFirst { it.id == trackId }
+        // remove currently playing track from the queue
+        originalQueue.value = originalQueue.value.filter { it.id != trackId }
+        shuffledQueue.value = shuffledQueue.value.filter { it.id != trackId }
+
         if(currTrackPos == -1) {
             Log.e("QueueManager", "Could not fetch the current track position " +
                     "in the active queue\n TrackID: $trackId")
@@ -75,20 +95,14 @@ class QueueManager @Inject constructor(
         }
     }
 
-    fun setShuffleEnabled(enabled: Boolean, currTrackId: Long? = null) {
-        shuffleEnabled = enabled
-
+    fun setShuffleEnabled(enabled: Boolean) {
+        shuffleEnabled.value = enabled
         if(enabled) {
-            shuffledQueue.clear()
-            shuffledQueue.addAll(originalQueue.shuffled())
+            shuffledQueue.value = originalQueue.value.shuffled()
         }
 
-        currTrackId?.let {
-            windowStartTrackId = currTrackId
-            addedUpToId = currTrackId
-            advanceWindow()
-        }
-        _queue.value = activeQueue
+        windowStartTrackId = activeQueue.first().id
+        addedUpToId = null
     }
 
 
@@ -143,11 +157,11 @@ class QueueManager @Inject constructor(
     }
 
     private fun reset() {
-        originalQueue.clear()
-        shuffledQueue.clear()
+        originalQueue.value = emptyList()
+        shuffledQueue.value = emptyList()
         resolvedTracks.clear()
         pendingResolution.clear()
-        shuffleEnabled = false
+        shuffleEnabled.value = false
         windowStartTrackId = null
         addedUpToId = null
     }

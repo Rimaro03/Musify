@@ -2,7 +2,6 @@ package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
-import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -50,7 +49,6 @@ class PlayerController @Inject constructor(
     val playingPlaylistId: StateFlow<String?> = _playingPlaylistId
 
     init {
-        Log.d("PlayerController", "init")
         connect()
     }
 
@@ -59,7 +57,6 @@ class PlayerController @Inject constructor(
             _playerState.value = playbackState
         }
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            Log.d("PlayerController", "onIsPlayingChanged: $isPlaying")
             _isPlaying.value = isPlaying
         }
 
@@ -72,6 +69,7 @@ class PlayerController @Inject constructor(
 
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             _shuffleEnabled.value = shuffleModeEnabled
+            queueManager.setShuffleEnabled(shuffleModeEnabled)
         }
     }
 
@@ -159,7 +157,6 @@ class PlayerController @Inject constructor(
         coroutineScope.launch {
             queueManager.queue.collect { queue ->
                 val queueString = queue.joinToString("\n") { it.title }
-                Log.d("PlayerController", "Current queue: $queueString")
             }
         }
     }

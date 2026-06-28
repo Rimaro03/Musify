@@ -2,18 +2,20 @@ package com.rimaro.musify.ui.player
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
-import android.util.Log
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.google.android.material.card.MaterialCardView
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.LayoutMiniplayerBinding
 import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.ui.common.PlayButtonState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.math.abs
 
@@ -34,13 +36,21 @@ class MiniPlayerView @JvmOverloads constructor(
             .into(binding.miniplayerTrackIcon)
     }
 
+    fun setButtonState(buttonState: PlayButtonState) {
+        val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
+            setStyle(CircularProgressDrawable.DEFAULT)
+            setColorSchemeColors(Color.BLACK)
+            strokeWidth = 5f
+            centerRadius = 20f
+            start()
+        }
 
-    fun setPlaying(isPlaying: Boolean) {
-        binding.miniplayerPlayPause.icon = AppCompatResources.getDrawable(
-            context,
-            if(isPlaying) R.drawable.pause_24px
-            else R.drawable.play_arrow_24px
-        )
+        binding.miniplayerPlayPause.icon = when(buttonState) {
+            is PlayButtonState.Buffering -> progressDrawable
+            is PlayButtonState.PlayingThis -> ContextCompat.getDrawable(binding.root.context, R.drawable.pause_24px)
+            else -> ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
+        }
+
     }
 
     fun setOnPlayPauseClick(action: () -> Unit) {

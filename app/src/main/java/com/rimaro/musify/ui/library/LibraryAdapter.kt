@@ -1,7 +1,6 @@
 package com.rimaro.musify.ui.library
 
 import android.graphics.Color
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
@@ -21,18 +20,40 @@ class LibraryAdapter (
     private val onPlaylistClick: (String) -> Unit
 ) : ListAdapter<FirestorePlaylist, RecyclerView.ViewHolder>(DIFF_CALLBACK)  {
     private var playingPlaylistId: String? = null
-    private var isFetching: Boolean = false
+    private var playerState = Player.STATE_IDLE
+    private var isPlaying = false
 
-    fun setPlayingPlaylistId(playlistId: String, fetching: Boolean) = run {
-        Log.d("LibraryAdapter", "$playlistId - $fetching")
+    fun setPlayingPlaylistId(playlistId: String?) {
+        val prevId = playingPlaylistId
         playingPlaylistId = playlistId
-        isFetching = fetching
+        updateButtons(prevId)
+    }
 
-        val item = currentList.find { it.id == playlistId }
-        item?.let {
-            val position = currentList.indexOf(item)
-            notifyItemChanged(position)
-        }
+    fun setPlayerState(newState: Int) {
+        playerState = newState
+        updateButtons()
+    }
+
+    fun setIsPlaying(newIsPlaying: Boolean) {
+        isPlaying = newIsPlaying
+        updateButtons()
+    }
+
+    private fun updateButtons(prevPlaylistId: String? = null) {
+        notifyDataSetChanged()
+//        val item = currentList.find { it.id == playingPlaylistId }
+//        item?.let {
+//            val position = currentList.indexOf(item)
+//            notifyItemChanged(position)
+//        }
+//
+//        prevPlaylistId?.let { prevId ->
+//            val item = currentList.find { it.id ==  prevId}
+//            item?.let {
+//                val position = currentList.indexOf(item)
+//                notifyItemChanged(position)
+//            }
+//        }
     }
 
     companion object {
@@ -69,24 +90,28 @@ class LibraryAdapter (
 
             binding.libraryName.text = playlist.name
             binding.libraryPlaylistOrAlbum.text = "Playlist"
-            val trackCount = this@LibraryAdapter.itemCount
+            //val trackCount = this@LibraryAdapter.itemCount
             //binding.libraryTrackNum.text = "$trackCount tracks"
             binding.libraryPlayBtn.setOnClickListener {
                 onClick(playlist.id)
             }
             binding.libraryPlayBtn.icon = (
                 if(playingPlaylistId == playlist.id) {
-                    if(isFetching) {
+                    if(playerState == Player.STATE_BUFFERING) {
                         progressDrawable
                     } else {
-                        ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
+                        if (playerState == Player.STATE_READY && isPlaying){
+                            ContextCompat.getDrawable(binding.root.context, R.drawable.pause_24px)
+                        } else {
+                            ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
+                        }
                     }
                 } else {
                     ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
                 }
             )
 
-            binding.libraryPlayBtn.isEnabled = !isFetching
+            //binding.libraryPlayBtn.isEnabled = playerState != Player.STATE_BUFFERING
             binding.root.setOnClickListener { onPlaylistClick(playlist.id) }
         }
     }

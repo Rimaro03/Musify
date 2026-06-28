@@ -1,7 +1,6 @@
 package com.rimaro.musify
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -189,14 +188,13 @@ class MainActivity : AppCompatActivity() {
 
                 launch {
                     playerViewModel.currentTrack.collect { track ->
-                        Log.d("MainActivity", "track: $track")
                         track?.let { binding.miniplayer.bind(it) }
                     }
                 }
 
                 launch {
-                    playerViewModel.isPlaying.collect { state ->
-                        binding.miniplayer.setPlaying(state)
+                    playerViewModel.playButtonState.collect {
+                        binding.miniplayer.setButtonState(it)
                     }
                 }
             }

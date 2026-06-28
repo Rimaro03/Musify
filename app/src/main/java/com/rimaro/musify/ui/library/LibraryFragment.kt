@@ -20,7 +20,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentLibraryBinding
-import com.rimaro.musify.ui.PlaybackViewmodel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.getValue
@@ -31,7 +30,7 @@ class LibraryFragment : Fragment(), MenuProvider {
     private val binding get() = _binding!!
 
     private val viewModel: LibraryViewModel by activityViewModels()
-    private val playbackViewmodel: PlaybackViewmodel by activityViewModels()
+    //private val playbackViewmodel: PlaybackViewmodel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,7 +49,7 @@ class LibraryFragment : Fragment(), MenuProvider {
 
         val libraryRv = binding.libraryRv
         val libraryAdapter = LibraryAdapter(
-            playbackViewmodel::playPlaylist,
+            viewModel::togglePlayButton,
             ::navigateToPlaylist
         )
         libraryRv.adapter = libraryAdapter
@@ -101,10 +100,18 @@ class LibraryFragment : Fragment(), MenuProvider {
 
     private fun observePlayerState(libraryAdapter: LibraryAdapter) {
         viewLifecycleOwner.lifecycleScope.launch {
-            playbackViewmodel.fetchingTracks.collect { fetchingTracks ->
-                playbackViewmodel.playingPlaylistId?.let { playlistId ->
-                    libraryAdapter.setPlayingPlaylistId(playlistId, fetchingTracks)
-                }
+            viewModel.playingPlaylistId.collect {
+                libraryAdapter.setPlayingPlaylistId(it)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isPlaying.collect {
+                libraryAdapter.setIsPlaying(it)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.playerState.collect {
+                libraryAdapter.setPlayerState(it)
             }
         }
     }

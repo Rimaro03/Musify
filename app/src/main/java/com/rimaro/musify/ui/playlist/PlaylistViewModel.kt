@@ -61,7 +61,7 @@ class PlaylistViewModel @Inject constructor(
             playing && activeId == currPlaylistId -> PlayButtonState.PlayingThis
             else -> if (activeId == currPlaylistId) PlayButtonState.Idle else PlayButtonState.PlayingOther
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayButtonState.Idle)
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, PlayButtonState.Idle)
 
     fun retrieveTrackIds(playlistId: String) {
         viewModelScope.launch {
@@ -128,55 +128,20 @@ class PlaylistViewModel @Inject constructor(
                 playerController.togglePlayPause()
             } else {
                 playerController.clearQueue()
-                playNextTracks()
+                playPlaylist()
             }
         }
         else {
             playerController.clearQueue()
-            playNextTracks()
+            playPlaylist()
         }
     }
 
-    private fun playNextTracks(startIndex: Int = 0) {
-        val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
-        playerController.playPlaylist(tracksToPlay, currPlaylistId)
+    private fun playPlaylist() {
+        if(_playlistUiState.value is PlaylistUiState.Success) {
+            val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
+            playerController.playPlaylist(tracksToPlay, currPlaylistId)
+        }
     }
 
-//    private fun playNextTracks(startIndex: Int = 0) =
-//        viewModelScope.launch(Dispatchers.Main) {
-//            val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
-//                .subList(startIndex, startIndex + TRACKS_TO_PLAY)
-//
-//            /* For each of the next TRACKS_TO_PLAY tracks
-//            Iff it has stream url, play
-//            if not, try to fetch it one more time
-//            If succeed play, otherwise skip
-//            * */
-//            tracksToPlay.forEach { track ->
-//                if (track.streamUrl != null) {
-//                    playerController.enqueueTracks(listOf(track), playlistId = currPlaylistId)
-//                } else {
-//                    Log.e("PlaylistViewModel", "No stream url found, retrying, for track ${track.title}")
-//                    val fetchedTrack = trackUrlResolver.resolve(track)
-//                    if(fetchedTrack != null && fetchedTrack.streamUrl != null) {
-//                        _playlistUiState.update { state ->
-//                            if (state !is PlaylistUiState.Success) return@update state
-//                            state.copy(
-//                                trackList = state.trackList.map { item ->
-//                                    if(item.id == fetchedTrack.id) item.copy(streamUrl = fetchedTrack.streamUrl)
-//                                    else item
-//                                }
-//                            )
-//                        }
-//                        playerController.enqueueTracks(listOf(fetchedTrack), playlistId = currPlaylistId)
-//                    } else {
-//                        Log.e("PlaylistViewModel", "Error trying to re-fetch url for track ${track.title}")
-//                    }
-//                }
-//            }
-//    }
-
-    companion object {
-        private const val TRACKS_TO_PLAY = 5
-    }
 }
