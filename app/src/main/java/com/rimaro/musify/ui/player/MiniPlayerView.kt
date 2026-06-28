@@ -39,7 +39,7 @@ class MiniPlayerView @JvmOverloads constructor(
     fun setButtonState(buttonState: PlayButtonState) {
         val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
             setStyle(CircularProgressDrawable.DEFAULT)
-            setColorSchemeColors(Color.BLACK)
+            setColorSchemeColors(Color.WHITE)
             strokeWidth = 5f
             centerRadius = 20f
             start()
