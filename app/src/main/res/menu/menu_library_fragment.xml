@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/library_add"
-        android:title="Add To Library"
+        android:title="@string/add_to_library"
         android:icon="@drawable/media3_icon_plus"
         app:showAsAction="ifRoom" />
 

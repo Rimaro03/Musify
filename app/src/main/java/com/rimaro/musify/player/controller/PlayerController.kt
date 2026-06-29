@@ -2,6 +2,8 @@ package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -74,6 +76,9 @@ class PlayerController @Inject constructor(
     }
 
     fun connect() {
+        val serviceIntent = Intent(context, MusicService::class.java)
+        ContextCompat.startForegroundService(context, serviceIntent)
+
         val sessionToken = SessionToken(
             context,
             ComponentName(context, MusicService::class.java)

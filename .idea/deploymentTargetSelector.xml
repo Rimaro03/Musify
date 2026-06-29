@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="musify">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-06-28T12:21:28.756014664Z">
+        <DropdownSelection timestamp="2026-06-29T11:19:39.680342505Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="PhysicalDevice" identifier="serial=33241JEHN00378" />

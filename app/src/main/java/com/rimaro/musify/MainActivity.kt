@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        // hide bottom nav on auth, login fragments
+        // hide bottom nav on some fragments
         val fragmentsNoNav = listOf(
             R.id.signinFragment,
             R.id.signupSplashFragment,
@@ -128,7 +128,6 @@ class MainActivity : AppCompatActivity() {
             R.id.libraryFragment,
             R.id.searchFragment,
             R.id.profileFragment,
-            R.id.playerFragment
         ))
         setupActionBarWithNavController(navController, appBarConfiguration)
     }

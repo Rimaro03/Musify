@@ -81,4 +81,7 @@
     <string name="track_hours">%d hr </string>
     <string name="track_mins">%d min</string>
     <string name="playlist_like_button">playlist like button</string>
+    <string name="track_cover">track cover</string>
+    <string name="add_to_library">Add To Library</string>
+    <string name="player_top_menu">Player top menu</string>
 </resources>
