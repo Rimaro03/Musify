@@ -1,4 +1,4 @@
-package com.rimaro.musify.util
+package com.rimaro.musify.util.thumbnail
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -9,7 +9,10 @@ import androidx.core.graphics.scale
 import javax.inject.Singleton
 
 @Singleton
-object ThumbnailCreator {
+object ThumbnailManager {
+
+    // PUBLIC INTERFACE //
+
     fun createPlaylistThumbnail(covers: List<Bitmap>, size: Int = 512): Bitmap {
         require(covers.size >= 4) { "Need at least 4 covers" }
 
@@ -35,7 +38,10 @@ object ThumbnailCreator {
         return result
     }
 
-    fun centerCropBitmap(source: Bitmap, targetW: Int, targetH: Int): Bitmap {
+
+    // PRIVATE INTERFACE //
+
+    private fun centerCropBitmap(source: Bitmap, targetW: Int, targetH: Int): Bitmap {
         val sourceRatio = source.width.toFloat() / source.height
         val targetRatio = targetW.toFloat() / targetH
 

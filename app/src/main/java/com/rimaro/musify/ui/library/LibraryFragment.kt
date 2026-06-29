@@ -50,7 +50,8 @@ class LibraryFragment : Fragment(), MenuProvider {
         val libraryRv = binding.libraryRv
         val libraryAdapter = LibraryAdapter(
             viewModel::togglePlayButton,
-            ::navigateToPlaylist
+            ::navigateToPlaylist,
+            viewModel::createThumbnail
         )
         libraryRv.adapter = libraryAdapter
         libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)

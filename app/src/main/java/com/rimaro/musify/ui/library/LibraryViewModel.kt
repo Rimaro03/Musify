@@ -11,10 +11,11 @@ import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
-import com.rimaro.musify.util.ImportPlaylist
+import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -23,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     application: Application,
-    private val importPlaylist: ImportPlaylist,
+    private val playlistImporter: PlaylistImporter,
     private val firestorePlaylistDao: FirestorePlaylistDao,
     private val playerController: PlayerController,
     private val deezerRepository: DeezerRepository
@@ -46,13 +47,55 @@ class LibraryViewModel @Inject constructor(
 
     fun importFromCsv(uri: Uri) {
         viewModelScope.launch {
-            importPlaylist.importFromCsv(uri)
+            playlistImporter.importFromCsv(uri)
                 .collect { result ->
                     importState.value = result
                 }
         }
     }
 
+    fun createThumbnail(playlistId: String) {
+        viewModelScope.launch {
+            // get covers
+            val firestorePlaylist = firestorePlaylistDao.getPlaylist(playlistId)
+            if(firestorePlaylist == null) {
+                Log.e("LibraryViewmodel", "Could not fetch firestore playlist during thumbnail creation")
+                return@launch
+            }
+
+            val deezerTracks = firestorePlaylist.trackIds.take(4).map { trackId ->
+                async {
+                    deezerRepository.getTrackById(trackId)
+                }
+            }.awaitAll()
+
+            val covers = if(deezerTracks.size < 4) {
+                listOf(deezerTracks.first().album?.coverXl ?: return@launch)
+            } else {
+                deezerTracks.map { it.album?.coverXl ?: return@launch}
+            }
+
+            // create thumbnail
+            val newThumbnailPath = playlistImporter.createPlaylistThumbnail(covers, playlistId)
+                ?: return@launch
+
+            // update playlist with thumbnail
+            firestorePlaylistDao.updatePlaylistThumbnail(playlistId, newThumbnailPath)
+
+            // update playlist cover
+            val currentList = _libraryUiState.value as? LibraryUiState.Success ?: return@launch
+
+            val updatedList = currentList.res.map { playlist ->
+                if(playlist.id == playlistId) {
+                    playlist.copy(thumbnailPath = newThumbnailPath)
+                } else {
+                    playlist
+                }
+            }
+
+            _libraryUiState.value = LibraryUiState.Success(updatedList)
+        }
+    }
 
     // PLAYLIST PLAY METHODS //
 

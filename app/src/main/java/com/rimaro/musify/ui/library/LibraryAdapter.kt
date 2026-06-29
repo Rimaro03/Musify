@@ -13,11 +13,13 @@ import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemLibraryPlaylistBinding
 import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.util.thumbnail.StorageManager
 import java.io.File
 
 class LibraryAdapter (
     private val onClick: (String) -> Unit,
-    private val onPlaylistClick: (String) -> Unit
+    private val onPlaylistClick: (String) -> Unit,
+    private val createThumbnail: (String) -> Unit
 ) : ListAdapter<FirestorePlaylist, RecyclerView.ViewHolder>(DIFF_CALLBACK)  {
     private var playingPlaylistId: String? = null
     private var playerState = Player.STATE_IDLE
@@ -81,8 +83,11 @@ class LibraryAdapter (
 
         fun bind(playlist: FirestorePlaylist,
                  onClick: (String) -> Unit,
-                 onPlaylistClick: (String) -> Unit
+                 onPlaylistClick: (String) -> Unit,
+                 createThumbnail: (String) -> Unit
         ) {
+            val isPathValid = StorageManager.isFilePathValid(playlist.thumbnailPath)
+            if(!isPathValid) createThumbnail(playlist.id)
             Glide.with(binding.root)
                 .load(File(playlist.thumbnailPath))
                 .centerCrop()
@@ -125,7 +130,7 @@ class LibraryAdapter (
 
     override fun onBindViewHolder(p0: RecyclerView.ViewHolder, p1: Int) {
         if (p0 is LibraryViewHolder) {
-            p0.bind(getItem(p1), onClick, onPlaylistClick)
+            p0.bind(getItem(p1), onClick, onPlaylistClick, createThumbnail)
         }
     }
 }

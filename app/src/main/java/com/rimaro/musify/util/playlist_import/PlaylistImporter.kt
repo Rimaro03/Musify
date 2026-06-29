@@ -1,4 +1,4 @@
-package com.rimaro.musify.util
+package com.rimaro.musify.util.playlist_import
 
 import android.app.Application
 import android.content.Context
@@ -12,6 +12,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.ui.library.ImportResult
+import com.rimaro.musify.util.thumbnail.StorageManager
+import com.rimaro.musify.util.thumbnail.ThumbnailManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -24,7 +26,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ImportPlaylist @Inject constructor(
+class PlaylistImporter @Inject constructor(
     private val application: Application,
     private val deezerRepository: DeezerRepository,
     private val firestorePlaylistDao: FirestorePlaylistDao
@@ -43,7 +45,7 @@ class ImportPlaylist @Inject constructor(
 
     fun importFromCsv(
         uri: Uri
-    ): Flow<ImportResult> = flow{
+    ): Flow<ImportResult> = flow {
         val inputStream = application.contentResolver.openInputStream(uri)
             ?: run {
                 emit(ImportResult.Error("Could not open file")); return@flow
@@ -60,7 +62,7 @@ class ImportPlaylist @Inject constructor(
         val resolvedIds = mutableListOf<Long>()
         val covers = mutableListOf<String>()
 
-        parseCsvStream(inputStream)
+        CsvManager.parseCsvStream(inputStream)
             .chunked(50)
             .forEach { chunk ->
                 val tracks = coroutineScope {
@@ -73,7 +75,7 @@ class ImportPlaylist @Inject constructor(
 
                 tracks.forEach { track ->
                     if (track != null) resolvedIds.add(track.id) else failed++
-                    if(covers.size < 4) {
+                    if (covers.size < 4) {
                         track?.album?.coverXl?.let {
                             covers.add(it)
                         }
@@ -99,7 +101,7 @@ class ImportPlaylist @Inject constructor(
 
         // create thumbnail
         val thumbnailPath = createPlaylistThumbnail(covers, playlistId)
-        if(thumbnailPath == null){
+        if (thumbnailPath == null) {
             emit(ImportResult.Error("Error creating playliust"))
             return@flow
         }
@@ -121,8 +123,7 @@ class ImportPlaylist @Inject constructor(
         return playlistId
     }
 
-    // TODO: when adding new tracks, and number of tracks >= 4, build combined playlist thumbnail
-    private suspend fun createPlaylistThumbnail(covers: List<String>, fileName: String): String? {
+    suspend fun createPlaylistThumbnail(covers: List<String>, fileName: String): String? {
         val bitmaps = coroutineScope {
             covers.take(4)
                 .map { uri -> async { loadBitmapFromUri(application, uri.toUri()) } }
@@ -134,9 +135,9 @@ class ImportPlaylist @Inject constructor(
         val thumbnailBitmap = if (bitmaps.size < 4) {
             bitmaps[0]
         } else {
-            ThumbnailCreator.createPlaylistThumbnail(bitmaps)
+            ThumbnailManager.createPlaylistThumbnail(bitmaps)
         }
-        val thumbnailPath = ImageStorage.save(application, thumbnailBitmap, fileName)
+        val thumbnailPath = StorageManager.save(application, thumbnailBitmap, fileName)
 
         return thumbnailPath
     }

@@ -1,4 +1,4 @@
-package com.rimaro.musify.util
+package com.rimaro.musify.util.thumbnail
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,7 +9,7 @@ import java.io.IOException
 import javax.inject.Singleton
 
 @Singleton
-object ImageStorage {
+object StorageManager {
     private const val DIR = "playlists_thumbnail"
 
     fun save(context: Context, bitmap: Bitmap, filename: String): String? {
@@ -37,5 +37,14 @@ object ImageStorage {
 
     fun delete(path: String): Boolean {
         return File(path).takeIf { it.exists() }?.delete() ?: false
+    }
+
+    fun isFilePathValid(path: String): Boolean {
+        return try {
+            val file = File(path)
+            file.exists() && file.isFile && file.canRead()
+        } catch (e: Exception) {
+            false
+        }
     }
 }
