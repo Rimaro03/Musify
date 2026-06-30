@@ -48,7 +48,6 @@ class PlayerFragment : Fragment() {
         setupItemsMenu()
     }
 
-
     private fun setupItemsMenu() {
         requireActivity().addMenuProvider(
             object : MenuProvider {

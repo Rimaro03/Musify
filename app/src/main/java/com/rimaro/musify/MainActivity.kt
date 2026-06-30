@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         setupSearchbar()
 
         setupMiniplayer(navController)
-        observePlayer()
+        observePlayer(navController)
 
         //hide menu on auth, login fragments
         navController.addOnDestinationChangedListener { _, _, _ ->
@@ -182,14 +182,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun observePlayer() {
+    private fun observePlayer(navController: NavController) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     playerViewModel.currentTrack.collect { track ->
                         val visible = track != null
-                        binding.miniplayer.isVisible = visible
-                        // Push nav host up when miniplayer appears
+                        val currentDest = navController.currentDestination?.id
+                        if(currentDest != R.id.playerFragment) {
+                            binding.miniplayer.isVisible = visible
+                        }
                     }
                 }
 
