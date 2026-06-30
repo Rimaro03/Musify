@@ -23,6 +23,8 @@ class PlayerViewModel @Inject constructor(
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val currentTrack: StateFlow<Track?> = playerController.currentTrack
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+    val shuffleEnabled: StateFlow<Boolean> = playerController.shuffleEnabled
+    val repeatMode: StateFlow<Int> = playerController.repeatMode
     val playButtonState: StateFlow<PlayButtonState> = combine(
         playerState, isPlaying, playingPlaylistId
     ) { state, playing, _ ->
@@ -48,6 +50,7 @@ class PlayerViewModel @Inject constructor(
     fun seekTo(positionMs: Long) = playerController.seekTo(positionMs)
 
     fun toggleShuffle() = playerController.toggleShuffle()
+    fun toggleRepeatMode() = playerController.toggleRepeatMode()
 
     override fun onCleared() {
         playerController.disconnect()

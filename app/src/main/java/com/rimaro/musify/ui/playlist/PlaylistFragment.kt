@@ -150,8 +150,8 @@ class PlaylistFragment : Fragment() {
         val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
             setStyle(CircularProgressDrawable.DEFAULT)
             setColorSchemeColors(Color.BLACK)
-            strokeWidth = 5f
-            centerRadius = 20f
+            strokeWidth = 10f
+            centerRadius = 0f
             start()
         }
 

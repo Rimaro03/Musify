@@ -102,11 +102,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/play_arrow_24px"
+                app:icon="@drawable/play_arrow_24px"
                 app:tint="@color/black"
                 android:padding="10dp"
-                android:scaleType="fitCenter"
-                android:contentDescription="My button" />
+                android:scaleType="fitCenter"/>
 
         </com.google.android.material.card.MaterialCardView>
 

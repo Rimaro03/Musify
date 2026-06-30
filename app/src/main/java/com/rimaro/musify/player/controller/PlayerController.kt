@@ -2,8 +2,7 @@ package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import androidx.core.content.ContextCompat
+import androidx.compose.animation.core.RepeatMode
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -44,6 +43,9 @@ class PlayerController @Inject constructor(
     private val _shuffleEnabled = MutableStateFlow<Boolean>(false)
     val shuffleEnabled: StateFlow<Boolean> = _shuffleEnabled
 
+    private val _repeatMode = MutableStateFlow(Player.REPEAT_MODE_OFF)
+    val repeatMode: StateFlow<Int> = _repeatMode
+
     private val _currentTrack = MutableStateFlow<Track?>(null)
     val currentTrack: StateFlow<Track?> = _currentTrack
 
@@ -72,6 +74,11 @@ class PlayerController @Inject constructor(
         override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
             _shuffleEnabled.value = shuffleModeEnabled
             queueManager.setShuffleEnabled(shuffleModeEnabled)
+        }
+
+        override fun onRepeatModeChanged(repeatMode: Int) {
+            super.onRepeatModeChanged(repeatMode)
+            _repeatMode.value = repeatMode
         }
     }
 
@@ -131,6 +138,13 @@ class PlayerController @Inject constructor(
 
     fun toggleShuffle() {
         controller?.shuffleModeEnabled = controller?.shuffleModeEnabled?.not() ?: false
+    }
+    fun toggleRepeatMode() {
+        when(_repeatMode.value) {
+            Player.REPEAT_MODE_OFF -> controller?.repeatMode = Player.REPEAT_MODE_ONE
+            Player.REPEAT_MODE_ONE -> controller?.repeatMode = Player.REPEAT_MODE_ALL
+            Player.REPEAT_MODE_ALL -> controller?.repeatMode = Player.REPEAT_MODE_OFF
+        }
     }
 
     fun getCurrentMediaItem(): MediaItem? = controller?.currentMediaItem
