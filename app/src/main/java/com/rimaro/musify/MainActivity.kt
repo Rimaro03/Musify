@@ -1,5 +1,8 @@
 package com.rimaro.musify
 
+import android.app.ActivityManager
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -9,6 +12,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.search.SearchBar
@@ -20,6 +24,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.rimaro.musify.player.service.MusicService
 import com.rimaro.musify.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
 
@@ -92,6 +97,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             true
+        }
+        binding.toolbar.setNavigationOnClickListener {
+            navController.popBackStack()
         }
 
         // hide bottom nav on some fragments

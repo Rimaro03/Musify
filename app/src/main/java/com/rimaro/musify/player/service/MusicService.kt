@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -28,14 +29,34 @@ class MusicService : MediaSessionService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                NOTIFICATION_ID,
-                buildPlaceholderNotification(),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-            )
+        super.onStartCommand(intent, flags, startId)
+        try {
+            val notification = buildPlaceholderNotification()
+
+            if (notification == null) {
+                Log.e("MusicService", "Notification is null!")
+                stopSelf()
+                return START_NOT_STICKY
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notification,
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+            } else {
+                // For Android 13 and below - STILL NEED THIS!
+                startForeground(NOTIFICATION_ID, notification)
+            }
+
+        } catch (e: Exception) {
+            Log.e("MusicService", "Error starting foreground service", e)
+            stopSelf()
+            return START_NOT_STICKY
         }
-        return super.onStartCommand(intent, flags, startId)
+
+        return START_STICKY
     }
 
     private fun buildPlaceholderNotification(): Notification {

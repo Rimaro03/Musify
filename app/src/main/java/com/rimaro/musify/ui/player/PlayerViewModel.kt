@@ -19,7 +19,6 @@ class PlayerViewModel @Inject constructor(
     application: Application,
     private val playerController: PlayerController
 ) : AndroidViewModel(application) {
-
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val currentTrack: StateFlow<Track?> = playerController.currentTrack
@@ -47,8 +46,6 @@ class PlayerViewModel @Inject constructor(
     fun skipNext() = playerController.skipNext()
     fun skipPrevious() = playerController.skipPrev()
     fun seekTo(positionMs: Long) = playerController.seekTo(positionMs)
-
-
 
     fun toggleShuffle() = playerController.toggleShuffle()
 

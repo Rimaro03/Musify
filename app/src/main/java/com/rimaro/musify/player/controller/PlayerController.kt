@@ -76,9 +76,6 @@ class PlayerController @Inject constructor(
     }
 
     fun connect() {
-        val serviceIntent = Intent(context, MusicService::class.java)
-        ContextCompat.startForegroundService(context, serviceIntent)
-
         val sessionToken = SessionToken(
             context,
             ComponentName(context, MusicService::class.java)
