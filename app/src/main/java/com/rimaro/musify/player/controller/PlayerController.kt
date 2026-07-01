@@ -52,6 +52,9 @@ class PlayerController @Inject constructor(
     private val _playingPlaylistId = MutableStateFlow<String?>("1")
     val playingPlaylistId: StateFlow<String?> = _playingPlaylistId
 
+    val currPosition = controller?.contentPosition ?: 0
+    val duration = controller?.duration ?: 0
+
     init {
         connect()
     }
@@ -177,4 +180,11 @@ class PlayerController @Inject constructor(
         }
     }
 
+    fun addListener(listener: Player.Listener) {
+        controller?.addListener(listener)
+    }
+
+    fun removeListener(listener: Player.Listener) {
+        controller?.removeListener(listener)
+    }
 }

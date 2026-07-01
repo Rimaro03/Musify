@@ -109,6 +109,51 @@
     </LinearLayout>
 
     <!-- Progress bar -->
+    <LinearLayout
+        android:id="@+id/player_track_seekbar_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/player_track_title_container"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/player_track_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:layout_marginTop="5dp">
+
+            <TextView
+                android:id="@+id/player_track_position"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray_light"
+                android:text="0:00" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="1dp" />
+
+            <TextView
+                android:id="@+id/player_track_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray_light"
+                android:text="0:00" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <!-- Playback controls -->
     <LinearLayout
@@ -117,16 +162,16 @@
         android:layout_height="wrap_content"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:gravity="center_horizontal"
-        app:layout_constraintTop_toBottomOf="@id/player_track_title_container">
+        app:layout_constraintTop_toBottomOf="@id/player_track_seekbar_container">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/player_shuffle_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            app:icon="@drawable/media3_icon_shuffle_off"
+            app:icon="@drawable/media3_icon_shuffle_on"
             android:contentDescription="@string/play_pause_icon"
             app:iconSize="@dimen/player_skip_icon"
             style="@style/Widget.Material3.Button.IconButton"

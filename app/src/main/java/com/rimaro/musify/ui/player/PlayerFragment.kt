@@ -2,19 +2,26 @@ package com.rimaro.musify.ui.player
 
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SeekBar
+import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.AppCompatSeekBar
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
@@ -24,7 +31,7 @@ import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.PlayButtonState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.schabi.newpipe.extractor.timeago.patterns.fa
+import java.util.Locale
 
 @AndroidEntryPoint
 class PlayerFragment : Fragment() {
@@ -32,6 +39,20 @@ class PlayerFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: PlayerViewModel by activityViewModels()
+
+    private lateinit var seekBar: AppCompatSeekBar
+    private lateinit var tvPosition: TextView
+    private lateinit var tvDuration: TextView
+
+    private val handler = Handler(Looper.getMainLooper())
+    private var isUserSeeking = false
+
+    private val updateProgressAction = object : Runnable {
+        override fun run() {
+            updateSeekBar()
+            handler.postDelayed(this, 200L)
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,6 +67,7 @@ class PlayerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         observeCurrentTrack()
         setupItemsMenu()
+        addPlayerListener()
     }
 
     private fun setupItemsMenu() {
@@ -62,6 +84,26 @@ class PlayerFragment : Fragment() {
             viewLifecycleOwner,
             Lifecycle.State.RESUMED
         )
+    }
+
+    private val playerListener = object : Player.Listener {
+        override fun onIsPlayingChanged(isPlaying: Boolean) {
+            if (isPlaying) startProgressUpdates() else stopProgressUpdates()
+        }
+
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            updateSeekBar()
+        }
+
+        override fun onPlaybackStateChanged(playbackState: Int) {
+            if (playbackState == Player.STATE_READY) {
+                val duration = viewModel.trackDuration
+                if (duration != C.TIME_UNSET) {
+                    seekBar.max = duration.toInt()
+                    tvDuration.text = formatTime(duration)
+                }
+            }
+        }
     }
 
     private fun observeCurrentTrack() {
@@ -182,9 +224,72 @@ class PlayerFragment : Fragment() {
         }
     }
 
+    private fun addPlayerListener() {
+        seekBar = binding.playerTrackSeekbar
+        tvPosition = binding.playerTrackPosition
+        tvDuration = binding.playerTrackDuration
+
+        seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    tvPosition.text = formatTime(progress.toLong())
+                }
+            }
+
+            override fun onStartTrackingTouch(sb: SeekBar) {
+                isUserSeeking = true
+                stopProgressUpdates()
+            }
+
+            override fun onStopTrackingTouch(sb: SeekBar) {
+                isUserSeeking = false
+                viewModel.seekTo(sb.progress.toLong())
+                if (viewModel.isPlaying.value) startProgressUpdates()
+            }
+        })
+
+        viewModel.addListener(playerListener)
+    }
+
+    private fun startProgressUpdates() {
+        handler.removeCallbacks(updateProgressAction)
+        handler.post(updateProgressAction)
+    }
+
+    private fun stopProgressUpdates() {
+        handler.removeCallbacks(updateProgressAction)
+    }
+
+    private fun updateSeekBar() {
+        if (isUserSeeking) return
+        val duration = viewModel.trackDuration
+        val position = viewModel.trackCurrPos
+
+        if (duration != C.TIME_UNSET && duration > 0) {
+            seekBar.max = duration.toInt()
+            tvDuration.text = formatTime(duration)
+        }
+        seekBar.progress = position.toInt()
+        tvPosition.text = formatTime(position)
+    }
+
+    private fun formatTime(ms: Long): String {
+        val totalSeconds = ms / 1000
+        val minutes = totalSeconds / 60
+        val seconds = totalSeconds % 60
+        return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        stopProgressUpdates()
         _binding = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.removeListener(playerListener)
+        stopProgressUpdates()
     }
 }
 
