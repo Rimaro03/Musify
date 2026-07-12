@@ -25,8 +25,12 @@ class PlayerViewModel @Inject constructor(
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
     val shuffleEnabled: StateFlow<Boolean> = playerController.shuffleEnabled
     val repeatMode: StateFlow<Int> = playerController.repeatMode
-    val trackCurrPos = playerController.currPosition
-    val trackDuration = playerController.duration
+    val trackCurrPos: Long
+        get() = playerController.currPosition
+    val trackDuration: Long
+        get() = playerController.duration
+    val controllerReady = playerController.controllerReady
+
     val playButtonState: StateFlow<PlayButtonState> = combine(
         playerState, isPlaying, playingPlaylistId
     ) { state, playing, _ ->

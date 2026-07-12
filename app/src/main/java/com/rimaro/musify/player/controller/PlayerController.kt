@@ -2,6 +2,7 @@ package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
 import androidx.compose.animation.core.RepeatMode
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
@@ -19,6 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,6 +35,9 @@ class PlayerController @Inject constructor(
     private val controller get() = if (controllerFuture?.isDone == true && controllerFuture?.isCancelled == false) {
         controllerFuture?.get()
     } else null
+
+    private val _controllerReady = MutableStateFlow(false)
+    val controllerReady: StateFlow<Boolean> = _controllerReady
 
     private val _playerState = MutableStateFlow<Int>(Player.STATE_IDLE)
     val playerState: StateFlow<Int> = _playerState
@@ -52,8 +57,11 @@ class PlayerController @Inject constructor(
     private val _playingPlaylistId = MutableStateFlow<String?>("1")
     val playingPlaylistId: StateFlow<String?> = _playingPlaylistId
 
-    val currPosition = controller?.contentPosition ?: 0
-    val duration = controller?.duration ?: 0
+    val currPosition: Long
+        get() = controller?.currentPosition ?: 0
+
+    val duration: Long
+        get() = controller?.duration ?: 0
 
     init {
         connect()
@@ -100,6 +108,7 @@ class PlayerController @Inject constructor(
                     _currentTrack.value = controller.currentMediaItem?.let {
                         MediaItemMapper.toTrack(it)
                     }
+                    _controllerReady.value = true
                 }, MoreExecutors.directExecutor())
             }
     }

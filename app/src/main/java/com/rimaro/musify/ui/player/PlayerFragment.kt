@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -88,7 +89,9 @@ class PlayerFragment : Fragment() {
 
     private val playerListener = object : Player.Listener {
         override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) startProgressUpdates() else stopProgressUpdates()
+            if (isPlaying) {
+                startProgressUpdates()
+            } else stopProgressUpdates()
         }
 
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
@@ -248,7 +251,19 @@ class PlayerFragment : Fragment() {
             }
         })
 
-        viewModel.addListener(playerListener)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.controllerReady.collect { ready ->
+                    Log.d("PlayerFragment", "$ready")
+                    if (ready) {
+                        viewModel.addListener(playerListener)
+                        updateSeekBar()
+                        if (viewModel.isPlaying.value) startProgressUpdates()
+                    }
+                }
+            }
+        }
     }
 
     private fun startProgressUpdates() {
@@ -264,6 +279,7 @@ class PlayerFragment : Fragment() {
         if (isUserSeeking) return
         val duration = viewModel.trackDuration
         val position = viewModel.trackCurrPos
+        Log.d("PlayerFragment", "$duration $position")
 
         if (duration != C.TIME_UNSET && duration > 0) {
             seekBar.max = duration.toInt()
@@ -278,6 +294,16 @@ class PlayerFragment : Fragment() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if(viewModel.isPlaying.value) startProgressUpdates()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopProgressUpdates()
     }
 
     override fun onDestroy() {
