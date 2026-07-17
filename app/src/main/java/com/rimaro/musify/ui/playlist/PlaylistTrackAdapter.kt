@@ -9,19 +9,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemPlaylistTrackBinding
-import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.ui.common.model.TrackUiModel
 
 class PlaylistTrackAdapter (
-    private val onTrackClick: (Track) -> Unit,
-    private val onMenuClick: (Track) -> Unit,
-    private val onTrackLongClick: (Track) -> Unit
-): ListAdapter<Track, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
+    private val onTrackClick: (TrackUiModel) -> Unit,
+    private val onMenuClick: (TrackUiModel) -> Unit,
+    private val onTrackLongClick: (TrackUiModel) -> Unit
+): ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Track>() {
-            override fun areItemsTheSame(old: Track, new: Track) =
-                old.id == new.id
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TrackUiModel>() {
+            override fun areItemsTheSame(old: TrackUiModel, new: TrackUiModel) =
+                old.track.id == new.track.id
 
-            override fun areContentsTheSame(old: Track, new: Track) =
+            override fun areContentsTheSame(old: TrackUiModel, new: TrackUiModel) =
                 old == new
         }
     }
@@ -29,10 +29,12 @@ class PlaylistTrackAdapter (
     class ViewHolder(private val binding: ItemPlaylistTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(
-            track: Track,
-            onTrackClick: (Track) -> Unit,
-            onMenuClick: ((Track) -> Unit),
-            onTrackLongClick: (Track) -> Unit) {
+            trackModel: TrackUiModel,
+            onTrackClick: (TrackUiModel) -> Unit,
+            onMenuClick: ((TrackUiModel) -> Unit),
+            onTrackLongClick: (TrackUiModel) -> Unit) {
+            val track = trackModel.track
+
             // track metadata
             binding.playlistTrackName.text = track.title
             binding.playlistTrackArtist.text = track.artist
@@ -40,7 +42,7 @@ class PlaylistTrackAdapter (
                 .load(track.artworkUrl)
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .into(binding.playlistTrackThumbnail)
-            binding.playlistTrackClickable.setOnClickListener { onTrackClick(track) }
+            binding.playlistTrackClickable.setOnClickListener { onTrackClick(trackModel) }
             // dark shadow
             binding.loadingOverlay.visibility = if (track.streamUrl == null) {
                 View.VISIBLE
@@ -49,12 +51,14 @@ class PlaylistTrackAdapter (
             }
             // menu btn
             binding.playlistTrackMenuBtn.setOnClickListener {
-                onMenuClick(track)
+                onMenuClick(trackModel)
             }
             binding.playlistTrackClickable.setOnLongClickListener {
-                onTrackLongClick(track)
+                onTrackLongClick(trackModel)
                 true
             }
+            // highlight playing track
+            binding.root.isActivated = trackModel.isPlaying
         }
     }
 

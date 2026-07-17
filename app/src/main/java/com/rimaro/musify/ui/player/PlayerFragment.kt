@@ -1,5 +1,6 @@
 package com.rimaro.musify.ui.player
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -148,6 +149,20 @@ class PlayerFragment : Fragment() {
                 viewModel.resume()
             }
         }
+
+        // action buttons
+        val shareBtn = binding.playerTrackShare
+        shareBtn.setOnClickListener {
+            val sendIntent: Intent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, "Check out this track: ${track?.sourceUrl ?: "Url unavailable6"}")
+                type = "text/plain"
+            }
+
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
+        }
+
         val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
             setStyle(CircularProgressDrawable.DEFAULT)
             setColorSchemeColors(Color.BLACK)

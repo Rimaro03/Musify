@@ -27,6 +27,7 @@ import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.getValue
@@ -54,9 +55,9 @@ class PlaylistFragment : Fragment() {
 
         val trackRv = binding.playlistTrackRv
         val trackAdapter = PlaylistTrackAdapter(
-            {track -> viewModel.playTrack(track)},
-            {track -> showTrackMenu(track, playlistId)},
-            viewModel::playPreview,
+            {trackModel -> viewModel.playTrack(trackModel.track)},
+            {trackModel -> showTrackMenu(trackModel.track, playlistId)},
+            { trackModel -> viewModel.playPreview(trackModel.track) },
         )
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())
@@ -107,7 +108,8 @@ class PlaylistFragment : Fragment() {
         }
     }
 
-    private fun setupPlaylistHeader(playlist: FirestorePlaylist, tracks: List<Track>) {
+    private fun setupPlaylistHeader(playlist: FirestorePlaylist, trackModels: List<TrackUiModel>) {
+        val tracks = trackModels.map { it.track }
         val cover = binding.playlistCover
         val title = binding.playlistTitle
         Glide.with(requireContext())

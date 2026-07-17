@@ -13,6 +13,7 @@ import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
 import com.rimaro.musify.ui.common.PlayButtonState
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -20,10 +21,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -39,36 +40,55 @@ class PlaylistViewModel @Inject constructor(
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
 ) : AndroidViewModel(application) {
-    private val currPlaylistId: String = checkNotNull(savedStateHandle["playlistId"])
-
-    private val _playlistUiState = MutableStateFlow<PlaylistUiState>(PlaylistUiState.Idle)
-    val playlistUiState = _playlistUiState.asStateFlow()
+    private val _playlistRawState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
+        PlaylistUiState.Idle)
+    private val currentTrack: Flow<Track?> = playerController.currentTrack
+    private val currPlaylistId: MutableStateFlow<String?> = MutableStateFlow(checkNotNull(savedStateHandle["playlistId"]))
 
     val shuffleEnabled: StateFlow<Boolean> = playerController.shuffleEnabled
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
 
+    var playlistUiState: Flow<PlaylistUiState> = combine(_playlistRawState, currentTrack, currPlaylistId)
+    { rawState, currTrack, currPlaylistId ->
+        when(rawState) {
+            is PlaylistUiState.Success -> {
+                val thisPlaylistActive = currPlaylistId == playingPlaylistId.value
+                PlaylistUiState.Success(
+                    playlist = rawState.playlist,
+                    trackList = rawState.trackList.map { trackModel ->
+                        trackModel.copy(isPlaying = thisPlaylistActive && trackModel.track.id == currTrack?.id)
+                    }
+                )
+            }
+            is PlaylistUiState.Idle -> PlaylistUiState.Idle
+            is PlaylistUiState.Loading -> PlaylistUiState.Loading
+            is PlaylistUiState.Error -> PlaylistUiState.Error(rawState.message)
+        }
+    }
+
     init {
-        retrieveTrackIds(currPlaylistId)
+        retrieveTrackIds(currPlaylistId.value)
     }
 
     val playButtonState: StateFlow<PlayButtonState> = combine(
         playerState, isPlaying, playingPlaylistId
     ) {state, playing, activeId ->
         when {
-            state == Player.STATE_BUFFERING && activeId == currPlaylistId -> PlayButtonState.Buffering
-            playing && activeId == currPlaylistId -> PlayButtonState.PlayingThis
-            else -> if (activeId == currPlaylistId) PlayButtonState.Idle else PlayButtonState.PlayingOther
+            state == Player.STATE_BUFFERING && activeId == currPlaylistId.value -> PlayButtonState.Buffering
+            playing && activeId == currPlaylistId.value -> PlayButtonState.PlayingThis
+            else -> if (activeId == currPlaylistId.value) PlayButtonState.Idle else PlayButtonState.PlayingOther
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, PlayButtonState.Idle)
 
-    fun retrieveTrackIds(playlistId: String) {
+    fun retrieveTrackIds(playlistId: String?) {
+        if (playlistId == null) return
         viewModelScope.launch {
-            _playlistUiState.value = PlaylistUiState.Loading
+            _playlistRawState.value = PlaylistUiState.Loading
             val firestorePlaylist = firestorePlaylistDao.getPlaylist(playlistId)
             if(firestorePlaylist == null) {
-                _playlistUiState.value = PlaylistUiState.Error("Could not retrieve playlist")
+                _playlistRawState.value = PlaylistUiState.Error("Could not retrieve playlist")
                 return@launch
             }
             val trackIds = firestorePlaylist.trackIds
@@ -77,27 +97,29 @@ class PlaylistViewModel @Inject constructor(
                     deezerRepository.getTrackById(trackId)
                 }
             }.awaitAll()
-            val tracks = deezerTracks.map { it.toTrack() }
-            _playlistUiState.value = PlaylistUiState.Success(firestorePlaylist, tracks)
+            val tracks = deezerTracks.map { TrackUiModel(track = it.toTrack()) }
+            _playlistRawState.value = PlaylistUiState.Success(firestorePlaylist, tracks)
 
             fetchStreamUrl(tracks).collect { fetchedTrack ->
-                val currentTracks = (_playlistUiState.value as PlaylistUiState.Success).trackList.toMutableList()
-                val position = currentTracks.indexOfFirst { it.id == fetchedTrack.id  }
-                if(position != -1) {
-                    currentTracks[position] = fetchedTrack
-                    _playlistUiState.value = PlaylistUiState.Success(firestorePlaylist, currentTracks.toList())
+                _playlistRawState.update { state ->
+                    if (state is PlaylistUiState.Success) {
+                        val updatedTracks = state.trackList.map { trackModel ->
+                            if (trackModel.track.id == fetchedTrack.track.id) fetchedTrack else trackModel
+                        }
+                        state.copy(trackList = updatedTracks)
+                    } else state
                 }
             }
         }
     }
 
-    private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
+    private fun fetchStreamUrl(tracks: List<TrackUiModel>): Flow<TrackUiModel> = channelFlow {
         val semaphore = Semaphore(5)
-        tracks.map { track ->
+        tracks.map { trackModel ->
             async {
                 semaphore.withPermit {
-                    val fetchedTrack = trackUrlResolver.resolve(track)
-                    fetchedTrack?.let { send(it) }
+                    val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
+                    fetchedTrack?.let { send(TrackUiModel(track = it)) }
                 }
             }
         }.awaitAll()
@@ -106,7 +128,7 @@ class PlaylistViewModel @Inject constructor(
     fun playTrack(track: Track) {
         viewModelScope.launch {
             track.streamUrl?.let {
-                playerController.playTracks(listOf(track), currPlaylistId)
+                playerController.playTracks(listOf(track), currPlaylistId.value)
             }
         }
     }
@@ -124,7 +146,7 @@ class PlaylistViewModel @Inject constructor(
         if(playerState.value == Player.STATE_BUFFERING) return
 
         if(playerState.value == Player.STATE_READY) {
-            if(playingPlaylistId.value == currPlaylistId) {
+            if(playingPlaylistId.value == currPlaylistId.value) {
                 playerController.togglePlayPause()
             } else {
                 playerController.clearQueue()
@@ -138,9 +160,9 @@ class PlaylistViewModel @Inject constructor(
     }
 
     private fun playPlaylist() {
-        if(_playlistUiState.value is PlaylistUiState.Success) {
-            val tracksToPlay = (_playlistUiState.value as PlaylistUiState.Success).trackList
-            playerController.playPlaylist(tracksToPlay, currPlaylistId)
+        if(_playlistRawState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
+            val tracksToPlay = (_playlistRawState.value as PlaylistUiState.Success).trackList.map { it.track }
+            playerController.playPlaylist(tracksToPlay, currPlaylistId.value!!)
         }
     }
 
