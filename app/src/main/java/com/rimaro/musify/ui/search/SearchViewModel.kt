@@ -12,15 +12,19 @@ import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,8 +37,34 @@ class SearchViewModel @Inject constructor(
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController
 ) : AndroidViewModel(application) {
-    private val _searchUiState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
-    val searchUiState = _searchUiState.asStateFlow()
+    private val _searchRawState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
+    private val currentTrack: StateFlow<Track?> = playerController.currentTrack
+    private val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+
+    var searchUiState: Flow<SearchUiState> = combine(_searchRawState, currentTrack, playingPlaylistId)
+    { rawState, currTrack, playingPlaylistId ->
+        when(rawState) {
+            is SearchUiState.Success -> {
+                val thisPlaylistActive = playingPlaylistId == null
+                SearchUiState.Success(
+                    searchResultList = rawState.searchResultList.map { resultItem ->
+                        if(resultItem is SearchResultItem.TrackItem) {
+                            val newTrackModel = resultItem.trackModel.copy(
+                                isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id
+                            )
+                            Log.d("SearchViewModel", "${newTrackModel.isPlaying}")
+                            resultItem.copy(
+                                trackModel = newTrackModel
+                            )
+                        } else resultItem
+                    }
+                )
+            }
+            is SearchUiState.Idle -> SearchUiState.Idle
+            is SearchUiState.Loading -> SearchUiState.Loading
+            is SearchUiState.Error -> SearchUiState.Error(rawState.message)
+        }
+    }
 
     private val _trendingUiState = MutableStateFlow<TrendingUiState>(TrendingUiState.Idle)
     val trendingUiState = _trendingUiState.asStateFlow()
@@ -85,28 +115,43 @@ class SearchViewModel @Inject constructor(
         if(query.isBlank()) return
 
         viewModelScope.launch {
-            _searchUiState.value = SearchUiState.Loading
+            _searchRawState.value = SearchUiState.Loading
             try {
                 val res = deezerRepository.autocomplete(query)
                 val tracks = res.tracks.data.map { it.toTrack() }
 
                 val searchResultList = buildSearchItemsList(res, tracks)
                 if(searchResultList.isEmpty()) {
-                    _searchUiState.value = SearchUiState.Error("No track found")
+                    _searchRawState.value = SearchUiState.Error("No track found")
                 } else {
-                    _searchUiState.value = SearchUiState.Success(searchResultList)
+                    _searchRawState.value = SearchUiState.Success(searchResultList)
                 }
 
                 fetchStreamUrl(tracks).collect { fetchedTrack ->
-                    val currentTracks = (_searchUiState.value as SearchUiState.Success).searchResultList.toMutableList()
-                    val position = currentTracks.indexOfFirst { it is SearchResultItem.TrackItem && it.track.id == fetchedTrack.id  }
+                    /*val currentTracks = (_searchRawState.value as SearchUiState.Success).searchResultList.toMutableList()
+                    val position = currentTracks.indexOfFirst { it is SearchResultItem.TrackItem && it.trackModel.track.id == fetchedTrack.track.id  }
                     if(position != -1) {
                         currentTracks[position] = SearchResultItem.TrackItem(fetchedTrack)
-                        _searchUiState.value = SearchUiState.Success(currentTracks.toList())
+                        _searchRawState.value = SearchUiState.Success(currentTracks.toList())
+                    }*/
+                    _searchRawState.update { state ->
+                        if (state is SearchUiState.Success) {
+                            val updatedList = state.searchResultList.map { resultItem ->
+                                if (resultItem is SearchResultItem.TrackItem) {
+                                    val trackModel = resultItem.trackModel
+                                    SearchResultItem.TrackItem (
+                                        trackModel = if (trackModel.track.id == fetchedTrack.track.id) {
+                                            fetchedTrack
+                                        } else trackModel
+                                    )
+                                } else resultItem
+                            }
+                            state.copy(searchResultList = updatedList)
+                        } else state
                     }
                 }
             } catch (e: Exception) {
-                _searchUiState.value = SearchUiState.Error(e.message ?: "Unknown error")
+                _searchRawState.value = SearchUiState.Error(e.message ?: "Unknown error")
                 Log.e("SearchViewModel", "Error performing search", e)
             }
         }
@@ -120,7 +165,7 @@ class SearchViewModel @Inject constructor(
         }
         // then add the tracks
         if(tracks.isNotEmpty()) {
-            searchResultList.addAll(tracks.map { track -> SearchResultItem.TrackItem(track) })
+            searchResultList.addAll(tracks.map { track -> SearchResultItem.TrackItem(TrackUiModel(track = track)) })
         }
         // then add the most relevant album
         if(res.albums.data.isNotEmpty()) {
@@ -153,11 +198,11 @@ class SearchViewModel @Inject constructor(
     }
 
     /* TRACK STREAM URL FETCHING */
-    private fun fetchStreamUrl(tracks: List<Track>): Flow<Track> = channelFlow {
+    private fun fetchStreamUrl(tracks: List<Track>): Flow<TrackUiModel> = channelFlow {
         tracks.map { track ->
             async {
                 val fetchedTrack = trackUrlResolver.resolve(track)
-                fetchedTrack?.let { send(it) }
+                fetchedTrack?.let { send(TrackUiModel(track = it)) }
             }
         }.awaitAll()
     }

@@ -1,5 +1,6 @@
 package com.rimaro.musify.ui.search
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import com.rimaro.musify.databinding.ItemSearchAlbumBinding
 import com.rimaro.musify.databinding.ItemSearchArtistBinding
 import com.rimaro.musify.databinding.ItemSearchTrackBinding
 import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import com.rimaro.musify.ui.search.SearchResultItem.AlbumItem
 import com.rimaro.musify.ui.search.SearchResultItem.ArtistItem
 import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
@@ -34,7 +36,7 @@ class SearchResultAdapter (
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SearchResultItem>() {
             override fun areItemsTheSame(old: SearchResultItem, new: SearchResultItem) =
                 when (old) {
-                    is TrackItem if new is TrackItem -> old.track.id == new.track.id
+                    is TrackItem if new is TrackItem -> old.trackModel.track.id == new.trackModel.track.id
                     is ArtistItem if new is ArtistItem -> old.artist.id == new.artist.id
                     is AlbumItem if new is AlbumItem -> old.album.id == new.album.id
                     else -> false
@@ -47,19 +49,24 @@ class SearchResultAdapter (
 
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
-            fun bind(track: Track,
+            fun bind(trackModel: TrackUiModel,
                      onTrackClick: (Track) -> Unit,
                      onTrackLongClick: (Track) -> Unit,
                      onMenuClick: ((Track) -> Unit)
             ) {
+                Log.d("TrackVH", "inflated binding.root: ${binding.root}, has background: ${binding.root.background}")
+                binding.root.setBackgroundResource(R.drawable.track_item_bg)
+                val track = trackModel.track
                 // track metadata
                 binding.searchTrackName.text = track.title
                 binding.searchTrackArtist.text = track.artist
-                Glide.with(binding.root)
+                Glide.with(itemView.context)
                     .load(track.artworkUrl)
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(binding.searchTrackThumbnail)
-                binding.searchTrackClickable.setOnClickListener { onTrackClick(track) }
+                binding.searchTrackClickable.setOnClickListener {
+                    onTrackClick(track)
+                }
                 // dark shadow
                 binding.loadingOverlay.visibility = if (track.streamUrl == null) {
                     View.VISIBLE
@@ -74,6 +81,9 @@ class SearchResultAdapter (
                     onTrackLongClick(track)
                     true
                 }
+                // highlight playing track
+                binding.root.isActivated = trackModel.isPlaying
+                Log.d("TrackVH", "background after set: ${binding.root.background}, isActivated: ${binding.root.isActivated}")
             }
     }
 
@@ -120,7 +130,7 @@ class SearchResultAdapter (
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
-            is TrackItem  -> (holder as TrackViewHolder).bind(item.track, onTrackClick,
+            is TrackItem  -> (holder as TrackViewHolder).bind(item.trackModel, onTrackClick,
                 onTrackLongClick, onMenuClick
             )
             is ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)

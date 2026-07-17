@@ -193,8 +193,8 @@ class SearchFragment : Fragment() {
 
         val swipeCallback = SwipeToQueueCallback(
             onSwiped = { position ->
-                val track = (adapter.currentList[position] as SearchResultItem.TrackItem).track
-                viewModel.enqueueTracks(listOf(track))
+                val res = (adapter.currentList[position] as SearchResultItem.TrackItem)
+                viewModel.enqueueTracks(listOf(res.trackModel.track))
 
                 // Snap the item back instead of removing it
                 adapter.notifyItemChanged(position)
