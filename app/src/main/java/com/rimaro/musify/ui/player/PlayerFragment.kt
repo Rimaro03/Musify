@@ -121,6 +121,7 @@ class PlayerFragment : Fragment() {
     }
 
     private fun setupPlayer(track: Track?) {
+        Log.d("PlayerFrag", "$track")
         // track metadata
         val cover = binding.playerTrackCover
         Glide.with(requireContext())
@@ -155,7 +156,7 @@ class PlayerFragment : Fragment() {
         shareBtn.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "Check out this track: ${track?.sourceUrl ?: "Url unavailable6"}")
+                putExtra(Intent.EXTRA_TEXT, "Check out this track: ${track?.sourceUrl ?: "Url unavailable"}")
                 type = "text/plain"
             }
 
@@ -270,7 +271,6 @@ class PlayerFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.controllerReady.collect { ready ->
-                    Log.d("PlayerFragment", "$ready")
                     if (ready) {
                         viewModel.addListener(playerListener)
                         updateSeekBar()
@@ -294,7 +294,6 @@ class PlayerFragment : Fragment() {
         if (isUserSeeking) return
         val duration = viewModel.trackDuration
         val position = viewModel.trackCurrPos
-        Log.d("PlayerFragment", "$duration $position")
 
         if (duration != C.TIME_UNSET && duration > 0) {
             seekBar.max = duration.toInt()
