@@ -1,6 +1,5 @@
 package com.rimaro.musify.data.remote.firestore
 
-import android.util.Log
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -12,14 +11,12 @@ import javax.inject.Inject
 class FirestorePlaylistDao @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-
     companion object {
         private const val PLAYLISTS_COLLECTION = "playlists"
         private const val BATCH_LIMIT = 500
     }
 
-    // --- Playlist CRUD ---
-
+    // --- Playlist CRUD --- //
     suspend fun createPlaylist(ownerId: String, name: String): String {
         val docRef = firestore.collection(PLAYLISTS_COLLECTION).document()
         val data = mapOf(
