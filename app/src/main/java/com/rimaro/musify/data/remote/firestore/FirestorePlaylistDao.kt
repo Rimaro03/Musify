@@ -1,10 +1,13 @@
 package com.rimaro.musify.data.remote.firestore
 
+import androidx.compose.animation.core.snap
+import androidx.compose.runtime.snapshots.Snapshot
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.domain.model.FirestoreTrack
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -13,6 +16,8 @@ class FirestorePlaylistDao @Inject constructor(
 ) {
     companion object {
         private const val PLAYLISTS_COLLECTION = "playlists"
+        private const val USERS_COLLECTION = "users"
+        private const val USERS_LIKED_COLLECTION = "likedTracks"
         private const val BATCH_LIMIT = 500
     }
 
@@ -62,7 +67,7 @@ class FirestorePlaylistDao @Inject constructor(
     }
 
     suspend fun updatePlaylistThumbnail(playlistId: String, thumbnailPath: String) {
-        firestore.collection((PLAYLISTS_COLLECTION))
+        firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
             .update(
                 "thumbnailPath", thumbnailPath
@@ -70,8 +75,18 @@ class FirestorePlaylistDao @Inject constructor(
             .await()
     }
 
-    // --- Track ID management ---
+    // --- Liked tracks --- //
+    suspend fun getUserLikedTracks(userId: String): List<FirestoreTrack> {
+        val snapshot = firestore.collection(USERS_COLLECTION)
+            .document(userId)
+            .collection(USERS_LIKED_COLLECTION)
+            .get()
+            .await()
 
+        return snapshot.toObjects(FirestoreTrack::class.java)
+    }
+
+    // --- Track ID management --- //
     suspend fun addTrackId(playlistId: String, trackId: Long) {
         firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)

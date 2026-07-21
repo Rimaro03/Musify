@@ -1,8 +1,5 @@
 package com.rimaro.musify
 
-import android.app.ActivityManager
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -12,19 +9,17 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import com.rimaro.musify.databinding.ActivityMainBinding
-import com.rimaro.musify.ui.SharedViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.rimaro.musify.player.service.MusicService
+import com.rimaro.musify.ui.common.SearchbarViewModel
 import com.rimaro.musify.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
 
@@ -34,7 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
 
-    private val viewModel: SharedViewModel by viewModels()
+    private val viewModel: SearchbarViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -19,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SignupViewModel @Inject constructor(
     application: Application,
-    private val firestorePlaylistDao: FirestorePlaylistDao
 ) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow<SignupUiState>(SignupUiState.Idle)
     val uiState = _uiState.asStateFlow()

@@ -28,7 +28,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.ui.SharedViewModel
+import com.rimaro.musify.ui.common.SearchbarViewModel
 import com.rimaro.musify.ui.common.SwipeToQueueCallback
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,7 +40,7 @@ class SearchFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SearchViewModel by viewModels()
-    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private val sharedViewModel: SearchbarViewModel by activityViewModels()
 
     private lateinit var searchBar: SearchBar
     private lateinit var searchView: SearchView

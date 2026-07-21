@@ -1,4 +1,4 @@
-package com.rimaro.musify.ui
+package com.rimaro.musify.ui.common
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SharedViewModel @Inject constructor(
+class SearchbarViewModel @Inject constructor(
     application: Application
 ) : AndroidViewModel(application) {
     private val _searchbarFocused = MutableSharedFlow<Boolean>(replay = 1)
