@@ -5,6 +5,6 @@ data class FirestorePlaylist(
     val id: String = "",
     val ownerId: String = "",
     val name: String = "",
-    val trackIds: List<Long> = emptyList(),
+    val tracks: List<FirestoreTrack> = emptyList(),
     val thumbnailPath: String = ""
 )

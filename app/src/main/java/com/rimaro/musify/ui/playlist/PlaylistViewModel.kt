@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -32,8 +33,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlaylistViewModel @Inject constructor(
-    application: Application,
     savedStateHandle: SavedStateHandle,
+    application: Application,
     private val firestorePlaylistDao: FirestorePlaylistDao,
     private val deezerRepository: DeezerRepository,
     private val trackUrlResolver: TrackUrlResolver,
@@ -49,6 +50,8 @@ class PlaylistViewModel @Inject constructor(
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+
+    private var latestLikedTrackIds: List<Long> = emptyList()
 
     var playlistUiState: Flow<PlaylistUiState> = combine(_playlistRawState, currentTrack, currPlaylistId)
     { rawState, currTrack, currPlaylistId ->
@@ -91,16 +94,15 @@ class PlaylistViewModel @Inject constructor(
                 _playlistRawState.value = PlaylistUiState.Error("Could not retrieve playlist")
                 return@launch
             }
-            val trackIds = firestorePlaylist.trackIds
-            val deezerTracks = trackIds.map { trackId ->
-                async {
-                    deezerRepository.getTrackById(trackId)
-                }
-            }.awaitAll()
-            val tracks = deezerTracks.map { TrackUiModel(track = it.toTrack()) }
-            _playlistRawState.value = PlaylistUiState.Success(firestorePlaylist, tracks)
 
-            fetchStreamUrl(tracks).collect { fetchedTrack ->
+            val firestoreTracks = firestorePlaylist.tracks
+            val trackUiModels = firestoreTracks.map {
+                TrackUiModel(track = it.toTrack())
+            }
+            _playlistRawState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
+            applyLikedTracks()
+
+            fetchStreamUrl(trackUiModels).collect { fetchedTrack ->
                 _playlistRawState.update { state ->
                     if (state is PlaylistUiState.Success) {
                         val updatedTracks = state.trackList.map { trackModel ->
@@ -110,6 +112,7 @@ class PlaylistViewModel @Inject constructor(
                     } else state
                 }
             }
+            applyLikedTracks()
         }
     }
 
@@ -119,7 +122,7 @@ class PlaylistViewModel @Inject constructor(
             async {
                 semaphore.withPermit {
                     val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-                    fetchedTrack?.let { send(TrackUiModel(track = it)) }
+                    fetchedTrack?.let { send(TrackUiModel(track = it, isLiked = trackModel.isLiked)) }
                 }
             }
         }.awaitAll()
@@ -156,6 +159,23 @@ class PlaylistViewModel @Inject constructor(
         else {
             playerController.clearQueue()
             playPlaylist()
+        }
+    }
+
+    fun onLikedTracksChange(likedTrackIds: List<Long>) {
+        latestLikedTrackIds = likedTrackIds
+        applyLikedTracks()
+    }
+
+    fun applyLikedTracks() {
+        _playlistRawState.update { state ->
+            if(state is PlaylistUiState.Success) {
+                val updatedTracks = state.trackList.map { trackModel ->
+                    trackModel.copy(isLiked = trackModel.track.id in latestLikedTrackIds)
+                }
+                state.copy(trackList = updatedTracks)
+            }
+            else state
         }
     }
 

@@ -17,7 +17,6 @@ object MediaItemMapper {
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
             .setArtist(track.artist)
-            .setAlbumTitle(track.album)
             .setArtworkUri(track.artworkUrl?.toUri())
             .setDurationMs(track.durationMs)
             .setGenre(track.genre)
@@ -44,7 +43,6 @@ object MediaItemMapper {
             id          = mediaItem.mediaId.toLong(),
             title       = meta.title?.toString()       ?: "Unknown title",
             artist      = meta.artist?.toString()      ?: "Unknown artist",
-            album       = meta.albumTitle?.toString()  ?: "Unknown album",
             artworkUrl  = meta.artworkUri?.toString(),
             durationMs  = meta.durationMs              ?: 0L,
             genre       = meta.genre?.toString(),

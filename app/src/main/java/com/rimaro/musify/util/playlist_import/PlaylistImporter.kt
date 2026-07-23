@@ -10,6 +10,7 @@ import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
+import com.rimaro.musify.domain.model.FirestoreTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.thumbnail.StorageManager
@@ -59,7 +60,7 @@ class PlaylistImporter @Inject constructor(
 
         var processed = 0
         var failed = 0
-        val resolvedIds = mutableListOf<Long>()
+        val resolvedTracks = mutableListOf<FirestoreTrack>()
         val covers = mutableListOf<String>()
 
         CsvManager.parseCsvStream(inputStream)
@@ -74,7 +75,20 @@ class PlaylistImporter @Inject constructor(
                 }
 
                 tracks.forEach { track ->
-                    if (track != null) resolvedIds.add(track.id) else failed++
+                    if (track != null) {
+                        val firestoreTrack = FirestoreTrack(
+                            title = track.title,
+                            trackId = track.id,
+                            albumId = track.album?.id,
+                            artist = track.artist?.name,
+                            artistId = track.artist?.id,
+                            artworkUrl = track.album?.coverXl,
+                            duration = track.duration,
+                            genres = track.album?.genres?.joinToString(", " ),
+                            previewUrl = track.preview
+                        )
+                        resolvedTracks.add(firestoreTrack)
+                    } else failed++
                     if (covers.size < 4) {
                         track?.album?.coverXl?.let {
                             covers.add(it)
@@ -86,16 +100,16 @@ class PlaylistImporter @Inject constructor(
                 emit(ImportResult.Progress(processed, -1, failed)) // -1 = total unknown (streaming)
 
                 // Flush to Firestore every 500 resolved IDs
-                if (resolvedIds.size >= BATCH_LIMIT) {
+                if (resolvedTracks.size >= BATCH_LIMIT) {
                     Log.d("NewPlaylist", "Flushing to firestore, BATCH LIMIT")
-                    firestorePlaylistDao.addTrackIdsBatch(playlistId, resolvedIds.toList())
-                    resolvedIds.clear()
+                    firestorePlaylistDao.addTracksBatch(playlistId, resolvedTracks.toList())
+                    resolvedTracks.clear()
                 }
             }
 
         // Flush remaining
-        if (resolvedIds.isNotEmpty()) {
-            firestorePlaylistDao.addTrackIdsBatch(playlistId, resolvedIds.toList())
+        if (resolvedTracks.isNotEmpty()) {
+            firestorePlaylistDao.addTracksBatch(playlistId, resolvedTracks.toList())
             Log.d("NewPlaylist", "Flushing to firestore")
         }
 

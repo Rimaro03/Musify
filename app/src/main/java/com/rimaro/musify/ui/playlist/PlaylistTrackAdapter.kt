@@ -3,6 +3,7 @@ package com.rimaro.musify.ui.playlist
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -49,6 +50,8 @@ class PlaylistTrackAdapter (
             } else {
                 View.GONE
             }
+            // like btn
+            binding.playlistTrackLikeBtn.isVisible = trackModel.isLiked == true
             // menu btn
             binding.playlistTrackMenuBtn.setOnClickListener {
                 onMenuClick(trackModel)

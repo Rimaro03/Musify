@@ -28,7 +28,7 @@ class FirestorePlaylistDao @Inject constructor(
             "id"         to docRef.id,
             "ownerId"    to ownerId,
             "name"       to name,
-            "trackIds"   to emptyList<String>(),
+            "tracks"     to emptyList<FirestoreTrack>(),
             "createdAt"  to FieldValue.serverTimestamp(),
             "updatedAt"  to FieldValue.serverTimestamp(),
             "thumbnailPath" to ""
@@ -122,6 +122,19 @@ class FirestorePlaylistDao @Inject constructor(
         }
     }
 
+    suspend fun addTracksBatch(playlistId: String, tracks: List<FirestoreTrack>) {
+        val playlistRef = firestore
+            .collection(PLAYLISTS_COLLECTION)
+            .document(playlistId)
+
+        tracks.chunked(BATCH_LIMIT).forEach { chunk ->
+            val batch = firestore.batch()
+            batch.update(playlistRef, "tracks", FieldValue.arrayUnion(*chunk.toTypedArray()))
+            batch.update(playlistRef, "updatedAt", FieldValue.serverTimestamp())
+            batch.commit().await()
+        }
+    }
+
     // --- Helpers ---
 
     private fun DocumentSnapshot.toPlaylist(): FirestorePlaylist? {
@@ -130,7 +143,7 @@ class FirestorePlaylistDao @Inject constructor(
                 id       = getString("id") ?: return null,
                 ownerId  = getString("ownerId") ?: return null,
                 name     = getString("name") ?: return null,
-                trackIds = (get("trackIds") as? List<Long>) ?: emptyList(),
+                tracks = (get("tracks") as? List<FirestoreTrack>) ?: emptyList(),
                 thumbnailPath = getString("thumbnailPath") ?: return null
             )
         } catch (e: Exception) {
