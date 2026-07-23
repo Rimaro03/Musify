@@ -4,6 +4,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -84,6 +85,8 @@ class SearchResultAdapter (
                 // highlight playing track
                 binding.root.isActivated = trackModel.isPlaying
                 Log.d("TrackVH", "background after set: ${binding.root.background}, isActivated: ${binding.root.isActivated}")
+                // liked track
+                binding.searchTrackLikeBtn?.isVisible = trackModel.isLiked == true
             }
     }
 

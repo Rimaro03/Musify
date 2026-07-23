@@ -82,14 +82,30 @@
 
         </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/search_track_menu_btn"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            app:icon="@drawable/more_vert_24px"
-            android:contentDescription="@string/menu_icon"
-            style="@style/Widget.Material3.Button.IconButton"/>
+            android:layout_height="match_parent">
+
+            <ImageButton
+                android:id="@+id/search_track_like_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:src="@drawable/media3_icon_heart_filled"
+                android:contentDescription="@string/playlist_like_button"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:visibility="gone"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/search_track_menu_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                app:icon="@drawable/more_vert_24px"
+                android:contentDescription="@string/menu_icon"
+                style="@style/Widget.Material3.Button.IconButton"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -36,7 +36,6 @@ class PlaylistViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     application: Application,
     private val firestorePlaylistDao: FirestorePlaylistDao,
-    private val deezerRepository: DeezerRepository,
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,

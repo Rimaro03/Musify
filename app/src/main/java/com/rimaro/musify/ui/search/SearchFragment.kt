@@ -25,6 +25,7 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import com.google.android.material.snackbar.Snackbar
+import com.rimaro.musify.MainViewModel
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
 import com.rimaro.musify.domain.model.Track
@@ -41,6 +42,7 @@ class SearchFragment : Fragment() {
 
     private val viewModel: SearchViewModel by viewModels()
     private val sharedViewModel: SearchbarViewModel by activityViewModels()
+    private val mainViewModel: MainViewModel by activityViewModels()
 
     private lateinit var searchBar: SearchBar
     private lateinit var searchView: SearchView
@@ -107,6 +109,7 @@ class SearchFragment : Fragment() {
         setupSearchAdapter(searchResultAdapter, searchResultsRv)
         observeSearchUiState(searchResultAdapter)
 
+        observeLikedTracks()
     }
 
     override fun onDestroyView() {
@@ -272,6 +275,16 @@ class SearchFragment : Fragment() {
                         historyContainer.addView(item)
                     }
 
+                }
+            }
+        }
+    }
+
+    private fun observeLikedTracks() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                mainViewModel.likedTrackIds.collect { likedTrackIds ->
+                    viewModel.onLikedTracksChange(likedTrackIds)
                 }
             }
         }

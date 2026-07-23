@@ -41,6 +41,8 @@ class SearchViewModel @Inject constructor(
     private val currentTrack: StateFlow<Track?> = playerController.currentTrack
     private val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
 
+    private var latestLikedTrackIds: List<Long> = emptyList()
+
     var searchUiState: Flow<SearchUiState> = combine(_searchRawState, currentTrack, playingPlaylistId)
     { rawState, currTrack, playingPlaylistId ->
         when(rawState) {
@@ -50,9 +52,9 @@ class SearchViewModel @Inject constructor(
                     searchResultList = rawState.searchResultList.map { resultItem ->
                         if(resultItem is SearchResultItem.TrackItem) {
                             val newTrackModel = resultItem.trackModel.copy(
-                                isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id
+                                isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id,
+                                isLiked = resultItem.trackModel.isLiked
                             )
-                            Log.d("SearchViewModel", "${newTrackModel.isPlaying}")
                             resultItem.copy(
                                 trackModel = newTrackModel
                             )
@@ -118,7 +120,9 @@ class SearchViewModel @Inject constructor(
             _searchRawState.value = SearchUiState.Loading
             try {
                 val res = deezerRepository.autocomplete(query)
-                val tracks = res.tracks.data.map { it.toTrack() }
+                val tracks = res.tracks.data.map {
+                    TrackUiModel(it.toTrack())
+                }
 
                 val searchResultList = buildSearchItemsList(res, tracks)
                 if(searchResultList.isEmpty()) {
@@ -126,6 +130,7 @@ class SearchViewModel @Inject constructor(
                 } else {
                     _searchRawState.value = SearchUiState.Success(searchResultList)
                 }
+                applyLikedTracks()
 
                 fetchStreamUrl(tracks).collect { fetchedTrack ->
                     /*val currentTracks = (_searchRawState.value as SearchUiState.Success).searchResultList.toMutableList()
@@ -150,6 +155,7 @@ class SearchViewModel @Inject constructor(
                         } else state
                     }
                 }
+                applyLikedTracks()
             } catch (e: Exception) {
                 _searchRawState.value = SearchUiState.Error(e.message ?: "Unknown error")
                 Log.e("SearchViewModel", "Error performing search", e)
@@ -157,15 +163,15 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    private fun buildSearchItemsList(res: DeezerAutocompleteRes, tracks: List<Track>): List<SearchResultItem> {
+    private fun buildSearchItemsList(res: DeezerAutocompleteRes, trackModels: List<TrackUiModel>): List<SearchResultItem> {
         val searchResultList = mutableListOf<SearchResultItem>()
         // first add the most relevant artist
         if(res.artists.data.isNotEmpty()) {
             searchResultList.add(SearchResultItem.ArtistItem(res.artists.data[0]))
         }
         // then add the tracks
-        if(tracks.isNotEmpty()) {
-            searchResultList.addAll(tracks.map { track -> SearchResultItem.TrackItem(TrackUiModel(track = track)) })
+        if(trackModels.isNotEmpty()) {
+            searchResultList.addAll(trackModels.map { trackModel -> SearchResultItem.TrackItem(trackModel) })
         }
         // then add the most relevant album
         if(res.albums.data.isNotEmpty()) {
@@ -198,11 +204,11 @@ class SearchViewModel @Inject constructor(
     }
 
     /* TRACK STREAM URL FETCHING */
-    private fun fetchStreamUrl(tracks: List<Track>): Flow<TrackUiModel> = channelFlow {
-        tracks.map { track ->
+    private fun fetchStreamUrl(tracks: List<TrackUiModel>): Flow<TrackUiModel> = channelFlow {
+        tracks.map { trackModel ->
             async {
-                val fetchedTrack = trackUrlResolver.resolve(track)
-                fetchedTrack?.let { send(TrackUiModel(track = it)) }
+                val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
+                fetchedTrack?.let { send(TrackUiModel(track = it, isLiked = trackModel.isLiked)) }
             }
         }.awaitAll()
     }
@@ -214,5 +220,29 @@ class SearchViewModel @Inject constructor(
         super.onCleared()
         previewPlayerController.stop()
         playerController.stop()
+    }
+
+    /* Liked tracks logic */
+    fun onLikedTracksChange(likedTrackIds: List<Long>) {
+        latestLikedTrackIds = likedTrackIds
+        applyLikedTracks()
+    }
+
+    fun applyLikedTracks() {
+        _searchRawState.update { state ->
+            if(state is SearchUiState.Success) {
+                val updatedList = state.searchResultList.map { resultItem ->
+                    if (resultItem is SearchResultItem.TrackItem) {
+                        val trackModel = resultItem.trackModel
+                        resultItem.copy (
+                            trackModel = trackModel.copy(isLiked = trackModel.track.id in latestLikedTrackIds)
+                        )
+                    } else resultItem
+
+                }
+                state.copy(searchResultList = updatedList)
+            }
+            else state
+        }
     }
 }
