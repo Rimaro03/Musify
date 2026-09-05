@@ -5,11 +5,11 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.local.preferences.SearchHistoryManager
+import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.domain.model.DeezerAutocompleteRes
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
-import com.rimaro.musify.domain.repository.LikedTracksRepo
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
@@ -17,7 +17,6 @@ import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,7 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,7 +36,7 @@ class SearchViewModel @Inject constructor(
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
-    private val likedTracksRepo: LikedTracksRepo
+    private val likedTracksRepo: FirestoreLikedTracksRepo
 ) : AndroidViewModel(application) {
     /** Handles Idle, Loading, Success, Error states */
     private val _searchState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
@@ -60,7 +58,9 @@ class SearchViewModel @Inject constructor(
                                         streamUrl = trackUrls[resultItem.trackModel.track.id.toString()]
                                     ),
                                     isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id,
-                                    isLiked = likedTrackIds.contains(resultItem.trackModel.track.id.toString())
+                                    isLiked = likedTrackIds
+                                        .map{ it.trackId }
+                                        .contains(resultItem.trackModel.track.id)
                                 )
                                 resultItem.copy(
                                     trackModel = newTrackModel
@@ -141,27 +141,7 @@ class SearchViewModel @Inject constructor(
 
                 fetchStreamUrl(tracks).collect { fetchedTrack ->
                     audioTrackUrls.value += fetchedTrack
-                    /*val currentTracks = (_searchRawState.value as SearchUiState.Success).searchResultList.toMutableList()
-                    val position = currentTracks.indexOfFirst { it is SearchResultItem.TrackItem && it.trackModel.track.id == fetchedTrack.track.id  }
-                    if(position != -1) {
-                        currentTracks[position] = SearchResultItem.TrackItem(fetchedTrack)
-                        _searchRawState.value = SearchUiState.Success(currentTracks.toList())
-                    }*/
-//                    _searchState.update { state ->
-//                        if (state is SearchUiState.Success) {
-//                            val updatedList = state.searchResultList.map { resultItem ->
-//                                if (resultItem is SearchResultItem.TrackItem) {
-//                                    val trackModel = resultItem.trackModel
-//                                    SearchResultItem.TrackItem (
-//                                        trackModel = if (trackModel.track.id == fetchedTrack.track.id) {
-//                                            fetchedTrack
-//                                        } else trackModel
-//                                    )
-//                                } else resultItem
-//                            }
-//                            state.copy(searchResultList = updatedList)
-//                        } else state
-//                    }
+                    // TODO: move this to a repo
                 }
             } catch (e: Exception) {
                 _searchState.value = SearchUiState.Error(e.message ?: "Unknown error")
@@ -231,6 +211,11 @@ class SearchViewModel @Inject constructor(
         super.onCleared()
         previewPlayerController.stop()
         playerController.stop()
+    }
+
+    /* TRACK LIKE/UNLIKE LOGIC */
+    fun unlikeTrack(track: Track) = viewModelScope.launch {
+        likedTracksRepo.removeTrack(track.id)
     }
 
     companion object {

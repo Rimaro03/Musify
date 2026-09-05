@@ -1,6 +1,5 @@
 package com.rimaro.musify.ui.search
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,7 +26,8 @@ class SearchResultAdapter (
     private val onTrackLongClick: (Track) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
     private val onAlbumClick: (DeezerAlbum) -> Unit,
-    private val onMenuClick: (Track) -> Unit
+    private val onMenuClick: (Track) -> Unit,
+    private val onLikeBtnClick: (Track) -> Unit
 ): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         const val TYPE_TRACK = 0
@@ -53,9 +53,9 @@ class SearchResultAdapter (
             fun bind(trackModel: TrackUiModel,
                      onTrackClick: (Track) -> Unit,
                      onTrackLongClick: (Track) -> Unit,
-                     onMenuClick: ((Track) -> Unit)
+                     onMenuClick: ((Track) -> Unit),
+                     onLikeBtnClick: (Track) -> Unit
             ) {
-                Log.d("TrackVH", "inflated binding.root: ${binding.root}, has background: ${binding.root.background}")
                 binding.root.setBackgroundResource(R.drawable.track_item_bg)
                 val track = trackModel.track
                 // track metadata
@@ -84,9 +84,11 @@ class SearchResultAdapter (
                 }
                 // highlight playing track
                 binding.root.isActivated = trackModel.isPlaying
-                Log.d("TrackVH", "background after set: ${binding.root.background}, isActivated: ${binding.root.isActivated}")
                 // liked track
                 binding.searchTrackLikeBtn.isVisible = trackModel.isLiked == true
+                binding.searchTrackLikeBtn.setOnClickListener {
+                    onLikeBtnClick(track)
+                }
             }
     }
 
@@ -134,7 +136,7 @@ class SearchResultAdapter (
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val item = getItem(position)) {
             is TrackItem  -> (holder as TrackViewHolder).bind(item.trackModel, onTrackClick,
-                onTrackLongClick, onMenuClick
+                onTrackLongClick, onMenuClick, onLikeBtnClick
             )
             is ArtistItem -> (holder as ArtistViewHolder).bind(item.artist)
             is AlbumItem  -> (holder as AlbumViewHolder).bind(item.album)

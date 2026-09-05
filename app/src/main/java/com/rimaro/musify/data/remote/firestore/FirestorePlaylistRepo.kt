@@ -1,7 +1,5 @@
 package com.rimaro.musify.data.remote.firestore
 
-import androidx.compose.animation.core.snap
-import androidx.compose.runtime.snapshots.Snapshot
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -11,7 +9,7 @@ import com.rimaro.musify.domain.model.FirestoreTrack
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class FirestorePlaylistDao @Inject constructor(
+class FirestorePlaylistRepo @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     companion object {
@@ -73,17 +71,6 @@ class FirestorePlaylistDao @Inject constructor(
                 "thumbnailPath", thumbnailPath
             )
             .await()
-    }
-
-    // --- Liked tracks --- //
-    suspend fun getUserLikedTracks(userId: String): List<FirestoreTrack> {
-        val snapshot = firestore.collection(USERS_COLLECTION)
-            .document(userId)
-            .collection(USERS_LIKED_COLLECTION)
-            .get()
-            .await()
-
-        return snapshot.toObjects(FirestoreTrack::class.java)
     }
 
     // --- Track ID management --- //

@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.FirestoreTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.ui.library.ImportResult
@@ -30,7 +30,7 @@ import javax.inject.Singleton
 class PlaylistImporter @Inject constructor(
     private val application: Application,
     private val deezerRepository: DeezerRepository,
-    private val firestorePlaylistDao: FirestorePlaylistDao
+    private val firestorePlaylistRepo: FirestorePlaylistRepo
 ) {
     companion object {
         private const val BATCH_LIMIT = 500
@@ -102,14 +102,14 @@ class PlaylistImporter @Inject constructor(
                 // Flush to Firestore every 500 resolved IDs
                 if (resolvedTracks.size >= BATCH_LIMIT) {
                     Log.d("NewPlaylist", "Flushing to firestore, BATCH LIMIT")
-                    firestorePlaylistDao.addTracksBatch(playlistId, resolvedTracks.toList())
+                    firestorePlaylistRepo.addTracksBatch(playlistId, resolvedTracks.toList())
                     resolvedTracks.clear()
                 }
             }
 
         // Flush remaining
         if (resolvedTracks.isNotEmpty()) {
-            firestorePlaylistDao.addTracksBatch(playlistId, resolvedTracks.toList())
+            firestorePlaylistRepo.addTracksBatch(playlistId, resolvedTracks.toList())
             Log.d("NewPlaylist", "Flushing to firestore")
         }
 
@@ -121,7 +121,7 @@ class PlaylistImporter @Inject constructor(
         }
 
         // update playlist with thumbnail
-        firestorePlaylistDao.updatePlaylistThumbnail(playlistId, thumbnailPath)
+        firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, thumbnailPath)
 
         emit(ImportResult.Success(imported = processed - failed, skipped = failed))
     }.flowOn(Dispatchers.IO)
@@ -129,7 +129,7 @@ class PlaylistImporter @Inject constructor(
     private suspend fun createPlaylist(uri: Uri): String? {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val fileName = uri.getFileName(application)?.split(".csv")[0] ?: "New Playlist"
-        val playlistId =  firestorePlaylistDao.createPlaylist(
+        val playlistId =  firestorePlaylistRepo.createPlaylist(
             ownerId = userId,
             name = fileName
         )

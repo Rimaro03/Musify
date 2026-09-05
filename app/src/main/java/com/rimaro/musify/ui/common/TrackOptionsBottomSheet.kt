@@ -8,8 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
+import com.rimaro.musify.domain.model.FirestoreTrack
 import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -21,6 +24,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
     private val binding get() = _binding!!
 
     @Inject lateinit var playerController: PlayerController
+    @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
 
     companion object {
         private const val ARG_TRACK = "track"
@@ -52,7 +56,9 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
             playerController.enqueueTracks(listOf(track), 1, playlistId = playlistId)
             dismiss()
         }
-        binding.trackOptLike.setOnClickListener {  }
+        binding.trackOptLike.setOnClickListener {
+            firestoreLikedTracksRepo.addTrack(track.toFirestoreTrack())
+        }
         binding.trackOptShare.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND

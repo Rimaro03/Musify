@@ -3,7 +3,7 @@ package com.rimaro.musify.di
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.persistentCacheSettings
-import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -30,7 +30,7 @@ object FirestoreModule {
     @Singleton
     fun provideFirestorePlaylistDao(
         firestore: FirebaseFirestore
-    ): FirestorePlaylistDao {
-        return FirestorePlaylistDao(firestore)
+    ): FirestorePlaylistRepo {
+        return FirestorePlaylistRepo(firestore)
     }
 }

@@ -9,7 +9,6 @@ import android.widget.ImageButton
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -20,7 +19,6 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
-import com.rimaro.musify.MainViewModel
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
 import com.rimaro.musify.domain.model.FirestorePlaylist
@@ -37,7 +35,6 @@ class PlaylistFragment : Fragment() {
     private var _binding: FragmentPlaylistBinding? = null
     private val binding get() = _binding!!
 
-    private val mainViewModel: MainViewModel by activityViewModels()
     private val viewModel: PlaylistViewModel by viewModels()
     private val args: PlaylistFragmentArgs by navArgs()
 
@@ -71,8 +68,6 @@ class PlaylistFragment : Fragment() {
         val playPlaylistBtn = binding.playlistPlayBtn
         playPlaylistBtn.setOnClickListener { viewModel.togglePlayButton() }
         observePlayerState(playPlaylistBtn)
-
-        observeLikedTracks()
     }
 
     private fun showTrackMenu(track: Track, playlistId: String?) {
@@ -181,16 +176,6 @@ class PlaylistFragment : Fragment() {
                             R.drawable.play_arrow_24px
                         )
                     }
-                }
-            }
-        }
-    }
-
-    private fun observeLikedTracks() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.likedTrackIds.collect { likedTrackIds ->
-                    viewModel.onLikedTracksChange(likedTrackIds)
                 }
             }
         }

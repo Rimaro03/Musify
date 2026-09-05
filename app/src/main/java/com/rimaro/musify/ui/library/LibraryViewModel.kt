@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import com.google.firebase.auth.FirebaseAuth
-import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
@@ -15,7 +15,6 @@ import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,7 +24,7 @@ import javax.inject.Inject
 class LibraryViewModel @Inject constructor(
     application: Application,
     private val playlistImporter: PlaylistImporter,
-    private val firestorePlaylistDao: FirestorePlaylistDao,
+    private val firestorePlaylistRepo: FirestorePlaylistRepo,
     private val playerController: PlayerController,
     private val deezerRepository: DeezerRepository
 ) : AndroidViewModel(application) {
@@ -57,7 +56,7 @@ class LibraryViewModel @Inject constructor(
     fun createThumbnail(playlistId: String) {
         viewModelScope.launch {
             // get covers
-            val firestorePlaylist = firestorePlaylistDao.getPlaylist(playlistId)
+            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
             if(firestorePlaylist == null) {
                 Log.e("LibraryViewmodel", "Could not fetch firestore playlist during thumbnail creation")
                 return@launch
@@ -80,7 +79,7 @@ class LibraryViewModel @Inject constructor(
                 ?: return@launch
 
             // update playlist with thumbnail
-            firestorePlaylistDao.updatePlaylistThumbnail(playlistId, newThumbnailPath)
+            firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, newThumbnailPath)
 
             // update playlist cover
             val currentList = _libraryUiState.value as? LibraryUiState.Success ?: return@launch
@@ -106,7 +105,7 @@ class LibraryViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _libraryUiState.value = LibraryUiState.Loading
-            val playlists = firestorePlaylistDao.getUserPlaylists(userId)
+            val playlists = firestorePlaylistRepo.getUserPlaylists(userId)
             _libraryUiState.value = LibraryUiState.Success(playlists)
         }
     }
@@ -130,7 +129,7 @@ class LibraryViewModel @Inject constructor(
 
     private fun playPlaylist(playlistId: String) {
         viewModelScope.launch {
-            val firestorePlaylist = firestorePlaylistDao.getPlaylist(playlistId)
+            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
             if (firestorePlaylist == null) {
                 Log.e("LibraryViewmodel", "Could not retrieve playlist")
                 return@launch

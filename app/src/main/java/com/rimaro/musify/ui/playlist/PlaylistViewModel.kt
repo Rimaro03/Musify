@@ -1,15 +1,13 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
-import com.rimaro.musify.data.remote.firestore.FirestorePlaylistDao
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
-import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
@@ -35,7 +33,7 @@ import javax.inject.Inject
 class PlaylistViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     application: Application,
-    private val firestorePlaylistDao: FirestorePlaylistDao,
+    private val firestorePlaylistRepo: FirestorePlaylistRepo,
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
@@ -88,7 +86,7 @@ class PlaylistViewModel @Inject constructor(
         if (playlistId == null) return
         viewModelScope.launch {
             _playlistRawState.value = PlaylistUiState.Loading
-            val firestorePlaylist = firestorePlaylistDao.getPlaylist(playlistId)
+            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
             if(firestorePlaylist == null) {
                 _playlistRawState.value = PlaylistUiState.Error("Could not retrieve playlist")
                 return@launch

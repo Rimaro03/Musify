@@ -36,9 +36,11 @@ fun DeezerTrack.toTrack(
     id = id,
     title = title,
     artist = artist?.name ?: "Unknown Artist",
+    artistId = artist?.id ?: 0L,
     durationMs = duration * 1000L,
     genre = album?.genres?.joinToString(", "),
     artworkUrl = album?.coverXl,
+    albumId = album?.id ?: 0L,
     streamUrl = streamUrl,
     sourceUrl = sourceUrl,
     previewUrl = preview
