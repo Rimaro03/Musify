@@ -48,20 +48,22 @@ class FirestoreLikedTracksRepo @Inject constructor(
         }
     }
 
-    suspend fun removeTrack(trackId: Long) {
-        val uid = auth.currentUser?.uid ?: return
+    fun removeTrack(trackId: Long) {
+        appScope.launch {
+            val uid = auth.currentUser?.uid ?: return@launch
 
-        val collectionRef = firestore.collection(USERS_COLLECTION)
-            .document(uid)
-            .collection(LIKED_TRACKS_COLLECTION)
+            val collectionRef = firestore.collection(USERS_COLLECTION)
+                .document(uid)
+                .collection(LIKED_TRACKS_COLLECTION)
 
-        val snapshot = collectionRef
-            .whereEqualTo("trackId", trackId)
-            .get()
-            .await()
+            val snapshot = collectionRef
+                .whereEqualTo("trackId", trackId)
+                .get()
+                .await()
 
-        for (doc in snapshot.documents) {
-            doc.reference.delete().await()
+            for (doc in snapshot.documents) {
+                doc.reference.delete().await()
+            }
         }
     }
 

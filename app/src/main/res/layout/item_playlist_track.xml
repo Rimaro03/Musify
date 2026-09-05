@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="5dp"
     android:layout_marginBottom="10dp"
     android:background="@drawable/track_item_bg">
@@ -64,22 +65,22 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent">
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/playlist_track_like_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:src="@drawable/media3_icon_heart_filled"
+                app:icon="@drawable/media3_icon_heart_filled"
                 android:contentDescription="@string/playlist_like_button"
                 style="@style/Widget.Material3.Button.IconButton"
                 android:visibility="gone"/>
 
-            <ImageButton
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/playlist_track_menu_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:src="@drawable/more_vert_24px"
+                app:icon="@drawable/more_vert_24px"
                 android:contentDescription="@string/menu_icon"
                 style="@style/Widget.Material3.Button.IconButton"/>
 

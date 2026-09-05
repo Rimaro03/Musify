@@ -22,12 +22,12 @@ import com.rimaro.musify.ui.search.SearchResultItem.ArtistItem
 import com.rimaro.musify.ui.search.SearchResultItem.TrackItem
 
 class SearchResultAdapter (
-    private val onTrackClick: (Track) -> Unit,
-    private val onTrackLongClick: (Track) -> Unit,
+    private val onTrackClick: (TrackUiModel) -> Unit,
+    private val onTrackLongClick: (TrackUiModel) -> Unit,
     private val onArtistClick: (DeezerArtist) -> Unit,
     private val onAlbumClick: (DeezerAlbum) -> Unit,
-    private val onMenuClick: (Track) -> Unit,
-    private val onLikeBtnClick: (Track) -> Unit
+    private val onMenuClick: (TrackUiModel) -> Unit,
+    private val onLikeBtnClick: (TrackUiModel) -> Unit
 ): ListAdapter<SearchResultItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         const val TYPE_TRACK = 0
@@ -51,10 +51,10 @@ class SearchResultAdapter (
     class TrackViewHolder(private val binding: ItemSearchTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
             fun bind(trackModel: TrackUiModel,
-                     onTrackClick: (Track) -> Unit,
-                     onTrackLongClick: (Track) -> Unit,
-                     onMenuClick: ((Track) -> Unit),
-                     onLikeBtnClick: (Track) -> Unit
+                     onTrackClick: (TrackUiModel) -> Unit,
+                     onTrackLongClick: (TrackUiModel) -> Unit,
+                     onMenuClick: ((TrackUiModel) -> Unit),
+                     onLikeBtnClick: (TrackUiModel) -> Unit
             ) {
                 binding.root.setBackgroundResource(R.drawable.track_item_bg)
                 val track = trackModel.track
@@ -66,7 +66,7 @@ class SearchResultAdapter (
                     .placeholder(R.drawable.ic_launcher_foreground)
                     .into(binding.searchTrackThumbnail)
                 binding.searchTrackClickable.setOnClickListener {
-                    onTrackClick(track)
+                    onTrackClick(trackModel)
                 }
                 // dark shadow
                 binding.loadingOverlay.visibility = if (track.streamUrl == null) {
@@ -76,10 +76,10 @@ class SearchResultAdapter (
                 }
                 // menu btn
                 binding.searchTrackMenuBtn.setOnClickListener {
-                    onMenuClick(track)
+                    onMenuClick(trackModel)
                 }
                 binding.searchTrackClickable.setOnLongClickListener {
-                    onTrackLongClick(track)
+                    onTrackLongClick(trackModel)
                     true
                 }
                 // highlight playing track
@@ -87,7 +87,7 @@ class SearchResultAdapter (
                 // liked track
                 binding.searchTrackLikeBtn.isVisible = trackModel.isLiked == true
                 binding.searchTrackLikeBtn.setOnClickListener {
-                    onLikeBtnClick(track)
+                    onLikeBtnClick(trackModel)
                 }
             }
     }

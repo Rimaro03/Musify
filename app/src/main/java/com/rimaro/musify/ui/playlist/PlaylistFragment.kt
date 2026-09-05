@@ -53,9 +53,10 @@ class PlaylistFragment : Fragment() {
 
         val trackRv = binding.playlistTrackRv
         val trackAdapter = PlaylistTrackAdapter(
-            {trackModel -> viewModel.playTrack(trackModel.track)},
-            {trackModel -> showTrackMenu(trackModel.track, playlistId)},
+            { trackModel -> viewModel.playTrack(trackModel.track) },
+            { trackModel -> showTrackMenu(trackModel, playlistId) },
             { trackModel -> viewModel.playPreview(trackModel.track) },
+            { trackUiModel -> viewModel.unlikeTrack(trackUiModel.track)}
         )
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())
@@ -70,15 +71,15 @@ class PlaylistFragment : Fragment() {
         observePlayerState(playPlaylistBtn)
     }
 
-    private fun showTrackMenu(track: Track, playlistId: String?) {
-        TrackOptionsBottomSheet.newInstance(track, playlistId)
+    private fun showTrackMenu(trackModel: TrackUiModel, playlistId: String?) {
+        TrackOptionsBottomSheet.newInstance(trackModel, playlistId)
             .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 
     private fun observePlayerUiState(adapter: PlaylistTrackAdapter) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.playlistUiState.collect { uiState ->
+                viewModel.uiState.collect { uiState ->
                     val progress = binding.playlistProgress
                     val container = binding.libraryContainer
 

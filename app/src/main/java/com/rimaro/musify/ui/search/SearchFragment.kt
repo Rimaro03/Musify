@@ -32,6 +32,7 @@ import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.SearchbarViewModel
 import com.rimaro.musify.ui.common.SwipeToQueueCallback
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -99,11 +100,11 @@ class SearchFragment : Fragment() {
         /* SEARCH LOGIC */
         val searchResultsRv = binding.searchResultsRv
         val searchResultAdapter = SearchResultAdapter(
-            viewModel::playTrack,
-            viewModel::playPreview,
+            { trackUiModel -> viewModel.playTrack(trackUiModel.track) },
+            { trackUiModel ->  viewModel.playPreview(trackUiModel.track) },
             {}, {},
             ::showTrackMenu,
-            viewModel::unlikeTrack
+            { trackUiModel ->  viewModel.unlikeTrack(trackUiModel.track) }
         )
         searchResultsRv.adapter = searchResultAdapter
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
@@ -118,8 +119,8 @@ class SearchFragment : Fragment() {
     }
 
 
-    private fun showTrackMenu(track: Track) {
-        TrackOptionsBottomSheet.newInstance(track, null)
+    private fun showTrackMenu(trackModel: TrackUiModel) {
+        TrackOptionsBottomSheet.newInstance(trackModel, null)
             .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 

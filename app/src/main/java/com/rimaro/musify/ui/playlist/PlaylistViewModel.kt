@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
+import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
@@ -37,8 +38,9 @@ class PlaylistViewModel @Inject constructor(
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
+    private val likedTracksRepo: FirestoreLikedTracksRepo
 ) : AndroidViewModel(application) {
-    private val _playlistRawState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
+    private val _playlistState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
         PlaylistUiState.Idle)
     private val currentTrack: Flow<Track?> = playerController.currentTrack
     private val currPlaylistId: MutableStateFlow<String?> = MutableStateFlow(checkNotNull(savedStateHandle["playlistId"]))
@@ -47,26 +49,34 @@ class PlaylistViewModel @Inject constructor(
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+    private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
 
-    private var latestLikedTrackIds: List<Long> = emptyList()
-
-    var playlistUiState: Flow<PlaylistUiState> = combine(_playlistRawState, currentTrack, currPlaylistId)
-    { rawState, currTrack, currPlaylistId ->
-        when(rawState) {
-            is PlaylistUiState.Success -> {
-                val thisPlaylistActive = currPlaylistId == playingPlaylistId.value
-                PlaylistUiState.Success(
-                    playlist = rawState.playlist,
-                    trackList = rawState.trackList.map { trackModel ->
-                        trackModel.copy(isPlaying = thisPlaylistActive && trackModel.track.id == currTrack?.id)
-                    }
-                )
+    var uiState: Flow<PlaylistUiState> =
+        combine(_playlistState, currentTrack, currPlaylistId, likedTracksRepo.likedTrackIds, audioTrackUrls)
+        { rawState, currTrack, currPlaylistId, likedTrackIds, trackUrls ->
+            when(rawState) {
+                is PlaylistUiState.Success -> {
+                    val thisPlaylistActive = currPlaylistId == playingPlaylistId.value
+                    PlaylistUiState.Success(
+                        playlist = rawState.playlist,
+                        trackList = rawState.trackList.map { trackModel ->
+                            trackModel.copy(
+                                track = trackModel.track.copy(
+                                    streamUrl = trackUrls[trackModel.track.id.toString()]
+                                ),
+                                isPlaying = thisPlaylistActive && trackModel.track.id == currTrack?.id,
+                                isLiked = likedTrackIds
+                                    .map{ it.trackId }
+                                    .contains(trackModel.track.id)
+                            )
+                        }
+                    )
+                }
+                is PlaylistUiState.Idle -> PlaylistUiState.Idle
+                is PlaylistUiState.Loading -> PlaylistUiState.Loading
+                is PlaylistUiState.Error -> PlaylistUiState.Error(rawState.message)
             }
-            is PlaylistUiState.Idle -> PlaylistUiState.Idle
-            is PlaylistUiState.Loading -> PlaylistUiState.Loading
-            is PlaylistUiState.Error -> PlaylistUiState.Error(rawState.message)
         }
-    }
 
     init {
         retrieveTrackIds(currPlaylistId.value)
@@ -85,10 +95,10 @@ class PlaylistViewModel @Inject constructor(
     fun retrieveTrackIds(playlistId: String?) {
         if (playlistId == null) return
         viewModelScope.launch {
-            _playlistRawState.value = PlaylistUiState.Loading
+            _playlistState.value = PlaylistUiState.Loading
             val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
             if(firestorePlaylist == null) {
-                _playlistRawState.value = PlaylistUiState.Error("Could not retrieve playlist")
+                _playlistState.value = PlaylistUiState.Error("Could not retrieve playlist")
                 return@launch
             }
 
@@ -96,34 +106,31 @@ class PlaylistViewModel @Inject constructor(
             val trackUiModels = firestoreTracks.map {
                 TrackUiModel(track = it.toTrack())
             }
-            _playlistRawState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
-            applyLikedTracks()
+            _playlistState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
 
             fetchStreamUrl(trackUiModels).collect { fetchedTrack ->
-                _playlistRawState.update { state ->
-                    if (state is PlaylistUiState.Success) {
-                        val updatedTracks = state.trackList.map { trackModel ->
-                            if (trackModel.track.id == fetchedTrack.track.id) fetchedTrack else trackModel
-                        }
-                        state.copy(trackList = updatedTracks)
-                    } else state
-                }
+                audioTrackUrls.value += fetchedTrack
+                // TODO: move this to a repo
             }
-            applyLikedTracks()
         }
     }
 
-    private fun fetchStreamUrl(tracks: List<TrackUiModel>): Flow<TrackUiModel> = channelFlow {
+    private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
         val semaphore = Semaphore(5)
         tracks.map { trackModel ->
             async {
                 semaphore.withPermit {
                     val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-                    fetchedTrack?.let { send(TrackUiModel(track = it, isLiked = trackModel.isLiked)) }
+                    fetchedTrack?.let {
+                        if(it.streamUrl != null) {
+                            send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
+                        }
+                    }
                 }
             }
         }.awaitAll()
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
 
     fun playTrack(track: Track) {
         viewModelScope.launch {
@@ -159,28 +166,16 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
-    fun onLikedTracksChange(likedTrackIds: List<Long>) {
-        latestLikedTrackIds = likedTrackIds
-        applyLikedTracks()
-    }
-
-    fun applyLikedTracks() {
-        _playlistRawState.update { state ->
-            if(state is PlaylistUiState.Success) {
-                val updatedTracks = state.trackList.map { trackModel ->
-                    trackModel.copy(isLiked = trackModel.track.id in latestLikedTrackIds)
-                }
-                state.copy(trackList = updatedTracks)
-            }
-            else state
-        }
-    }
-
     private fun playPlaylist() {
-        if(_playlistRawState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
-            val tracksToPlay = (_playlistRawState.value as PlaylistUiState.Success).trackList.map { it.track }
+        if(_playlistState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
+            val tracksToPlay = (_playlistState.value as PlaylistUiState.Success).trackList.map { it.track }
             playerController.playPlaylist(tracksToPlay, currPlaylistId.value!!)
         }
+    }
+
+    /* TRACK LIKE/UNLIKE LOGIC */
+    fun unlikeTrack(track: Track) = viewModelScope.launch {
+        likedTracksRepo.removeTrack(track.id)
     }
 
 }

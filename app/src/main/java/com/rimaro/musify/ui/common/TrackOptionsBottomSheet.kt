@@ -10,10 +10,9 @@ import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
-import com.rimaro.musify.domain.model.FirestoreTrack
-import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -27,11 +26,11 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
     @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
 
     companion object {
-        private const val ARG_TRACK = "track"
+        private const val ARG_TRACK = "trackModel"
         private const val ARG_PLAYLIST_ID = "playlist_id"
-        fun newInstance(track: Track, playlistId: String?) = TrackOptionsBottomSheet().apply {
+        fun newInstance(trackModel: TrackUiModel, playlistId: String?) = TrackOptionsBottomSheet().apply {
             arguments = Bundle().apply {
-                putParcelable(ARG_TRACK, track)
+                putParcelable(ARG_TRACK, trackModel)
                 putString(ARG_PLAYLIST_ID, playlistId)
             }
         }
@@ -44,7 +43,8 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val track = arguments?.getParcelable(ARG_TRACK, Track::class.java) ?: return
+        val trackModel = arguments?.getParcelable(ARG_TRACK, TrackUiModel::class.java) ?: return
+        val track = trackModel.track
         val playlistId = arguments?.getString(ARG_PLAYLIST_ID)
 
         // track metadata
@@ -56,8 +56,17 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
             playerController.enqueueTracks(listOf(track), 1, playlistId = playlistId)
             dismiss()
         }
+        binding.trackOptLike.setImageResource(
+            if (trackModel.isLiked) androidx.media3.session.R.drawable.media3_icon_heart_filled
+            else androidx.media3.session.R.drawable.media3_icon_heart_unfilled
+        )
         binding.trackOptLike.setOnClickListener {
-            firestoreLikedTracksRepo.addTrack(track.toFirestoreTrack())
+            if (trackModel.isLiked) {
+                firestoreLikedTracksRepo.removeTrack(track.id)
+            } else {
+                firestoreLikedTracksRepo.addTrack(track.toFirestoreTrack())
+            }
+            dismiss()
         }
         binding.trackOptShare.setOnClickListener {
             val sendIntent: Intent = Intent().apply {

@@ -15,7 +15,8 @@ import com.rimaro.musify.ui.common.model.TrackUiModel
 class PlaylistTrackAdapter (
     private val onTrackClick: (TrackUiModel) -> Unit,
     private val onMenuClick: (TrackUiModel) -> Unit,
-    private val onTrackLongClick: (TrackUiModel) -> Unit
+    private val onTrackLongClick: (TrackUiModel) -> Unit,
+    private val onTrackLikeClick: (TrackUiModel) -> Unit,
 ): ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TrackUiModel>() {
@@ -33,7 +34,9 @@ class PlaylistTrackAdapter (
             trackModel: TrackUiModel,
             onTrackClick: (TrackUiModel) -> Unit,
             onMenuClick: ((TrackUiModel) -> Unit),
-            onTrackLongClick: (TrackUiModel) -> Unit) {
+            onTrackLongClick: (TrackUiModel) -> Unit,
+            onTrackLikeClick: (TrackUiModel) -> Unit
+        ) {
             val track = trackModel.track
 
             // track metadata
@@ -52,6 +55,9 @@ class PlaylistTrackAdapter (
             }
             // like btn
             binding.playlistTrackLikeBtn.isVisible = trackModel.isLiked == true
+            binding.playlistTrackLikeBtn.setOnClickListener {
+                onTrackLikeClick(trackModel)
+            }
             // menu btn
             binding.playlistTrackMenuBtn.setOnClickListener {
                 onMenuClick(trackModel)
@@ -75,6 +81,7 @@ class PlaylistTrackAdapter (
         position: Int,
     ) {
         val item = getItem(position)
-        (holder as ViewHolder).bind(item, onTrackClick, onMenuClick, onTrackLongClick)
+        (holder as ViewHolder).bind(item, onTrackClick, onMenuClick, onTrackLongClick,
+            onTrackLikeClick)
     }
 }
