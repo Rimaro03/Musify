@@ -2,6 +2,7 @@ package com.rimaro.musify.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -108,8 +109,6 @@ class SearchFragment : Fragment() {
         searchResultsRv.layoutManager = LinearLayoutManager(requireContext())
         setupSearchAdapter(searchResultAdapter, searchResultsRv)
         observeSearchUiState(searchResultAdapter)
-
-        observeLikedTracks()
     }
 
     override fun onDestroyView() {
@@ -215,7 +214,7 @@ class SearchFragment : Fragment() {
     private fun observeSearchUiState(adapter: SearchResultAdapter) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.searchUiState.collect { uiState ->
+                viewModel.uiState.collect { uiState ->
                     when (uiState) {
                         is SearchUiState.Idle -> {
                             binding.searchResultsRv.visibility = View.GONE
@@ -275,16 +274,6 @@ class SearchFragment : Fragment() {
                         historyContainer.addView(item)
                     }
 
-                }
-            }
-        }
-    }
-
-    private fun observeLikedTracks() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                mainViewModel.likedTrackIds.collect { likedTrackIds ->
-                    viewModel.onLikedTracksChange(likedTrackIds)
                 }
             }
         }

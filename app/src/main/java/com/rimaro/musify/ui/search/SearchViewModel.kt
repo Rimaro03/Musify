@@ -9,6 +9,7 @@ import com.rimaro.musify.domain.model.DeezerAutocompleteRes
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
+import com.rimaro.musify.domain.repository.LikedTracksRepo
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.resolver.TrackUrlResolver
@@ -16,6 +17,7 @@ import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,36 +37,42 @@ class SearchViewModel @Inject constructor(
     private val historyManager: SearchHistoryManager,
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
-    private val previewPlayerController: PreviewPlayerController
+    private val previewPlayerController: PreviewPlayerController,
+    private val likedTracksRepo: LikedTracksRepo
 ) : AndroidViewModel(application) {
-    private val _searchRawState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
+    /** Handles Idle, Loading, Success, Error states */
+    private val _searchState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     private val currentTrack: StateFlow<Track?> = playerController.currentTrack
     private val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+    private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
 
-    private var latestLikedTrackIds: List<Long> = emptyList()
-
-    var searchUiState: Flow<SearchUiState> = combine(_searchRawState, currentTrack, playingPlaylistId)
-    { rawState, currTrack, playingPlaylistId ->
-        when(rawState) {
-            is SearchUiState.Success -> {
-                val thisPlaylistActive = playingPlaylistId == null
-                SearchUiState.Success(
-                    searchResultList = rawState.searchResultList.map { resultItem ->
-                        if(resultItem is SearchResultItem.TrackItem) {
-                            val newTrackModel = resultItem.trackModel.copy(
-                                isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id,
-                                isLiked = resultItem.trackModel.isLiked
-                            )
-                            resultItem.copy(
-                                trackModel = newTrackModel
-                            )
-                        } else resultItem
-                    }
-                )
-            }
-            is SearchUiState.Idle -> SearchUiState.Idle
-            is SearchUiState.Loading -> SearchUiState.Loading
-            is SearchUiState.Error -> SearchUiState.Error(rawState.message)
+    var uiState: Flow<SearchUiState> =
+        combine(_searchState, currentTrack, playingPlaylistId, likedTracksRepo.likedTrackIds, audioTrackUrls) {
+            rawState, currTrack, playingPlaylistId, likedTrackIds, trackUrls ->
+            when (rawState) {
+                is SearchUiState.Success -> {
+                    val thisPlaylistActive = playingPlaylistId == null
+                    val state = SearchUiState.Success(
+                        searchResultList = rawState.searchResultList.map { resultItem ->
+                            if(resultItem is SearchResultItem.TrackItem) {
+                                val newTrackModel = resultItem.trackModel.copy(
+                                    track = resultItem.trackModel.track.copy(
+                                        streamUrl = trackUrls[resultItem.trackModel.track.id.toString()]
+                                    ),
+                                    isPlaying = thisPlaylistActive && currTrack?.id == resultItem.trackModel.track.id,
+                                    isLiked = likedTrackIds.contains(resultItem.trackModel.track.id.toString())
+                                )
+                                resultItem.copy(
+                                    trackModel = newTrackModel
+                                )
+                            } else resultItem
+                        }
+                    )
+                    state
+                }
+                is SearchUiState.Idle -> SearchUiState.Idle
+                is SearchUiState.Loading -> SearchUiState.Loading
+                is SearchUiState.Error -> SearchUiState.Error(rawState.message)
         }
     }
 
@@ -117,7 +125,7 @@ class SearchViewModel @Inject constructor(
         if(query.isBlank()) return
 
         viewModelScope.launch {
-            _searchRawState.value = SearchUiState.Loading
+            _searchState.value = SearchUiState.Loading
             try {
                 val res = deezerRepository.autocomplete(query)
                 val tracks = res.tracks.data.map {
@@ -126,38 +134,37 @@ class SearchViewModel @Inject constructor(
 
                 val searchResultList = buildSearchItemsList(res, tracks)
                 if(searchResultList.isEmpty()) {
-                    _searchRawState.value = SearchUiState.Error("No track found")
+                    _searchState.value = SearchUiState.Error("No track found")
                 } else {
-                    _searchRawState.value = SearchUiState.Success(searchResultList)
+                    _searchState.value = SearchUiState.Success(searchResultList)
                 }
-                applyLikedTracks()
 
                 fetchStreamUrl(tracks).collect { fetchedTrack ->
+                    audioTrackUrls.value += fetchedTrack
                     /*val currentTracks = (_searchRawState.value as SearchUiState.Success).searchResultList.toMutableList()
                     val position = currentTracks.indexOfFirst { it is SearchResultItem.TrackItem && it.trackModel.track.id == fetchedTrack.track.id  }
                     if(position != -1) {
                         currentTracks[position] = SearchResultItem.TrackItem(fetchedTrack)
                         _searchRawState.value = SearchUiState.Success(currentTracks.toList())
                     }*/
-                    _searchRawState.update { state ->
-                        if (state is SearchUiState.Success) {
-                            val updatedList = state.searchResultList.map { resultItem ->
-                                if (resultItem is SearchResultItem.TrackItem) {
-                                    val trackModel = resultItem.trackModel
-                                    SearchResultItem.TrackItem (
-                                        trackModel = if (trackModel.track.id == fetchedTrack.track.id) {
-                                            fetchedTrack
-                                        } else trackModel
-                                    )
-                                } else resultItem
-                            }
-                            state.copy(searchResultList = updatedList)
-                        } else state
-                    }
+//                    _searchState.update { state ->
+//                        if (state is SearchUiState.Success) {
+//                            val updatedList = state.searchResultList.map { resultItem ->
+//                                if (resultItem is SearchResultItem.TrackItem) {
+//                                    val trackModel = resultItem.trackModel
+//                                    SearchResultItem.TrackItem (
+//                                        trackModel = if (trackModel.track.id == fetchedTrack.track.id) {
+//                                            fetchedTrack
+//                                        } else trackModel
+//                                    )
+//                                } else resultItem
+//                            }
+//                            state.copy(searchResultList = updatedList)
+//                        } else state
+//                    }
                 }
-                applyLikedTracks()
             } catch (e: Exception) {
-                _searchRawState.value = SearchUiState.Error(e.message ?: "Unknown error")
+                _searchState.value = SearchUiState.Error(e.message ?: "Unknown error")
                 Log.e("SearchViewModel", "Error performing search", e)
             }
         }
@@ -204,14 +211,18 @@ class SearchViewModel @Inject constructor(
     }
 
     /* TRACK STREAM URL FETCHING */
-    private fun fetchStreamUrl(tracks: List<TrackUiModel>): Flow<TrackUiModel> = channelFlow {
+    private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
         tracks.map { trackModel ->
             async {
                 val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-                fetchedTrack?.let { send(TrackUiModel(track = it, isLiked = trackModel.isLiked)) }
+                fetchedTrack?.let {
+                    if(it.streamUrl != null) {
+                        send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
+                    }
+                }
             }
         }.awaitAll()
-    }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /* PLAYER LOGIC */
     fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks, playlistId = null)
@@ -222,27 +233,7 @@ class SearchViewModel @Inject constructor(
         playerController.stop()
     }
 
-    /* Liked tracks logic */
-    fun onLikedTracksChange(likedTrackIds: List<Long>) {
-        latestLikedTrackIds = likedTrackIds
-        applyLikedTracks()
-    }
-
-    fun applyLikedTracks() {
-        _searchRawState.update { state ->
-            if(state is SearchUiState.Success) {
-                val updatedList = state.searchResultList.map { resultItem ->
-                    if (resultItem is SearchResultItem.TrackItem) {
-                        val trackModel = resultItem.trackModel
-                        resultItem.copy (
-                            trackModel = trackModel.copy(isLiked = trackModel.track.id in latestLikedTrackIds)
-                        )
-                    } else resultItem
-
-                }
-                state.copy(searchResultList = updatedList)
-            }
-            else state
-        }
+    companion object {
+        private const val TAG = "SearchViewModel"
     }
 }

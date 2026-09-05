@@ -86,7 +86,7 @@ class SearchResultAdapter (
                 binding.root.isActivated = trackModel.isPlaying
                 Log.d("TrackVH", "background after set: ${binding.root.background}, isActivated: ${binding.root.isActivated}")
                 // liked track
-                binding.searchTrackLikeBtn?.isVisible = trackModel.isLiked == true
+                binding.searchTrackLikeBtn.isVisible = trackModel.isLiked == true
             }
     }
 

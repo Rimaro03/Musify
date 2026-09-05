@@ -1,6 +1,7 @@
 package com.rimaro.musify
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.Firebase
@@ -33,5 +34,9 @@ class MainViewModel @Inject constructor(
                 _likedTrackIds.value = likedTracks.map { it.trackId }
             }
         }
+    }
+
+    companion object {
+        private const val TAG = "MainViewModel"
     }
 }
