@@ -2,7 +2,6 @@ package com.rimaro.musify.data.remote.firestore
 
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.FirestoreTrack
@@ -24,7 +23,7 @@ class FirestoreLikedTracksRepo @Inject constructor(
 ) {
     private val auth = Firebase.auth
 
-    val likedTrackIds: StateFlow<Set<FirestoreTrack>> = callbackFlow {
+    val likedTracks: StateFlow<Set<FirestoreTrack>> = callbackFlow {
         val uid = auth.currentUser?.uid ?: return@callbackFlow
         val listener = firestore.collection(USERS_COLLECTION).document(uid)
             .collection(LIKED_TRACKS_COLLECTION)

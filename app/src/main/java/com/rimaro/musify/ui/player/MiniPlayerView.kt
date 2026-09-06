@@ -24,19 +24,31 @@ import kotlin.math.abs
 class MiniPlayerView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null,
 ) : MaterialCardView(context, attrs) {
+    private var currIsLiked = false
+
     private val binding = LayoutMiniplayerBinding.inflate(
         LayoutInflater.from(context), this, true
     )
 
-    fun bind(track: Track) {
+    fun bind(
+        track: Track,
+        toggleLikeBtn: (track: Track) -> Unit,
+    ) {
         binding.miniplayerTrackName.text = track.title
         binding.miniplayerArtist.text = track.artist
         Glide.with(context)
             .load(track.artworkUrl)
             .into(binding.miniplayerTrackIcon)
+
+        binding.miniplayerLike.icon =
+            if(currIsLiked) ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_filled)
+            else ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_unfilled)
+        binding.miniplayerLike.setOnClickListener {
+            toggleLikeBtn(track)
+        }
     }
 
-    fun setButtonState(buttonState: PlayButtonState) {
+    fun setPlayButtonState(buttonState: PlayButtonState) {
         val progressDrawable = CircularProgressDrawable(binding.root.context).apply {
             setStyle(CircularProgressDrawable.DEFAULT)
             setColorSchemeColors(Color.WHITE)
@@ -50,7 +62,13 @@ class MiniPlayerView @JvmOverloads constructor(
             is PlayButtonState.PlayingThis -> ContextCompat.getDrawable(binding.root.context, R.drawable.pause_24px)
             else -> ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
         }
+    }
 
+    fun setIsLiked(isLiked: Boolean) {
+        currIsLiked = isLiked
+        binding.miniplayerLike.icon =
+            if(isLiked) ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_filled)
+            else ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_unfilled)
     }
 
     fun setOnPlayPauseClick(action: () -> Unit) {

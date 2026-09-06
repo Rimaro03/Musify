@@ -45,7 +45,7 @@ class SearchViewModel @Inject constructor(
     private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
 
     var uiState: Flow<SearchUiState> =
-        combine(_searchState, currentTrack, playingPlaylistId, likedTracksRepo.likedTrackIds, audioTrackUrls) {
+        combine(_searchState, currentTrack, playingPlaylistId, likedTracksRepo.likedTracks, audioTrackUrls) {
             rawState, currTrack, playingPlaylistId, likedTrackIds, trackUrls ->
             when (rawState) {
                 is SearchUiState.Success -> {

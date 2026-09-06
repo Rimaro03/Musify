@@ -24,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -52,7 +51,7 @@ class PlaylistViewModel @Inject constructor(
     private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
 
     var uiState: Flow<PlaylistUiState> =
-        combine(_playlistState, currentTrack, currPlaylistId, likedTracksRepo.likedTrackIds, audioTrackUrls)
+        combine(_playlistState, currentTrack, currPlaylistId, likedTracksRepo.likedTracks, audioTrackUrls)
         { rawState, currTrack, currPlaylistId, likedTrackIds, trackUrls ->
             when(rawState) {
                 is PlaylistUiState.Success -> {

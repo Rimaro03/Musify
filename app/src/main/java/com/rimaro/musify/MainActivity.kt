@@ -19,9 +19,11 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.ui.common.SearchbarViewModel
 import com.rimaro.musify.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: SearchbarViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()
+    @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -190,15 +193,24 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+                // current playing track metadata
                 launch {
                     playerViewModel.currentTrack.collect { track ->
-                        track?.let { binding.miniplayer.bind(it) }
+                        track?.let { binding.miniplayer.bind(it, playerViewModel::toggleLike) }
                     }
                 }
 
+                // play button state
                 launch {
                     playerViewModel.playButtonState.collect {
-                        binding.miniplayer.setButtonState(it)
+                        binding.miniplayer.setPlayButtonState(it)
+                    }
+                }
+
+                // like button state
+                launch {
+                    playerViewModel.isLiked.collect {
+                        binding.miniplayer.setIsLiked(it)
                     }
                 }
             }
