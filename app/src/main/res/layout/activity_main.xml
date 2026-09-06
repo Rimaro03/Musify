@@ -85,8 +85,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:defaultNavHost="true"
-        app:navGraph="@navigation/nav_graph"
-        android:layout_marginBottom="@dimen/nav_bar_height"/>
+        app:navGraph="@navigation/nav_graph"/>
+
 
     <com.rimaro.musify.ui.player.MiniPlayerView
         android:id="@+id/miniplayer"
@@ -109,6 +109,7 @@
         android:layout_gravity="bottom"
         android:fitsSystemWindows="true"
         app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"/>
+        app:labelVisibilityMode="labeled"
+        android:layout_marginTop="@dimen/nav_bar_height"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

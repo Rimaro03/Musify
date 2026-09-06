@@ -16,6 +16,7 @@ import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatSeekBar
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -70,6 +71,13 @@ class PlayerFragment : Fragment() {
         observeCurrentTrack()
         setupItemsMenu()
         addPlayerListener()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.playingPlaylist.collect { playlist ->
+                    binding.playerPlayingPlaylistName.text = playlist?.name ?: "Playlist"
+                }
+            }
+        }
     }
 
     private fun setupItemsMenu() {
@@ -162,6 +170,21 @@ class PlayerFragment : Fragment() {
 
             val shareIntent = Intent.createChooser(sendIntent, null)
             startActivity(shareIntent)
+        }
+        val likeBtn = binding.playerTrackLike
+        likeBtn.setOnClickListener {
+            viewModel.currentTrack.value?.let {
+                viewModel.toggleLike(it)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.isLiked.collect {
+                    likeBtn.icon =
+                        if(it) ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_filled)
+                        else ContextCompat.getDrawable(binding.root.context, androidx.media3.session.R.drawable.media3_icon_heart_unfilled)
+                }
+            }
         }
 
         val progressDrawable = CircularProgressDrawable(binding.root.context).apply {

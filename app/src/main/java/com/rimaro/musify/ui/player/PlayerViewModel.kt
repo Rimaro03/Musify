@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
+import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
@@ -13,15 +15,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import org.schabi.newpipe.extractor.timeago.patterns.fa
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     application: Application,
     private val playerController: PlayerController,
-    private val firestoreLikedTracksRepo: FirestoreLikedTracksRepo
+    private val firestoreLikedTracksRepo: FirestoreLikedTracksRepo,
+    private val firestorePlaylistRepo: FirestorePlaylistRepo
 ) : AndroidViewModel(application) {
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
@@ -32,6 +36,17 @@ class PlayerViewModel @Inject constructor(
         else false
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+    val playingPlaylist: StateFlow<FirestorePlaylist?> = playingPlaylistId
+        .map { playlistId ->
+            playlistId?.let {
+                firestorePlaylistRepo.getPlaylist(it)
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     val shuffleEnabled: StateFlow<Boolean> = playerController.shuffleEnabled
     val repeatMode: StateFlow<Int> = playerController.repeatMode
     val trackCurrPos: Long
