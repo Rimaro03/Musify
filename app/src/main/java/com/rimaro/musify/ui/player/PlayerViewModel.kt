@@ -10,12 +10,13 @@ import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.PlayButtonState
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -25,11 +26,21 @@ class PlayerViewModel @Inject constructor(
     application: Application,
     private val playerController: PlayerController,
     private val firestoreLikedTracksRepo: FirestoreLikedTracksRepo,
-    private val firestorePlaylistRepo: FirestorePlaylistRepo
+    private val firestorePlaylistRepo: FirestorePlaylistRepo,
+    private val queueManager: QueueManager
 ) : AndroidViewModel(application) {
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val currentTrack: StateFlow<Track?> = playerController.currentTrack
+    val queue: StateFlow<List<TrackUiModel>> = queueManager.queue
+        .map { tracks ->
+            tracks.map { TrackUiModel(it) }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
     val isLiked: StateFlow<Boolean> = combine(currentTrack, firestoreLikedTracksRepo.likedTracks)
     { currTrack, currLikedTracks ->
         if(currTrack != null) currLikedTracks.any { it.trackId == currTrack.id }

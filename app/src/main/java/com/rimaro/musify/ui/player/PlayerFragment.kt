@@ -28,6 +28,8 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -51,6 +53,8 @@ class PlayerFragment : Fragment() {
     private lateinit var tvDuration: TextView
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
+    private lateinit var queueRv: RecyclerView
+    private lateinit var queueAdapter: QueueAdapter
 
     private val handler = Handler(Looper.getMainLooper())
     private var isUserSeeking = false
@@ -80,6 +84,12 @@ class PlayerFragment : Fragment() {
         bottomSheetBehavior = BottomSheetBehavior.from(binding.playerBottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
         setupBottomSheet()
+
+        queueRv = binding.playerQueueRv
+        queueAdapter = QueueAdapter()
+        queueRv.adapter = queueAdapter
+        queueRv.layoutManager = LinearLayoutManager(requireContext())
+        observeQueue()
     }
 
     private fun setupItemsMenu() {
@@ -369,6 +379,16 @@ class PlayerFragment : Fragment() {
                 }
             }
         })
+    }
+
+    private fun observeQueue() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.queue.collect {
+                    queueAdapter.submitList(it)
+                }
+            }
+        }
     }
 
     override fun onStart() {
