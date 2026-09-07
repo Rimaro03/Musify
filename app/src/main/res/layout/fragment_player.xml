@@ -230,30 +230,80 @@
         </LinearLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <LinearLayout
+    <View
+        android:id="@+id/scrim"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
+        android:alpha="0"
+        android:background="@android:color/black"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/playerBottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:orientation="vertical"
-        android:background="?attr/colorSurface"
+        android:background="@drawable/queue_bottomsheet_bg"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         app:behavior_hideable="false"
-        app:behavior_peekHeight="72dp">
+        app:behavior_peekHeight="73dp"
+        app:behavior_fitToContents="false"
+        app:behavior_halfExpandedRatio="0.65">
 
-        <TextView
-            android:id="@+id/playerPlayingPlaylistName"
+        <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+            android:id="@+id/drag_handle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textAlignment="center" />
+            android:padding="-10dp"/>
 
-        <!-- collapsed "Up Next" row -->
+
         <LinearLayout
-            android:id="@+id/playerUpNext"
+            android:id="@+id/playerQueuePeek"
             android:layout_width="match_parent"
-            android:layout_height="72dp"
+            android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:padding="16dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginTop="-15dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/playing_from"
+                    android:textColor="@color/gray_light"
+                    android:layout_marginEnd="5dp"/>
+
+                <TextView
+                    android:id="@+id/playerCurrPlaylist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/queue"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                app:drawableStartCompat="@drawable/queue_music_24px"/>
+
         </LinearLayout>
 
         <!-- expanded queue list -->
@@ -261,7 +311,8 @@
             android:id="@+id/playerQueueRv"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_marginTop="16dp"/>
 
     </LinearLayout>
 

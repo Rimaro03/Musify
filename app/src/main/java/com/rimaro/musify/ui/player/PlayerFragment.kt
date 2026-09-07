@@ -1,5 +1,6 @@
 package com.rimaro.musify.ui.player
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
@@ -28,6 +30,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlayerBinding
 import com.rimaro.musify.domain.model.Track
@@ -46,6 +49,8 @@ class PlayerFragment : Fragment() {
     private lateinit var seekBar: AppCompatSeekBar
     private lateinit var tvPosition: TextView
     private lateinit var tvDuration: TextView
+
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
 
     private val handler = Handler(Looper.getMainLooper())
     private var isUserSeeking = false
@@ -71,13 +76,10 @@ class PlayerFragment : Fragment() {
         observeCurrentTrack()
         setupItemsMenu()
         addPlayerListener()
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.playingPlaylist.collect { playlist ->
-                    binding.playerPlayingPlaylistName.text = playlist?.name ?: "Playlist"
-                }
-            }
-        }
+
+        bottomSheetBehavior = BottomSheetBehavior.from(binding.playerBottomSheet)
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+        setupBottomSheet()
     }
 
     private fun setupItemsMenu() {
@@ -331,6 +333,42 @@ class PlayerFragment : Fragment() {
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
         return String.format(Locale.getDefault(), "%d:%02d", minutes, seconds)
+    }
+
+    // Queue BottomSheet
+
+    private fun setupBottomSheet() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.playingPlaylist.collect { playlist ->
+                    binding.playerCurrPlaylist.text = playlist?.name ?: "Unknown playlist"
+                }
+            }
+        }
+
+        bottomSheetBehavior.addBottomSheetCallback(object  : BottomSheetBehavior.BottomSheetCallback() {
+            override fun onSlide(sheet: View, slideOffset: Float) {
+                val dimAlpha = slideOffset.coerceIn(0f, 1f)
+                binding.scrim.alpha = dimAlpha * 0.7f
+
+                binding.scrim.visibility = if (dimAlpha > 0f) View.VISIBLE else View.GONE
+            }
+
+            @SuppressLint("SwitchIntDef")
+            override fun onStateChanged(sheet: View, newState: Int) {
+                when (newState) {
+                    BottomSheetBehavior.STATE_COLLAPSED -> {
+                        binding.scrim.visibility = View.GONE
+                        binding.scrim.isClickable = false
+                    }
+                    BottomSheetBehavior.STATE_EXPANDED,
+                    BottomSheetBehavior.STATE_HALF_EXPANDED -> {
+                        binding.scrim.visibility = View.VISIBLE
+                        binding.scrim.isClickable = true
+                    }
+                }
+            }
+        })
     }
 
     override fun onStart() {
