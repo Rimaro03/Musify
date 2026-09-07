@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -78,6 +79,14 @@ class PlayerViewModel @Inject constructor(
 
     init {
         playerController.connect()
+    }
+
+    fun playTrack(track: Track) {
+        viewModelScope.launch {
+            track.streamUrl?.let {
+                playerController.playTracks(listOf(track), playerController.playingPlaylistId.value)
+            }
+        }
     }
 
     fun pause() {

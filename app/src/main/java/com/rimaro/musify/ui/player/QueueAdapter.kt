@@ -11,7 +11,9 @@ import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemQueueTrackBinding
 import com.rimaro.musify.ui.common.model.TrackUiModel
 
-class QueueAdapter : ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
+class QueueAdapter(
+    private val onTrackClick: (TrackUiModel) -> Unit
+) : ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TrackUiModel>() {
             override fun areItemsTheSame(old: TrackUiModel, new: TrackUiModel) =
@@ -25,7 +27,8 @@ class QueueAdapter : ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CAL
     class ViewHolder(private val binding: ItemQueueTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(
-            trackModel: TrackUiModel
+            trackModel: TrackUiModel,
+            onTrackClick: (TrackUiModel) -> Unit
         ) {
             val track = trackModel.track
 
@@ -36,8 +39,11 @@ class QueueAdapter : ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CAL
                 .load(track.artworkUrl)
                 .placeholder(R.drawable.ic_launcher_foreground)
                 .into(binding.queueTrackThumbnail)
+            binding.queueTrackClickable.setOnClickListener {
+                onTrackClick(trackModel)
+            }
             // highlight playing track
-            binding.root.isActivated = trackModel.isPlaying
+            binding.root.isActivated = false
         }
     }
 
@@ -51,6 +57,6 @@ class QueueAdapter : ListAdapter<TrackUiModel, RecyclerView.ViewHolder>(DIFF_CAL
         position: Int,
     ) {
         val item = getItem(position)
-        (holder as ViewHolder).bind(item)
+        (holder as ViewHolder).bind(item, onTrackClick)
     }
 }

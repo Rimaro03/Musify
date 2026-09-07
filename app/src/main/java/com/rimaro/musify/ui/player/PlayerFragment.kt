@@ -2,11 +2,13 @@ package com.rimaro.musify.ui.player
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -35,8 +37,10 @@ import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlayerBinding
+import com.rimaro.musify.databinding.ItemQueueTrackBinding
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.PlayButtonState
+import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -86,10 +90,23 @@ class PlayerFragment : Fragment() {
         setupBottomSheet()
 
         queueRv = binding.playerQueueRv
-        queueAdapter = QueueAdapter()
+        queueAdapter = QueueAdapter(
+            { trackModel -> viewModel.playTrack(trackModel.track) }
+        )
         queueRv.adapter = queueAdapter
         queueRv.layoutManager = LinearLayoutManager(requireContext())
         observeQueue()
+
+        binding.playerCurrTrack.queueTrackDragHandle.icon =
+            ContextCompat.getDrawable(binding.root.context, R.drawable.play_arrow_24px)
+        binding.playerCurrTrack.root.isActivated = true
+        binding.playerCurrTrack.queueTrackDragHandle.setOnClickListener {
+            if(viewModel.isPlaying.value) {
+                viewModel.pause()
+            } else {
+                viewModel.resume()
+            }
+        }
     }
 
     private fun setupItemsMenu() {
@@ -135,6 +152,14 @@ class PlayerFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentTrack.collect {
                     setupPlayer(it)
+
+                    // track metadata
+                    binding.playerCurrTrack.queueTrackName.text = it?.title
+                    binding.playerCurrTrack.queueTrackArtist.text = it?.artist
+                    Glide.with(binding.root)
+                        .load(it?.artworkUrl)
+                        .placeholder(R.drawable.ic_launcher_foreground)
+                        .into(binding.playerCurrTrack.queueTrackThumbnail)
                 }
             }
         }
@@ -206,10 +231,30 @@ class PlayerFragment : Fragment() {
             centerRadius = 20f
             start()
         }
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.playButtonState.collect { state ->
                     playBtn.icon = when(state) {
+                        PlayButtonState.Idle -> AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.play_arrow_24px
+                        )
+
+                        PlayButtonState.Buffering -> progressDrawable
+
+                        PlayButtonState.PlayingThis -> AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.pause_24px
+                        )
+
+                        PlayButtonState.PlayingOther -> AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.play_arrow_24px
+                        )
+                    }
+
+                    binding.playerCurrTrack.queueTrackDragHandle.icon = when(state) {
                         PlayButtonState.Idle -> AppCompatResources.getDrawable(
                             requireContext(),
                             R.drawable.play_arrow_24px
