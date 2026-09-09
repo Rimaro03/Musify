@@ -53,7 +53,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // top buttons
         binding.trackOptPlayNext.setOnClickListener {
-            playerController.enqueueTracks(listOf(track), 1, playlistId = playlistId)
+            playerController.enqueueTracks(listOf(track), 1)
             dismiss()
         }
         binding.trackOptLike.setImageResource(
@@ -83,7 +83,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // list buttons
         binding.trackOptAddToQueue.setOnClickListener {
-            playerController.enqueueTracks(listOf(track), playlistId = playlistId)
+            playerController.enqueueTracks(listOf(track))
             dismiss()
         }
         binding.trackOptSaveToPlaylist.setOnClickListener {  }

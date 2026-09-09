@@ -3,7 +3,6 @@ package com.rimaro.musify.player.controller
 import android.content.ComponentName
 import android.content.Context
 import android.util.Log
-import androidx.compose.animation.core.RepeatMode
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -20,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -65,6 +63,7 @@ class PlayerController @Inject constructor(
 
     init {
         connect()
+        observeQueue()
     }
 
     private val playerListener = object : Player.Listener {
@@ -137,15 +136,18 @@ class PlayerController @Inject constructor(
     fun skipPrev() = controller?.seekToPreviousMediaItem()
     fun seekTo(position: Long) = controller?.seekTo(position)
 
-    fun enqueueTracks(tracks: List<Track>, position: Int? = null, playlistId: String?) {
+    fun enqueueTracks(tracks: List<Track>, position: Int? = null) {
         controller?.run {
-            _playingPlaylistId.value = playlistId
             addMediaItems(
                 position ?: mediaItemCount ,
                 MediaItemMapper.fromTracks(tracks)
             )
             if(controller?.playbackState == Player.STATE_IDLE) prepare()
         }
+    }
+
+    fun setPlayingPlaylistId(playlistId: String?) {
+        _playingPlaylistId.value = playlistId
     }
 
     fun toggleShuffle() {
@@ -171,29 +173,19 @@ class PlayerController @Inject constructor(
         _playingPlaylistId.value = null
     }
 
-    fun playPlaylist(tracks: List<Track>, playlistId: String) {
-        queueManager.loadQueue(tracks, shuffleEnabled.value)
-
-        coroutineScope.launch(Dispatchers.Main) {
-            queueManager.tracksReady.collect { tracks ->
-                tracks.forEach { track ->
-                    enqueueTracks(listOf(track), playlistId = playlistId)
-                }
-            }
-        }
-
-        coroutineScope.launch {
-            queueManager.queue.collect { queue ->
-                val queueString = queue.joinToString("\n") { it.title }
-            }
-        }
-    }
-
     fun addListener(listener: Player.Listener) {
         controller?.addListener(listener)
     }
 
     fun removeListener(listener: Player.Listener) {
         controller?.removeListener(listener)
+    }
+
+    private fun observeQueue() {
+        coroutineScope.launch(Dispatchers.Main) {
+            for (batch in queueManager.tracksReady) {
+                enqueueTracks(batch)
+            }
+        }
     }
 }

@@ -205,7 +205,7 @@ class SearchViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /* PLAYER LOGIC */
-    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks, playlistId = null)
+    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks)
 
     override fun onCleared() {
         super.onCleared()

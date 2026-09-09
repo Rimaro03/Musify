@@ -5,6 +5,8 @@ import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.resolver.TrackUrlResolver
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -42,8 +44,8 @@ class QueueManager @Inject constructor(
     private val resolvedTracks = mutableListOf<Track>()
     private val pendingResolution = mutableSetOf<Long>()
 
-    private val _tracksReady = MutableSharedFlow<List<Track>>(extraBufferCapacity = 64)
-    val tracksReady: SharedFlow<List<Track>> = _tracksReady.asSharedFlow()
+    private val _tracksReady = Channel<List<Track>>(capacity = Channel.UNLIMITED)
+    val tracksReady: ReceiveChannel<List<Track>> = _tracksReady
 
     private var windowStartTrackId: Long? = null
     private val windowStartIndex get() = activeQueue.indexOfFirst { it.id == windowStartTrackId }
@@ -55,7 +57,9 @@ class QueueManager @Inject constructor(
         const val REFETCH_TRIGGER = 3
     }
 
+    // -------------- //
     // PUBLIC METHODS //
+    // -------------- //
 
     fun loadQueue(tracks: List<Track>, shuffle: Boolean) {
         reset()
@@ -73,9 +77,10 @@ class QueueManager @Inject constructor(
 
     fun onCurrentTrackChange(trackId: Long) {
         val currTrackPos = activeQueue.indexOfFirst { it.id == trackId }
-        // remove currently playing track from the queue
-        originalQueue.value = originalQueue.value.filter { it.id != trackId }
-        shuffledQueue.value = shuffledQueue.value.filter { it.id != trackId }
+
+//        remove currently playing track from the queue. EDIT: we currently don't do that
+//        originalQueue.value = originalQueue.value.filter { it.id != trackId }
+//        shuffledQueue.value = shuffledQueue.value.filter { it.id != trackId }
 
         if(currTrackPos == -1) {
             Log.e("QueueManager", "Could not fetch the current track position " +
@@ -88,6 +93,7 @@ class QueueManager @Inject constructor(
             return
         }
 
+        // fetch the next window of tracks when withing the last 3 fetched tracks
         val offsetWithinWindow = currTrackPos - windowStartIndex
         if (offsetWithinWindow >= REFETCH_TRIGGER) {
             windowStartTrackId = trackId
@@ -97,11 +103,11 @@ class QueueManager @Inject constructor(
 
     fun setShuffleEnabled(enabled: Boolean) {
         shuffleEnabled.value = enabled
-        if(enabled) {
+        if(enabled && !originalQueue.value.isEmpty()) {
             shuffledQueue.value = originalQueue.value.shuffled()
         }
 
-        windowStartTrackId = activeQueue.first().id
+        windowStartTrackId = activeQueue.firstOrNull()?.id
         addedUpToId = null
     }
 
@@ -152,7 +158,7 @@ class QueueManager @Inject constructor(
         addedUpToId = toFlush.last().id
 
         coroutineScope.launch {
-            _tracksReady.emit(toFlush)
+            _tracksReady.send(toFlush)
         }
     }
 

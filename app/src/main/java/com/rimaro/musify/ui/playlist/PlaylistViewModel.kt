@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
+import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.resolver.TrackUrlResolver
 import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.ui.common.model.TrackUiModel
@@ -37,7 +39,8 @@ class PlaylistViewModel @Inject constructor(
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
-    private val likedTracksRepo: FirestoreLikedTracksRepo
+    private val likedTracksRepo: FirestoreLikedTracksRepo,
+    private val queueManager: QueueManager
 ) : AndroidViewModel(application) {
     private val _playlistState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
         PlaylistUiState.Idle)
@@ -107,28 +110,28 @@ class PlaylistViewModel @Inject constructor(
             }
             _playlistState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
 
-            fetchStreamUrl(trackUiModels).collect { fetchedTrack ->
-                audioTrackUrls.value += fetchedTrack
-                // TODO: move this to a repo
-            }
+//            fetchStreamUrl(trackUiModels).collect { fetchedTrack ->
+//                audioTrackUrls.value += fetchedTrack
+//                // TODO: move this to a repo
+//            }
         }
     }
 
-    private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
-        val semaphore = Semaphore(5)
-        tracks.map { trackModel ->
-            async {
-                semaphore.withPermit {
-                    val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-                    fetchedTrack?.let {
-                        if(it.streamUrl != null) {
-                            send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
-                        }
-                    }
-                }
-            }
-        }.awaitAll()
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+//    private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
+//        val semaphore = Semaphore(5)
+//        tracks.map { trackModel ->
+//            async {
+//                semaphore.withPermit {
+//                    val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
+//                    fetchedTrack?.let {
+//                        if(it.streamUrl != null) {
+//                            send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
+//                        }
+//                    }
+//                }
+//            }
+//        }.awaitAll()
+//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
 
     fun playTrack(track: Track) {
@@ -167,8 +170,9 @@ class PlaylistViewModel @Inject constructor(
 
     private fun playPlaylist() {
         if(_playlistState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
+            playerController.setPlayingPlaylistId(currPlaylistId.value)
             val tracksToPlay = (_playlistState.value as PlaylistUiState.Success).trackList.map { it.track }
-            playerController.playPlaylist(tracksToPlay, currPlaylistId.value!!)
+            queueManager.loadQueue(tracksToPlay, shuffleEnabled.value)
         }
     }
 

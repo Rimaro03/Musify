@@ -1,5 +1,6 @@
 package com.rimaro.musify.data.remote.firestore
 
+import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,11 +25,18 @@ class FirestoreLikedTracksRepo @Inject constructor(
     private val auth = Firebase.auth
 
     val likedTracks: StateFlow<Set<FirestoreTrack>> = callbackFlow {
-        val uid = auth.currentUser?.uid ?: return@callbackFlow
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            trySend(emptySet())
+            awaitClose { } // no listener to remove, but must still call awaitClose
+            return@callbackFlow
+        }
+
         val listener = firestore.collection(USERS_COLLECTION).document(uid)
             .collection(LIKED_TRACKS_COLLECTION)
             .addSnapshotListener { snapshots, exception ->
                 if (exception != null) {
+                    Log.e("LikedTracksDebug", "uid=$uid, error=${exception.message}")
                     close(exception); return@addSnapshotListener
                 }
                 trySend(snapshots?.toObjects(FirestoreTrack::class.java)?.toSet() ?: emptySet())

@@ -11,6 +11,7 @@ import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -26,7 +27,8 @@ class LibraryViewModel @Inject constructor(
     private val playlistImporter: PlaylistImporter,
     private val firestorePlaylistRepo: FirestorePlaylistRepo,
     private val playerController: PlayerController,
-    private val deezerRepository: DeezerRepository
+    private val deezerRepository: DeezerRepository,
+    private val queueManager: QueueManager
 ) : AndroidViewModel(application) {
     val importState = MutableStateFlow<ImportResult?>(null)
 
@@ -142,7 +144,7 @@ class LibraryViewModel @Inject constructor(
             }.awaitAll()
             val tracks = deezerTracks.map { it.toTrack() }
 
-            playerController.playPlaylist(tracks, playlistId)
+            queueManager.loadQueue(tracks, playerController.shuffleEnabled.value)
         }
     }
 }
