@@ -14,9 +14,14 @@ import javax.inject.Inject
 class NewPipeExtractor @Inject constructor(
     @Suppress("UNUSED_PARAMETER") newPipeInit: Boolean
 ) {
-
     private val youtubeService = ServiceList.YouTube
 
+    /**
+     * Search a track by title and artists
+     * @param title the title of the track
+     * @param artist the author of the track
+     * @return The first YouTube url found for the track
+     * */
     fun search(title: String, artist: String): String? {
         return try {
             val queryHandler = youtubeService.searchQHFactory
@@ -33,6 +38,11 @@ class NewPipeExtractor @Inject constructor(
         }
     }
 
+    /**
+     * Extract the audio stream url for the provided YouTube source url
+     * @param url YouTube source url
+     * @return object containing streamUrl, expiration and sourceUrl for the provided track url
+     */
     fun extractDirect(url: String): ExtractorResult.Success? {
         return try {
             val streamInfo = StreamInfo.getInfo(youtubeService, url)

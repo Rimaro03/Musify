@@ -16,7 +16,12 @@ class TrackUrlResolver @Inject constructor(
     private val dao: TrackDao,
     private val extractor: TrackExtractor
 ) {
-    suspend fun resolve(track: Track): Track? {
+    /**
+     * Resolve the audio url of the provided track
+     * @param track instance of class Track to resolve
+     * @return pair<streamUrl, sourceUrl>, both can be null if invalid
+     * */
+    suspend fun resolve(track: Track): Pair<String?, String?> {
         val trackId = track.id
         val title = track.title
         val artist = track.artist
@@ -24,30 +29,35 @@ class TrackUrlResolver @Inject constructor(
         val cached = dao.getTrack(trackId.toString())
 
         // Return cached URL if still valid
-        val res = if (cached != null &&
+        val (streamUrl, sourceUrl) = if (cached != null &&
             cached.status == TrackStatus.ACTIVE &&
             cached.expiresAt > System.currentTimeMillis() + 5 * 60 * 1000L &&
             cached.failureCount < 5
         ) {
             dao.updateLastPlayed(trackId.toString())
-            listOf(cached.streamUrl, cached.sourceUrl)
+            Pair(cached.streamUrl, cached.sourceUrl)
         } else {
             try {
                 getFreshUrl(trackId.toString(), title, artist, cached)
             } catch (e: ExtractionException) {
                 Log.e("TrackUrlResolver", "Error resolving URL", e)
-                return null
+                Pair(null, null)
             }
         }
 
-        val fetchedTrack = track.copy(
-            streamUrl = res[0],
-            sourceUrl = res[1]
-        )
-        return fetchedTrack
+        return Pair(streamUrl, sourceUrl)
     }
 
-    suspend fun getFreshUrl(trackId: String, title: String, artist: String, cached: CachedTrack? = null): List<String> {
+    /**
+     * Get a fresh audio stream url for a track if the cached one is invalid/expired
+     * @param trackId the id of the track
+     * @param title the title of the track
+     * @param artist the name of the artist
+     * @param cached instance of CachedTrack, containing the streamUrl
+     * @return pair<streamUrl, sourceUrl>, both can be null if invalid
+     * @throws ExtractionException if the extraction fails
+     */
+    suspend fun getFreshUrl(trackId: String, title: String, artist: String, cached: CachedTrack? = null): Pair<String, String> {
         // Try to extract a fresh URL
         val sourceUrl = cached?.sourceUrl
 
@@ -72,7 +82,7 @@ class TrackUrlResolver @Inject constructor(
                         status = TrackStatus.ACTIVE
                     )
                 )
-                listOf(result.streamUrl, result.sourceUrl)
+                Pair(result.streamUrl, result.sourceUrl)
             }
             is ExtractorResult.Failure -> {
                 val newCount = (cached?.failureCount ?: 0) + 1
