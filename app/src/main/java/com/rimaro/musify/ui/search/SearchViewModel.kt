@@ -194,11 +194,9 @@ class SearchViewModel @Inject constructor(
     private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
         tracks.map { trackModel ->
             async {
-                val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-                fetchedTrack?.let {
-                    if(it.streamUrl != null) {
-                        send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
-                    }
+                val (streamUrl, _) = trackUrlResolver.resolve(trackModel.track)
+                streamUrl?.let {
+                    send(mapOf(Pair(trackModel.track.id.toString(), streamUrl)))
                 }
             }
         }.awaitAll()

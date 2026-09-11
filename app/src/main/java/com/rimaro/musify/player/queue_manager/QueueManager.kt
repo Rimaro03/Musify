@@ -3,6 +3,8 @@ package com.rimaro.musify.player.queue_manager
 import android.util.Log
 import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.domain.repository.audio_url.AudioUrlRepository
+import com.rimaro.musify.domain.repository.audio_url.ResolutionState
 import com.rimaro.musify.resolver.TrackUrlResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -14,15 +16,17 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.schabi.newpipe.extractor.timeago.patterns.it
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class QueueManager @Inject constructor(
     @AppScope private val coroutineScope: CoroutineScope,
-    private val trackUrlResolver: TrackUrlResolver,
+    private val audioUrlRepository: AudioUrlRepository
 ) {
     private val originalQueue = MutableStateFlow<List<Track>>(emptyList())
     private val shuffledQueue = MutableStateFlow<List<Track>>(emptyList())
@@ -41,8 +45,20 @@ class QueueManager @Inject constructor(
         initialValue = originalQueue.value
     )
 
-    private val resolvedTracks = mutableListOf<Track>()
-    private val pendingResolution = mutableSetOf<Long>()
+    private val resolvedTracks: StateFlow<List<Long>> = audioUrlRepository.resolutionState.map { tracks ->
+        tracks.filterValues { it is ResolutionState.Success }.keys.toList()
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
+    private val pendingResolution: StateFlow<List<Long>> = audioUrlRepository.resolutionState.map { tracks ->
+        tracks.filterValues { it is ResolutionState.Loading }.keys.toList()
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Eagerly,
+        initialValue = emptyList()
+    )
 
     private val _tracksReady = Channel<List<Track>>(capacity = Channel.UNLIMITED)
     val tracksReady: ReceiveChannel<List<Track>> = _tracksReady
@@ -118,20 +134,17 @@ class QueueManager @Inject constructor(
         val end = minOf(windowStartIndex + WINDOW_SIZE, activeQueue.size)
         for (i in windowStartIndex until end) {
             val track = activeQueue[i]
-            if (track !in resolvedTracks && track.id !in pendingResolution) {
+            if (track.id !in resolvedTracks.value && track.id !in pendingResolution.value) {
                 resolve(track)
             }
         }
     }
 
     private fun resolve(track: Track) {
-        pendingResolution.add(track.id)
         coroutineScope.launch {
-            val url = trackUrlResolver.resolve(track)?.streamUrl
-            pendingResolution.remove(track.id)
+            val url = audioUrlRepository.resolve(track)
             if(url != null) {
                 track.streamUrl = url
-                resolvedTracks.add(track)
                 flushToPlayer()
             } else {
                 Log.e("QueueManager", "Audio URL resolution failed for track ${track.id}")
@@ -143,14 +156,14 @@ class QueueManager @Inject constructor(
         val toFlush = mutableListOf<Track>()
         var next = addedUpToIndex + 1
         var nextTrack = activeQueue[next]
-        while(nextTrack in resolvedTracks) {
+        while(nextTrack.id in resolvedTracks.value) {
             toFlush.add(nextTrack)
             next++
             nextTrack = activeQueue[next]
         }
         if(toFlush.isEmpty()) {
             // check if track url retrieval failed
-            if(nextTrack.id !in pendingResolution) {
+            if(nextTrack.id !in pendingResolution.value) {
                 addedUpToId = activeQueue[addedUpToIndex + 1].id
             }
             return
@@ -165,9 +178,6 @@ class QueueManager @Inject constructor(
     private fun reset() {
         originalQueue.value = emptyList()
         shuffledQueue.value = emptyList()
-        resolvedTracks.clear()
-        pendingResolution.clear()
-        shuffleEnabled.value = false
         windowStartTrackId = null
         addedUpToId = null
     }

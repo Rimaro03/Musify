@@ -10,6 +10,8 @@ import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toTrack
+import com.rimaro.musify.domain.repository.audio_url.AudioUrlRepository
+import com.rimaro.musify.domain.repository.audio_url.ResolutionState
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
@@ -25,6 +27,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -40,7 +43,8 @@ class PlaylistViewModel @Inject constructor(
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
     private val likedTracksRepo: FirestoreLikedTracksRepo,
-    private val queueManager: QueueManager
+    private val queueManager: QueueManager,
+    private val audioUrlRepository: AudioUrlRepository
 ) : AndroidViewModel(application) {
     private val _playlistState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
         PlaylistUiState.Idle)
@@ -51,7 +55,23 @@ class PlaylistViewModel @Inject constructor(
     val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
-    private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
+    private val audioTrackUrls: StateFlow<Map<Long, ResolutionState>> = audioUrlRepository.resolutionState
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = emptyMap()
+        )
+
+    val playButtonState: StateFlow<PlayButtonState> = combine(
+        playerState, _playlistState, isPlaying, playingPlaylistId
+    ) {state, playlistState, playing, activeId ->
+        when {
+            (playlistState is PlaylistUiState.Loading || state == Player.STATE_BUFFERING)
+                    && activeId == currPlaylistId.value -> PlayButtonState.Buffering
+            playing && activeId == currPlaylistId.value -> PlayButtonState.PlayingThis
+            else -> if (activeId == currPlaylistId.value) PlayButtonState.Idle else PlayButtonState.PlayingOther
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, PlayButtonState.Idle)
 
     var uiState: Flow<PlaylistUiState> =
         combine(_playlistState, currentTrack, currPlaylistId, likedTracksRepo.likedTracks, audioTrackUrls)
@@ -62,9 +82,12 @@ class PlaylistViewModel @Inject constructor(
                     PlaylistUiState.Success(
                         playlist = rawState.playlist,
                         trackList = rawState.trackList.map { trackModel ->
+                            val resolutionState = trackUrls[trackModel.track.id]
                             trackModel.copy(
                                 track = trackModel.track.copy(
-                                    streamUrl = trackUrls[trackModel.track.id.toString()]
+                                    streamUrl = if(resolutionState is ResolutionState.Success) {
+                                        resolutionState.streamUrl
+                                    } else null
                                 ),
                                 isPlaying = thisPlaylistActive && trackModel.track.id == currTrack?.id,
                                 isLiked = likedTrackIds
@@ -83,16 +106,6 @@ class PlaylistViewModel @Inject constructor(
     init {
         retrieveTrackIds(currPlaylistId.value)
     }
-
-    val playButtonState: StateFlow<PlayButtonState> = combine(
-        playerState, isPlaying, playingPlaylistId
-    ) {state, playing, activeId ->
-        when {
-            state == Player.STATE_BUFFERING && activeId == currPlaylistId.value -> PlayButtonState.Buffering
-            playing && activeId == currPlaylistId.value -> PlayButtonState.PlayingThis
-            else -> if (activeId == currPlaylistId.value) PlayButtonState.Idle else PlayButtonState.PlayingOther
-        }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, PlayButtonState.Idle)
 
     fun retrieveTrackIds(playlistId: String?) {
         if (playlistId == null) return
