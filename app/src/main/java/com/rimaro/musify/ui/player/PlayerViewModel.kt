@@ -42,6 +42,21 @@ class PlayerViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+    val upcomingTracks: StateFlow<List<TrackUiModel>> =
+        combine(playerController.currentTrack, queue)
+        { currTrack, currQueue ->
+            if(currTrack != null && !currQueue.isEmpty()) {
+                val currTrackPos = currQueue.indexOfFirst { it.track.id == currTrack.id }
+                val sliceStartPost = if(currTrackPos + 1 < currQueue.size) currTrackPos + 1
+                else currTrackPos
+                currQueue.subList(sliceStartPost, currQueue.size)
+            } else emptyList()
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
     val isLiked: StateFlow<Boolean> = combine(currentTrack, firestoreLikedTracksRepo.likedTracks)
     { currTrack, currLikedTracks ->
         if(currTrack != null) currLikedTracks.any { it.trackId == currTrack.id }

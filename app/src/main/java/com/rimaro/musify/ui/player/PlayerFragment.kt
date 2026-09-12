@@ -429,7 +429,7 @@ class PlayerFragment : Fragment() {
     private fun observeQueue() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.queue.collect {
+                viewModel.upcomingTracks.collect {
                     queueAdapter.submitList(it)
                 }
             }

@@ -63,10 +63,10 @@ class PlaylistViewModel @Inject constructor(
         )
 
     val playButtonState: StateFlow<PlayButtonState> = combine(
-        playerState, _playlistState, isPlaying, playingPlaylistId
-    ) {state, playlistState, playing, activeId ->
+        playerState, isPlaying, playingPlaylistId
+    ) { state, playing, activeId ->
         when {
-            (playlistState is PlaylistUiState.Loading || state == Player.STATE_BUFFERING)
+            state == Player.STATE_BUFFERING
                     && activeId == currPlaylistId.value -> PlayButtonState.Buffering
             playing && activeId == currPlaylistId.value -> PlayButtonState.PlayingThis
             else -> if (activeId == currPlaylistId.value) PlayButtonState.Idle else PlayButtonState.PlayingOther
