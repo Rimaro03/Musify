@@ -133,7 +133,11 @@ class PlayerController @Inject constructor(
     }
 
     fun skipNext() = controller?.seekToNextMediaItem()
-    fun skipPrev() = controller?.seekToPreviousMediaItem()
+    fun skipPrev() {
+        if (currPosition < 3000){
+            controller?.seekToPreviousMediaItem()
+        } else controller?.seekTo(0)
+    }
     fun seekTo(position: Long) = controller?.seekTo(position)
 
     fun enqueueTracks(tracks: List<Track>, position: Int? = null) {
