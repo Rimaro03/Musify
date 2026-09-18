@@ -1,5 +1,8 @@
 package com.rimaro.musify
 
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
@@ -20,6 +23,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
+import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.ui.common.SearchbarViewModel
 import com.rimaro.musify.ui.player.PlayerViewModel
 import kotlinx.coroutines.launch
@@ -33,7 +37,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: SearchbarViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()
-    @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
+    @Inject lateinit var playerController: PlayerController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,6 +67,8 @@ class MainActivity : AppCompatActivity() {
             invalidateOptionsMenu()
         }
 
+        // pause on bluetooth disconnect
+        setupAudioCallback()
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -215,6 +221,19 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun setupAudioCallback() {
+        val audioDeviceCallback = object : AudioDeviceCallback() {
+            override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+                if(removedDevices.any { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP }) {
+                    playerController.pause()
+                }
+            }
+        }
+
+        val audioManager = this.getSystemService(AudioManager::class.java)
+        audioManager.registerAudioDeviceCallback(audioDeviceCallback, null)
     }
 
 }
