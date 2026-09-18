@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="musify">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-09-12T09:18:59.968015871Z">
+        <DropdownSelection timestamp="2026-09-18T12:44:33.668876446Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="Wireless" identifier="serviceName=adb-33241JEHN00378-hyjfga" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=33241JEHN00378" />
             </handle>
           </Target>
         </DropdownSelection>

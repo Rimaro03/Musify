@@ -427,10 +427,17 @@ class PlayerFragment : Fragment() {
     }
 
     private fun observeQueue() {
+//        val anchorItemId = currentList[layoutManager.findFirstVisibleItemPosition()].id
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.upcomingTracks.collect {
-                    queueAdapter.submitList(it)
+                viewModel.upcomingTracks.collect { list ->
+                    queueAdapter.submitList(list) {
+//                        val newPosition = list.indexOfFirst { it.track.id == anchorItemId }
+//                        if (newPosition != -1) {
+//                            queueRv.layoutManager?.scrollToPosition(newPosition)
+//                        }
+                    }
                 }
             }
         }

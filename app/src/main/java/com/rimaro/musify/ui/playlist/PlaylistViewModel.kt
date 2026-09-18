@@ -122,36 +122,19 @@ class PlaylistViewModel @Inject constructor(
                 TrackUiModel(track = it.toTrack())
             }
             _playlistState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
-
-//            fetchStreamUrl(trackUiModels).collect { fetchedTrack ->
-//                audioTrackUrls.value += fetchedTrack
-//                // TODO: move this to a repo
-//            }
         }
     }
 
-//    private fun fetchStreamUrl(tracks: List<TrackUiModel>): StateFlow<Map<String, String>> = channelFlow {
-//        val semaphore = Semaphore(5)
-//        tracks.map { trackModel ->
-//            async {
-//                semaphore.withPermit {
-//                    val fetchedTrack = trackUrlResolver.resolve(trackModel.track)
-//                    fetchedTrack?.let {
-//                        if(it.streamUrl != null) {
-//                            send(mapOf(Pair(it.id.toString(), it.streamUrl!!)))
-//                        }
-//                    }
-//                }
-//            }
-//        }.awaitAll()
-//    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
-
-
     fun playTrack(track: Track) {
-        viewModelScope.launch {
-            track.streamUrl?.let {
-                playerController.playTracks(listOf(track), currPlaylistId.value)
-            }
+        if(_playlistState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
+            playerController.setPlayingPlaylistId(currPlaylistId.value)
+            playerController.clearQueue()
+            val trackList = (_playlistState.value as PlaylistUiState.Success).trackList
+                .map { it.track }
+            val trackPos = trackList.indexOfFirst { it.id == track.id }
+            val tracksToPlay = trackList.subList(trackPos, trackList.size)
+
+            queueManager.loadQueue(tracksToPlay, shuffleEnabled.value)
         }
     }
 
@@ -184,6 +167,7 @@ class PlaylistViewModel @Inject constructor(
     private fun playPlaylist() {
         if(_playlistState.value is PlaylistUiState.Success && currPlaylistId.value != null) {
             playerController.setPlayingPlaylistId(currPlaylistId.value)
+            playerController.clearQueue()
             val tracksToPlay = (_playlistState.value as PlaylistUiState.Success).trackList.map { it.track }
             queueManager.loadQueue(tracksToPlay, shuffleEnabled.value)
         }
