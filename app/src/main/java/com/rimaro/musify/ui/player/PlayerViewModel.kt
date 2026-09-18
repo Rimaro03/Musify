@@ -120,10 +120,7 @@ class PlayerViewModel @Inject constructor(
     fun addListener(listener: Player.Listener) = playerController.addListener(listener)
     fun removeListener(listener: Player.Listener) = playerController.removeListener(listener)
 
-    fun toggleLike(track: Track) {
-        if(isLiked.value) firestoreLikedTracksRepo.removeTrack(track.id)
-        else firestoreLikedTracksRepo.addTrack(track.toFirestoreTrack())
-    }
+    fun toggleLike(track: Track) = firestoreLikedTracksRepo.toggleLike(track)
 
     override fun onCleared() {
         playerController.disconnect()

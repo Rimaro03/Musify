@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.app.NotificationCompat
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
@@ -22,10 +23,23 @@ import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.rimaro.musify.R
+import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
+import com.rimaro.musify.util.MediaItemMapper
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MusicService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
     private lateinit var player: ExoPlayer
+    @Inject lateinit var likedTracksRepo: FirestoreLikedTracksRepo
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val likeTrackCommand = SessionCommand(ACTION_LIKE_TRACK, Bundle.EMPTY)
     private val likeTrackButton = CommandButton.Builder(CommandButton.ICON_UNDEFINED)
@@ -46,9 +60,23 @@ class MusicService : MediaSessionService() {
         super.onCreate()
         player = ExoPlayer.Builder(this).build()
         mediaSession = MediaSession.Builder(this, player)
-            .setCallback(MediaSessionCallback(likeTrackCommand, shuffleCommand))
-            .setMediaButtonPreferences(ImmutableList.of(shuffleButton, likeTrackButton))
+            .setCallback(MediaSessionCallback())
+            //.setMediaButtonPreferences(ImmutableList.of(shuffleButton, likeTrackButton))
             .build()
+
+        player.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                refreshButtons()
+            }
+
+            override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+                refreshButtons()
+            }
+        })
+
+        scope.launch { likedTracksRepo.likedTracks.collect { refreshButtons() } }
+
+        refreshButtons()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -107,19 +135,7 @@ class MusicService : MediaSessionService() {
         }
     }
 
-    override fun onDestroy() {
-        mediaSession?.run {
-            player.release()
-            release()
-            mediaSession = null
-        }
-        super.onDestroy()
-    }
-
-    private class MediaSessionCallback(
-        private val likeCmd: SessionCommand,
-        private val shuffleCmd: SessionCommand
-    ) : MediaSession.Callback {
+    private inner class MediaSessionCallback : MediaSession.Callback {
         override fun onAddMediaItems(
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,
@@ -140,8 +156,8 @@ class MusicService : MediaSessionService() {
         ): MediaSession.ConnectionResult {
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
                 .buildUpon()
-                .add(shuffleCmd)
-                .add(likeCmd)
+                .add(shuffleCommand)
+                .add(likeTrackCommand)
                 .build()
 
 
@@ -157,23 +173,62 @@ class MusicService : MediaSessionService() {
             customCommand: SessionCommand,
             args: Bundle
         ): ListenableFuture<SessionResult> {
-            return when(customCommand.customAction) {
+            when(customCommand.customAction) {
                 ACTION_LIKE_TRACK -> {
-                    Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                    session.player.currentMediaItem?.let {
+                        likedTracksRepo.toggleLike(MediaItemMapper.toTrack(it))
+                    }
                 }
 
                 ACTION_SHUFFLE -> {
-                    Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                    session.player.shuffleModeEnabled = !session.player.shuffleModeEnabled
                 }
 
-                else -> super.onCustomCommand(session, controller, customCommand, args)
             }
+            return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
         }
+    }
+
+    @OptIn(UnstableApi::class)
+    private fun refreshButtons() {
+        val session = mediaSession ?: return
+        val player = session.player
+        val liked = player.currentMediaItem?.mediaId?.let { likedTracksRepo.isLiked(it.toLong()) } ?: false
+
+        val likeBtn = CommandButton.Builder(CommandButton.ICON_UNDEFINED)
+            .setDisplayName("Like track")
+            .setCustomIconResId(
+                if(liked) androidx.media3.session.R.drawable.media3_icon_heart_filled
+                else androidx.media3.session.R.drawable.media3_icon_heart_unfilled
+            )
+            .setSessionCommand(likeTrackCommand)
+            .build()
+
+        val shuffleBtn = CommandButton.Builder(CommandButton.ICON_UNDEFINED)
+            .setDisplayName("Like track")
+            .setCustomIconResId(
+                if(player.shuffleModeEnabled) androidx.media3.session.R.drawable.media3_icon_shuffle_on
+                else androidx.media3.session.R.drawable.media3_icon_shuffle_off
+            )
+            .setSessionCommand(shuffleCommand)
+            .build()
+
+        session.setMediaButtonPreferences(listOf(shuffleBtn, likeBtn))
     }
 
     companion object {
         private const val NOTIFICATION_ID = 1001
         const val ACTION_LIKE_TRACK = "ACTION_LIKE_TRACK"
         const val ACTION_SHUFFLE = "ACTION_SHUFFLE"
+    }
+
+    override fun onDestroy() {
+        scope.cancel()
+        mediaSession?.run {
+            player.release()
+            release()
+        }
+        mediaSession = null
+        super.onDestroy()
     }
 }

@@ -6,6 +6,8 @@ import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.FirestoreTrack
+import com.rimaro.musify.domain.model.Track
+import com.rimaro.musify.domain.model.toFirestoreTrack
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.SharingStarted
@@ -72,6 +74,15 @@ class FirestoreLikedTracksRepo @Inject constructor(
                 doc.reference.delete().await()
             }
         }
+    }
+
+    fun toggleLike(track: Track) {
+        if(isLiked(track.id)) removeTrack(track.id)
+        else addTrack(track.toFirestoreTrack())
+    }
+
+    fun isLiked(trackId: Long): Boolean {
+        return likedTracks.value.map { it.trackId }.contains(trackId)
     }
 
     companion object {

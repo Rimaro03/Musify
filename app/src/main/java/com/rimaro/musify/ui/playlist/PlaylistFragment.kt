@@ -6,8 +6,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -17,12 +19,12 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
 import com.rimaro.musify.domain.model.FirestorePlaylist
-import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import com.rimaro.musify.ui.common.model.TrackUiModel
@@ -37,6 +39,10 @@ class PlaylistFragment : Fragment() {
 
     private val viewModel: PlaylistViewModel by viewModels()
     private val args: PlaylistFragmentArgs by navArgs()
+
+    private var isToolbarTitleVisible = false
+
+    private lateinit var toolbarTitle: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -69,6 +75,14 @@ class PlaylistFragment : Fragment() {
         val playPlaylistBtn = binding.playlistPlayBtn
         playPlaylistBtn.setOnClickListener { viewModel.togglePlayButton() }
         observePlayerState(playPlaylistBtn)
+
+        toolbarTitle = requireActivity().findViewById(R.id.toolbar_title)
+        toolbarTitle.isVisible = true
+        binding.libraryContainer.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
+                updateToolbarTitleVisibility(scrollY)
+            }
+        )
     }
 
     private fun showTrackMenu(trackModel: TrackUiModel, playlistId: String?) {
@@ -182,8 +196,40 @@ class PlaylistFragment : Fragment() {
         }
     }
 
+    private fun updateToolbarTitleVisibility(scrollY: Int) {
+        val titleBottom = binding.playlistTitle.bottom
+
+        // simpler/more robust: compare scrollY to the title's top offset
+        val shouldShowToolbarTitle = scrollY >= titleBottom
+
+        if (shouldShowToolbarTitle != isToolbarTitleVisible) {
+            isToolbarTitleVisible = shouldShowToolbarTitle
+            animateToolbarTitle(shouldShowToolbarTitle)
+        }
+    }
+
+    private fun animateToolbarTitle(show: Boolean) {
+        val toolbarTitleView = requireActivity().findViewById<TextView>(R.id.toolbar_title)
+
+        toolbarTitleView.animate()
+            .alpha(if (show) 1f else 0f)
+            .setDuration(150)
+            .withStartAction {
+                if (show) {
+                    toolbarTitleView.text = binding.playlistTitle.text
+                    toolbarTitleView.visibility = View.VISIBLE
+                }
+            }
+            .withEndAction {
+                if (!show) toolbarTitleView.visibility = View.INVISIBLE
+            }
+            .start()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        toolbarTitle.text = ""
+        toolbarTitle.isVisible = false
         _binding = null
     }
 }
