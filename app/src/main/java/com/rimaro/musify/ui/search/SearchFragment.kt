@@ -28,9 +28,7 @@ import com.google.android.material.search.SearchView
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
-import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.SearchbarViewModel
-import com.rimaro.musify.ui.common.SwipeToQueueCallback
 import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -195,16 +193,8 @@ class SearchFragment : Fragment() {
         val queueIcon = ContextCompat.getDrawable(requireContext(), R.drawable.low_priority_24px)
 
         val swipeCallback = SwipeToQueueCallback(
-            onSwiped = { position ->
-                val res = (adapter.currentList[position] as SearchResultItem.TrackItem)
-                viewModel.enqueueTracks(listOf(res.trackModel.track))
-
-                // Snap the item back instead of removing it
-                adapter.notifyItemChanged(position)
-
-                // Optional: show a Snackbar confirmation
-                //Snackbar.make(view, "\"${track.title}\" added to queue", Snackbar.LENGTH_SHORT).show()
-            },
+            adapter = adapter,
+            onSwiped = { track -> viewModel.playNext(track) },
             queueIcon = queueIcon,
             requireContext()
         )

@@ -30,6 +30,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
@@ -93,6 +94,11 @@ class PlayerFragment : Fragment() {
         queueAdapter = QueueAdapter { trackModel -> viewModel.playTrack(trackModel.track) }
         queueRv.adapter = queueAdapter
         queueRv.layoutManager = LinearLayoutManager(requireContext())
+        val touchHelper = TouchHelper(
+            onMove = queueAdapter::moveItem,
+            onDropped = viewModel::onQueueItemsMoved
+        )
+        ItemTouchHelper(touchHelper).attachToRecyclerView(queueRv)
         observeQueue()
 
         binding.playerCurrTrack.queueTrackDragHandle.icon =

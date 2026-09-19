@@ -178,4 +178,13 @@ class PlaylistViewModel @Inject constructor(
         likedTracksRepo.removeTrack(track.id)
     }
 
+    fun playNext(track: Track) = viewModelScope.launch {
+        val currTrack = playerController.currentTrack.value
+        if(currTrack == null) {
+            queueManager.loadQueue(listOf(track), playerController.shuffleEnabled.value)
+        } else {
+            queueManager.playNext(currTrack, track)
+        }
+    }
+
 }

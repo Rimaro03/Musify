@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
@@ -16,10 +17,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.R
@@ -36,6 +38,9 @@ import kotlin.getValue
 class PlaylistFragment : Fragment() {
     private var _binding: FragmentPlaylistBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var trackRv: RecyclerView
+    private lateinit var trackAdapter: PlaylistTrackAdapter
 
     private val viewModel: PlaylistViewModel by viewModels()
     private val args: PlaylistFragmentArgs by navArgs()
@@ -57,8 +62,8 @@ class PlaylistFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val playlistId = args.playlistId
 
-        val trackRv = binding.playlistTrackRv
-        val trackAdapter = PlaylistTrackAdapter(
+        trackRv = binding.playlistTrackRv
+        trackAdapter = PlaylistTrackAdapter(
             { trackModel -> viewModel.playTrack(trackModel.track) },
             { trackModel -> showTrackMenu(trackModel, playlistId) },
             { trackModel -> viewModel.playPreview(trackModel.track) },
@@ -66,7 +71,8 @@ class PlaylistFragment : Fragment() {
         )
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())
-        observePlayerUiState(trackAdapter)
+        setupSwipe()
+        observePlayerUiState()
 
         val shuffleBtn = binding.playlistShuffleBtn
         shuffleBtn.setOnClickListener { viewModel.toggleShuffle() }
@@ -90,7 +96,20 @@ class PlaylistFragment : Fragment() {
             .show(childFragmentManager, "TrackOptionsBottomSheet")
     }
 
-    private fun observePlayerUiState(adapter: PlaylistTrackAdapter) {
+    private fun setupSwipe() {
+        val queueIcon = ContextCompat.getDrawable(requireContext(), R.drawable.low_priority_24px)
+
+        val swipeCallback = SwipeToQueueCallback(
+            adapter = trackAdapter,
+            onSwiped = { track -> viewModel.playNext(track) },
+            queueIcon = queueIcon,
+            requireContext()
+        )
+
+        ItemTouchHelper(swipeCallback).attachToRecyclerView(trackRv)
+    }
+
+    private fun observePlayerUiState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { uiState ->
@@ -108,7 +127,7 @@ class PlaylistFragment : Fragment() {
                             progress.isVisible = false
                             container.isVisible = true
                             setupPlaylistHeader(uiState.playlist, uiState.trackList)
-                            adapter.submitList(uiState.trackList)
+                            trackAdapter.submitList(uiState.trackList)
                         }
                         is PlaylistUiState.Loading -> {
                             progress.isVisible = true

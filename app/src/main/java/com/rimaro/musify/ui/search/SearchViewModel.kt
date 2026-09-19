@@ -12,6 +12,7 @@ import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
+import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.resolver.TrackUrlResolver
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,11 +37,17 @@ class SearchViewModel @Inject constructor(
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
     private val previewPlayerController: PreviewPlayerController,
-    private val likedTracksRepo: FirestoreLikedTracksRepo
+    private val likedTracksRepo: FirestoreLikedTracksRepo,
+    private val queueManager: QueueManager
 ) : AndroidViewModel(application) {
     /** Handles Idle, Loading, Success, Error states */
     private val _searchState = MutableStateFlow<SearchUiState>(SearchUiState.Idle)
     private val currentTrack: StateFlow<Track?> = playerController.currentTrack
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
+        )
     private val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
     private val audioTrackUrls: MutableStateFlow<Map<String, String>> = MutableStateFlow(emptyMap())
 
@@ -203,7 +210,14 @@ class SearchViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /* PLAYER LOGIC */
-    fun enqueueTracks(tracks: List<Track>) = playerController.enqueueTracks(tracks)
+    fun playNext(track: Track) = viewModelScope.launch {
+        val currTrack = playerController.currentTrack.value
+        if(currTrack == null) {
+            queueManager.loadQueue(listOf(track), playerController.shuffleEnabled.value)
+        } else {
+            queueManager.playNext(currTrack, track)
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()

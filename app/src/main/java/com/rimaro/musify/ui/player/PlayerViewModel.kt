@@ -122,6 +122,12 @@ class PlayerViewModel @Inject constructor(
 
     fun toggleLike(track: Track) = firestoreLikedTracksRepo.toggleLike(track)
 
+    fun onQueueItemsMoved(from: Int, to: Int) {
+        playerController.currentTrack.value?.let {
+            queueManager.move(from, to, it.id)
+        }
+    }
+
     override fun onCleared() {
         playerController.disconnect()
         super.onCleared()

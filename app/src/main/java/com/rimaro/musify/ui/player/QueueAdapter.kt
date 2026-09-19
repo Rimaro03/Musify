@@ -24,6 +24,12 @@ class QueueAdapter(
         }
     }
 
+    fun moveItem(from: Int, to: Int) {
+        val newList = currentList.toMutableList()
+        newList.add(to, newList.removeAt(from))
+        submitList(newList)
+    }
+
     class ViewHolder(private val binding: ItemQueueTrackBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(

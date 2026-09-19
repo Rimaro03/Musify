@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.map
 import kotlin.math.min
 
 @Singleton
@@ -74,6 +75,10 @@ class QueueManager @Inject constructor(
     @Volatile
     var generation = 0
         private set
+
+    init {
+        audioUrlRepository.resolutionState.value
+    }
 
     // -------------- //
     // PUBLIC METHODS //
@@ -135,7 +140,7 @@ class QueueManager @Inject constructor(
 
         val localGeneration = generation
         val toResolve = mutableListOf<Track>()
-        val end = minOf(windowStartIndex + WINDOW_SIZE, activeQueue.size - 1)
+        val end = minOf(windowStartIndex + WINDOW_SIZE, activeQueue.size)
         for (i in windowStartIndex until end) {
             toResolve.add(activeQueue[i])
         }
@@ -163,15 +168,16 @@ class QueueManager @Inject constructor(
     private suspend fun flushToPlayer(localGeneration: Int) {
         val toFlush = mutableListOf<Track>()
         var next = addedUpToIndex + 1
-        var nextTrack = activeQueue[next]
-        while(nextTrack.id in resolvedTracks.value) {
+        var nextTrack: Track? = activeQueue[next]
+        Log.d("QueueManager", "toFlush:${toFlush.map { it.title }}, resolvedTracks${resolvedTracks.value}, nextTrack: ${nextTrack?.title}")
+        while(nextTrack != null && nextTrack.id in resolvedTracks.value) {
             toFlush.add(nextTrack)
             next++
-            nextTrack = activeQueue[next]
+            nextTrack = activeQueue.getOrNull(next)
         }
         if(toFlush.isEmpty()) {
             // check if track url retrieval failed
-            if(nextTrack.id !in pendingResolution.value) {
+            if(nextTrack?.id !in pendingResolution.value) {
                 addedUpToId = activeQueue[addedUpToIndex + 1].id
             }
             return
@@ -196,6 +202,29 @@ class QueueManager @Inject constructor(
             list.toMutableList().apply { add(playingTrackIdx + 1, newTrack) }
         }
     }
+
+    fun move(from: Int, to: Int, currTrackId: Long) {
+        // queue only show up next, need to convert from and to
+        val base = activeQueue.indexOfFirst { it.id == currTrackId } + 1
+        val updatedFrom = base + from
+        val updatedTo = base + to
+        if (updatedFrom == updatedTo || updatedFrom !in activeQueue.indices || updatedTo !in activeQueue.indices) return
+        if(shuffleEnabled.value) {
+            shuffledQueue.update {
+                val list = it.toMutableList()
+                list.add(updatedTo, list.removeAt(updatedFrom))
+                list
+            }
+        } else {
+            originalQueue.update {
+                val list = it.toMutableList()
+                list.add(updatedTo, list.removeAt(updatedFrom))
+                list
+            }
+        }
+    }
+
+
 
     fun resetAddedUpToCount(currTrackId: String?) {
         if(currTrackId == null) return
