@@ -90,9 +90,7 @@ class PlayerFragment : Fragment() {
         setupBottomSheet()
 
         queueRv = binding.playerQueueRv
-        queueAdapter = QueueAdapter(
-            { trackModel -> viewModel.playTrack(trackModel.track) }
-        )
+        queueAdapter = QueueAdapter { trackModel -> viewModel.playTrack(trackModel.track) }
         queueRv.adapter = queueAdapter
         queueRv.layoutManager = LinearLayoutManager(requireContext())
         observeQueue()

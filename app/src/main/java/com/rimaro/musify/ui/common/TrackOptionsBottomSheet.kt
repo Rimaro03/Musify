@@ -12,6 +12,7 @@ import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -22,6 +23,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
     private var _binding: FragmentTrackOptionsBinding? = null
     private val binding get() = _binding!!
 
+    @Inject lateinit var queueManager: QueueManager
     @Inject lateinit var playerController: PlayerController
     @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
 
@@ -53,7 +55,12 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // top buttons
         binding.trackOptPlayNext.setOnClickListener {
-            playerController.enqueueTracks(listOf(track), 1)
+            val currTrack = playerController.currentTrack.value
+            if(currTrack == null) {
+                queueManager.loadQueue(listOf(track), playerController.shuffleEnabled.value)
+            } else {
+                queueManager.playNext(currTrack, track)
+            }
             dismiss()
         }
         binding.trackOptLike.setImageResource(
@@ -83,7 +90,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
         // list buttons
         binding.trackOptAddToQueue.setOnClickListener {
-            playerController.enqueueTracks(listOf(track))
+            queueManager.enqueue(track)
             dismiss()
         }
         binding.trackOptSaveToPlaylist.setOnClickListener {  }

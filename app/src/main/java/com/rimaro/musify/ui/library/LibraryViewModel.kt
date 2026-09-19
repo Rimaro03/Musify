@@ -131,6 +131,7 @@ class LibraryViewModel @Inject constructor(
 
     private fun playPlaylist(playlistId: String) {
         viewModelScope.launch {
+            playerController.setPlayingPlaylistId(playlistId)
             val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
             if (firestorePlaylist == null) {
                 Log.e("LibraryViewmodel", "Could not retrieve playlist")
@@ -144,6 +145,7 @@ class LibraryViewModel @Inject constructor(
             }.awaitAll()
             val tracks = deezerTracks.map { it.toTrack() }
 
+            playerController.clearQueue()
             queueManager.loadQueue(tracks, playerController.shuffleEnabled.value)
         }
     }

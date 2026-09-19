@@ -2,6 +2,7 @@ package com.rimaro.musify.player.controller
 
 import android.content.ComponentName
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -184,10 +185,32 @@ class PlayerController @Inject constructor(
         controller?.removeListener(listener)
     }
 
+    /**
+     * Observes for:
+     * 1. New tracks with audio url, to add in queue
+     * 2. Change in the whole queue, in which case it resets internal exoplayer queue
+     * and QueueManager addedUpTo counter
+     */
     private fun observeQueue() {
         coroutineScope.launch(Dispatchers.Main) {
             for (batch in queueManager.tracksReady) {
-                enqueueTracks(batch)
+                // check if a queue change happened while resolving the tracks, in which case do not add tracks
+                Log.d("PlayerController", "${batch.localGeneration} ${queueManager.generation}")
+                if (batch.localGeneration != queueManager.generation) continue
+
+                enqueueTracks(batch.tracks)
+            }
+        }
+        coroutineScope.launch(Dispatchers.Main) {
+            queueManager.queue.collect {
+                val player = controller
+                if (player != null) {
+                    val tailStart = player.currentMediaItemIndex + 1
+                    if (tailStart < player.mediaItemCount) {
+                        player.removeMediaItems(tailStart, player.mediaItemCount)
+                    }
+                }
+                queueManager.resetAddedUpToCount(player?.currentMediaItem?.mediaId)
             }
         }
     }
