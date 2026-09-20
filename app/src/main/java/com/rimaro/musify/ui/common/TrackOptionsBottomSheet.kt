@@ -3,6 +3,7 @@ package com.rimaro.musify.ui.common
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,8 +11,10 @@ import androidx.annotation.RequiresApi
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
+import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
+import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +28,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     @Inject lateinit var queueManager: QueueManager
     @Inject lateinit var playerController: PlayerController
+    @Inject lateinit var previewPlayerController: PreviewPlayerController
     @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
 
     companion object {
@@ -78,7 +82,7 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
         binding.trackOptShare.setOnClickListener {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_TEXT, "Check out this track: ${track.sourceUrl}")
+                putExtra(Intent.EXTRA_TEXT, "Check out this track: https://www.deezer.com/track/${track.id}")
                 type = "text/plain"
             }
 
@@ -96,8 +100,19 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
         binding.trackOptSaveToPlaylist.setOnClickListener {  }
         binding.trackOptGotoAlbum.setOnClickListener {  }
         binding.trackOptGotoArtist.setOnClickListener {  }
+
+        binding.trackOptPreviewBtn.setOnClickListener {
+            playPreview(track)
+        }
         binding.trackOptDismissBtn.setOnClickListener {
             dismiss()
+        }
+    }
+
+    private fun playPreview(track: Track) {
+        playerController.pause()
+        track.previewUrl?.let {
+            previewPlayerController.playPreview(track.id.toString(), it)
         }
     }
 

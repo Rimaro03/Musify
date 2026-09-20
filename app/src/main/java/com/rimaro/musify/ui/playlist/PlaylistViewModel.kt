@@ -1,7 +1,6 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -13,25 +12,17 @@ import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.audio_url.AudioUrlRepository
 import com.rimaro.musify.domain.repository.audio_url.ResolutionState
 import com.rimaro.musify.player.controller.PlayerController
-import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
-import com.rimaro.musify.resolver.TrackUrlResolver
 import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import javax.inject.Inject
 
 @HiltViewModel
@@ -39,9 +30,7 @@ class PlaylistViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     application: Application,
     private val firestorePlaylistRepo: FirestorePlaylistRepo,
-    private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
-    private val previewPlayerController: PreviewPlayerController,
     private val likedTracksRepo: FirestoreLikedTracksRepo,
     private val queueManager: QueueManager,
     private val audioUrlRepository: AudioUrlRepository
@@ -135,13 +124,6 @@ class PlaylistViewModel @Inject constructor(
             val tracksToPlay = trackList.subList(trackPos, trackList.size)
 
             queueManager.loadQueue(tracksToPlay, shuffleEnabled.value)
-        }
-    }
-
-    fun playPreview(track: Track) {
-        playerController.pause()
-        track.previewUrl?.let {
-            previewPlayerController.playPreview(track.id.toString(), it)
         }
     }
 

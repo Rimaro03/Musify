@@ -67,7 +67,7 @@ class PlaylistFragment : Fragment() {
         trackAdapter = PlaylistTrackAdapter(
             { trackModel -> viewModel.playTrack(trackModel.track) },
             { trackModel -> showTrackMenu(trackModel, playlistId) },
-            { trackModel -> viewModel.playPreview(trackModel.track) },
+            { trackModel -> showTrackMenu(trackModel, playlistId) }, //viewModel.playPreview(trackModel.track)
             { trackUiModel -> viewModel.unlikeTrack(trackUiModel.track)}
         )
         trackRv.adapter = trackAdapter

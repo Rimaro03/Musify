@@ -36,7 +36,6 @@ class SearchViewModel @Inject constructor(
     private val historyManager: SearchHistoryManager,
     private val trackUrlResolver: TrackUrlResolver,
     private val playerController: PlayerController,
-    private val previewPlayerController: PreviewPlayerController,
     private val likedTracksRepo: FirestoreLikedTracksRepo,
     private val queueManager: QueueManager
 ) : AndroidViewModel(application) {
@@ -109,22 +108,10 @@ class SearchViewModel @Inject constructor(
 
     fun playTrack(track: Track) {
         viewModelScope.launch {
-            previewPlayerController.stop()
             track.streamUrl?.let {
                 playerController.playTracks(listOf(track), null)
             }
         }
-    }
-
-    fun playPreview(track: Track) {
-        playerController.pause()
-        track.previewUrl?.let {
-            previewPlayerController.playPreview(track.id.toString(), it)
-        }
-    }
-
-    fun stopPreview() {
-        previewPlayerController.stop()
     }
 
     /* SEARCH LOGIC */
@@ -221,7 +208,6 @@ class SearchViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        previewPlayerController.stop()
         playerController.stop()
     }
 

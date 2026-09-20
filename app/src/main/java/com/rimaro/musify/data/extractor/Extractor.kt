@@ -1,6 +1,5 @@
 package com.rimaro.musify.data.extractor
 
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -22,8 +21,6 @@ class Extractor @Inject constructor(
             val youtubeUrl = newPipeExtractorImpl.search(title, artist)
                 //?: innerTubeSearch.search(title, artist)
                 ?: return@withContext ExtractorResult.Failure("No results found for $title - $artist")
-
-            Log.d("Extractor", "Found YouTube URL: $youtubeUrl")
 
             extractDirect(youtubeUrl)
         }
