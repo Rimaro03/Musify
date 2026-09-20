@@ -144,7 +144,6 @@ class QueueManager @Inject constructor(
         for (i in windowStartIndex until end) {
             toResolve.add(activeQueue[i])
         }
-        Log.d("QueueManager", "$end ${toResolve.map { it.title }}")
 
         refillJob = scope.launch {
             toResolve.forEach { track ->
@@ -169,7 +168,6 @@ class QueueManager @Inject constructor(
         val toFlush = mutableListOf<Track>()
         var next = addedUpToIndex + 1
         var nextTrack: Track? = activeQueue[next]
-        Log.d("QueueManager", "toFlush:${toFlush.map { it.title }}, resolvedTracks${resolvedTracks.value}, nextTrack: ${nextTrack?.title}")
         while(nextTrack != null && nextTrack.id in resolvedTracks.value) {
             toFlush.add(nextTrack)
             next++
@@ -208,6 +206,7 @@ class QueueManager @Inject constructor(
         val base = activeQueue.indexOfFirst { it.id == currTrackId } + 1
         val updatedFrom = base + from
         val updatedTo = base + to
+        Log.d("QueueManager", "$from - $to")
         if (updatedFrom == updatedTo || updatedFrom !in activeQueue.indices || updatedTo !in activeQueue.indices) return
         if(shuffleEnabled.value) {
             shuffledQueue.update {
@@ -222,6 +221,15 @@ class QueueManager @Inject constructor(
                 list
             }
         }
+//        if(shuffleEnabled.value) {
+//            shuffledQueue.update {
+//                newList
+//            }
+//        } else {
+//            originalQueue.update {
+//                newList
+//            }
+//        }
     }
 
 

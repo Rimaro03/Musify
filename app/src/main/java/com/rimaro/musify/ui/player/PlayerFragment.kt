@@ -437,6 +437,7 @@ class PlayerFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.upcomingTracks.collect { list ->
                     queueAdapter.submitList(list) {
+                        Log.d("PlayerFragment", list.map { it.track.title }.toString())
 //                        val newPosition = list.indexOfFirst { it.track.id == anchorItemId }
 //                        if (newPosition != -1) {
 //                            queueRv.layoutManager?.scrollToPosition(newPosition)
