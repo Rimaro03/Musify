@@ -2,6 +2,7 @@ package com.rimaro.musify.ui.playlist
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -246,9 +247,10 @@ class PlaylistFragment : Fragment() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         toolbarTitle.text = ""
-        toolbarTitle.isVisible = false
+        toolbarTitle.alpha = 0f
+        toolbarTitle.visibility = View.GONE
         _binding = null
+        super.onDestroy()
     }
 }

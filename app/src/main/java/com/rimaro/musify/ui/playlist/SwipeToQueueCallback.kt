@@ -40,9 +40,8 @@ class SwipeToQueueCallback(
             return
         }
         val track = adapter.currentList[position].track
+        adapter.notifyItemChanged(position)
         onSwiped(track)
-
-        Snackbar.make(viewHolder.itemView, "${track.title} is next up", Snackbar.LENGTH_SHORT).show()
     }
 
     override fun onChildDraw(
