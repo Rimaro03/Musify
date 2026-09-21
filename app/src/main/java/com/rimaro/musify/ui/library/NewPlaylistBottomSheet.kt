@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.databinding.FragmentNewPlaylistBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,7 +37,11 @@ class NewPlaylistBottomSheet : BottomSheetDialogFragment() {
         binding.newPlayDismissBtn.setOnClickListener {
             dismiss()
         }
-        binding.newPlayCreate.setOnClickListener {  }
+        binding.newPlayCreate.setOnClickListener {
+            findNavController().navigate(
+                NewPlaylistBottomSheetDirections.actionNewPlaylistToCreatePlaylist()
+            )
+        }
 
         binding.newPlayImportSingle.setOnClickListener {
             filePickerLauncher.launch("*/*")

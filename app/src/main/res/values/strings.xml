@@ -88,4 +88,8 @@
     <string name="playing_from">Playing from: </string>
     <string name="done">Done</string>
     <string name="add_1_song_to_playlist">Add 1 song to playlist</string>
+    <string name="name_required">Name required</string>
+    <string name="cancel">Cancel</string>
+    <string name="create">Create</string>
+    <string name="playlist_name">Playlist name</string>
 </resources>

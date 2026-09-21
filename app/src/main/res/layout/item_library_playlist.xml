@@ -20,7 +20,8 @@
             app:layout_constraintDimensionRatio="1:1"
             app:shapeAppearanceOverlay="@style/RoundedImageView"
             app:strokeColor="@color/gray_dark"
-            app:strokeWidth="2dp" />
+            app:strokeWidth="2dp"
+            android:src="@drawable/ic_launcher_foreground"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

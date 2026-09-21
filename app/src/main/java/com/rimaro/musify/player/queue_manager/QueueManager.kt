@@ -85,6 +85,8 @@ class QueueManager @Inject constructor(
     // -------------- //
 
     fun loadQueue(tracks: List<Track>, shuffle: Boolean) {
+        if(tracks.isEmpty()) return
+        
         reset()
         val shuffledTracks = tracks.shuffled()
         val queueToUse = if(shuffle) shuffledTracks else tracks

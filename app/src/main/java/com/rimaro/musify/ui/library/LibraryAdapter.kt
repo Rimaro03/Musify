@@ -87,11 +87,16 @@ class LibraryAdapter (
                  createThumbnail: (String) -> Unit
         ) {
             val isPathValid = StorageManager.isFilePathValid(playlist.thumbnailPath)
-            if(!isPathValid) createThumbnail(playlist.id)
-            Glide.with(binding.root)
-                .load(File(playlist.thumbnailPath))
-                .centerCrop()
-                .into(binding.libraryPlaylistCover)
+            if(isPathValid) {
+                Glide.with(binding.root)
+                    .load(File(playlist.thumbnailPath))
+                    .centerCrop()
+                    .into(binding.libraryPlaylistCover)
+            } else {
+                if(playlist.tracks.count() > 3) {
+                    createThumbnail(playlist.id)
+                }
+            }
 
             binding.libraryName.text = playlist.name
             binding.libraryPlaylistOrAlbum.text = "Playlist"

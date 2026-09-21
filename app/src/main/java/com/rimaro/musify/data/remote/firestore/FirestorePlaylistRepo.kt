@@ -19,6 +19,7 @@ class FirestorePlaylistRepo @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     private val auth = Firebase.auth
+    private val uid = auth.currentUser?.uid
 
     companion object {
         private const val PLAYLISTS_COLLECTION = "playlists"
@@ -28,11 +29,13 @@ class FirestorePlaylistRepo @Inject constructor(
     }
 
     // --- Playlist CRUD --- //
-    suspend fun createPlaylist(ownerId: String, name: String): String {
+    suspend fun createPlaylist(name: String): String? {
+        if (uid == null) return null
+
         val docRef = firestore.collection(PLAYLISTS_COLLECTION).document()
         val data = mapOf(
             "id"         to docRef.id,
-            "ownerId"    to ownerId,
+            "ownerId"    to uid,
             "name"       to name,
             "tracks"     to emptyList<FirestoreTrack>(),
             "createdAt"  to FieldValue.serverTimestamp(),

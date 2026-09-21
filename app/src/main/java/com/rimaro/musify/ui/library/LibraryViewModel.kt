@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
-import com.google.firebase.auth.FirebaseAuth
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.toTrack
 import com.rimaro.musify.domain.repository.DeezerRepository
@@ -17,7 +16,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,12 +39,16 @@ class LibraryViewModel @Inject constructor(
     val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
 
     private val _libraryUiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Idle)
-    val libraryUiState: StateFlow<LibraryUiState> = _libraryUiState
-
-    init {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
-        getUserPlaylists(userId)
-    }
+    val libraryUiState: StateFlow<LibraryUiState> = firestorePlaylistRepo
+        .observeUserPlaylists()
+        .map { userPlaylists ->
+            LibraryUiState.Success(userPlaylists)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            LibraryUiState.Loading
+        )
 
     // PLAYLIST IMPORTING METHODS //
 
@@ -99,19 +105,6 @@ class LibraryViewModel @Inject constructor(
     }
 
     // PLAYLIST PLAY METHODS //
-
-    private fun getUserPlaylists(userId: String?) {
-        if(userId == null) {
-            _libraryUiState.value = LibraryUiState.Error("User is null")
-            return
-        }
-        viewModelScope.launch {
-            _libraryUiState.value = LibraryUiState.Loading
-            val playlists = firestorePlaylistRepo.getUserPlaylists(userId)
-            _libraryUiState.value = LibraryUiState.Success(playlists)
-        }
-    }
-
     fun togglePlayButton(playlistId: String) {
         if(playerState.value == Player.STATE_BUFFERING) return
 

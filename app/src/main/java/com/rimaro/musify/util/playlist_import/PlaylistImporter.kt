@@ -127,10 +127,8 @@ class PlaylistImporter @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     private suspend fun createPlaylist(uri: Uri): String? {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return null
         val fileName = uri.getFileName(application)?.split(".csv")[0] ?: "New Playlist"
         val playlistId =  firestorePlaylistRepo.createPlaylist(
-            ownerId = userId,
             name = fileName
         )
 

@@ -34,9 +34,10 @@
                     android:id="@+id/playlist_cover"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@drawable/ic_launcher_background"
+                    android:src="@drawable/ic_launcher_foreground"
+                    android:background="@drawable/ic_launcher_background"
                     android:contentDescription="@string/playlist_cover"
-                    android:scaleType="fitXY"/>
+                    android:scaleType="fitCenter"/>
 
                 <View
                     android:layout_width="match_parent"

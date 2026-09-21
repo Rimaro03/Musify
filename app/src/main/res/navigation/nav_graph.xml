@@ -66,8 +66,11 @@
         android:label="@string/your_library"
         tools:layout="@layout/fragment_library" >
         <action
-            android:id="@+id/action_libraryFragment_to_playlistFragment2"
+            android:id="@+id/action_libraryFragment_to_playlistFragment"
             app:destination="@id/playlistFragment" />
+        <action
+            android:id="@+id/action_libraryFragment_to_new_playlist_sheet"
+            app:destination="@id/newPlaylistSheet" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -114,6 +117,20 @@
             app:argType="string" />
 
     </fragment>
+    <dialog
+        android:id="@+id/newPlaylistSheet"
+        android:name="com.rimaro.musify.ui.library.NewPlaylistBottomSheet"
+        android:label="NewPlaylistSheet"
+        tools:layout="@layout/fragment_new_playlist">
+        <action
+            android:id="@+id/action_newPlaylist_to_createPlaylist"
+            app:destination="@id/createPlaylistDialog" />
+    </dialog>
+    <dialog
+        android:id="@+id/createPlaylistDialog"
+        android:name="com.rimaro.musify.ui.library.createPlaylist.CreatePlaylistDialog"
+        android:label="CreatePlaylist"
+        tools:layout="@layout/dialog_create_playlist" />
     <dialog
         android:id="@+id/trackOptionSheet"
         android:name="com.rimaro.musify.ui.common.trackOptionsSheet.TrackOptionsSheet"
