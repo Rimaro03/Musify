@@ -5,6 +5,9 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/authCheckFragment">
     <action
+        android:id="@+id/action_global_trackOptionsSheet"
+        app:destination="@id/trackOptionSheet" />
+    <action
         android:id="@+id/action_global_playerFragment"
         app:destination="@id/playerFragment"
         app:enterAnim="@anim/slide_up"
@@ -111,4 +114,32 @@
             app:argType="string" />
 
     </fragment>
+    <dialog
+        android:id="@+id/trackOptionSheet"
+        android:name="com.rimaro.musify.ui.common.trackOptionsSheet.TrackOptionsSheet"
+        android:label="TrackOptionSheet"
+        tools:layout="@layout/fragment_track_options">
+        <argument
+            android:name="trackId"
+            app:argType="long" />
+        <argument
+            android:name="playlistId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <action
+            android:id="@+id/action_trackOptions_to_addToPlaylist"
+            app:destination="@id/addToPlaylistSheet"
+            app:popUpTo="@id/trackOptionSheet"
+            app:popUpToInclusive="true" />
+    </dialog>
+    <dialog
+        android:id="@+id/addToPlaylistSheet"
+        android:name="com.rimaro.musify.ui.common.addToPlaylistSheet.AddToPlaylistSheet"
+        android:label="AddToPlaylistSheet"
+        tools:layout="@layout/fragment_add_to_playlist">
+        <argument
+            android:name="trackId"
+            app:argType="long" />
+    </dialog>
 </navigation>

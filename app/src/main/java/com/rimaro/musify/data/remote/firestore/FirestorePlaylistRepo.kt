@@ -1,17 +1,25 @@
 package com.rimaro.musify.data.remote.firestore
 
+import android.util.Log
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.FirestoreTrack
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class FirestorePlaylistRepo @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
+    private val auth = Firebase.auth
+
     companion object {
         private const val PLAYLISTS_COLLECTION = "playlists"
         private const val USERS_COLLECTION = "users"
@@ -55,6 +63,27 @@ class FirestorePlaylistRepo @Inject constructor(
             .await()
 
         return snapshot.documents.mapNotNull { it.toPlaylist() }
+    }
+
+    fun observeUserPlaylists(): Flow<List<FirestorePlaylist>> = callbackFlow {
+        val uid = auth.currentUser?.uid
+        if(uid == null){
+            trySend(emptyList())
+            awaitClose {  }
+            return@callbackFlow
+        }
+
+        val registration = firestore.collection(PLAYLISTS_COLLECTION)
+            .whereEqualTo("ownerId", uid)
+            .addSnapshotListener { snapshots, exception ->
+                if (exception != null) {
+                    Log.e("FirestorePlaylistRepo", "Error fetching playlists for UID $uid")
+                    close(exception)
+                    return@addSnapshotListener
+                }
+                trySend(snapshots?.toObjects(FirestorePlaylist::class.java) ?: emptyList())
+            }
+        awaitClose { registration.remove() }
     }
 
     suspend fun deletePlaylist(playlistId: String) {

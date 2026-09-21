@@ -2,7 +2,6 @@ package com.rimaro.musify.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -26,10 +26,10 @@ import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.search.SearchBar
 import com.google.android.material.search.SearchView
 import com.google.android.material.snackbar.Snackbar
+import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
 import com.rimaro.musify.ui.common.SearchbarViewModel
-import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -118,8 +118,9 @@ class SearchFragment : Fragment() {
 
 
     private fun showTrackMenu(trackModel: TrackUiModel) {
-        TrackOptionsBottomSheet.newInstance(trackModel, null)
-            .show(childFragmentManager, "TrackOptionsBottomSheet")
+        findNavController().navigate(
+            NavGraphDirections.actionGlobalTrackOptionsSheet(trackModel.track.id, null)
+        )
     }
 
     private fun observeTrendingUiState(

@@ -18,6 +18,7 @@
             android:layout_height="50dp"
             android:contentDescription="@string/track_thumbnail"
             android:src="@drawable/ic_launcher_foreground"
+            android:background="@drawable/rounded_track_bg"
             android:scaleType="centerCrop"
             android:clipToOutline="true"
             android:layout_marginEnd="10dp"/>

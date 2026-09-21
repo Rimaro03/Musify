@@ -2,7 +2,6 @@ package com.rimaro.musify.ui.playlist
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -25,11 +25,11 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.snackbar.Snackbar
+import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
 import com.rimaro.musify.domain.model.FirestorePlaylist
 import com.rimaro.musify.ui.common.PlayButtonState
-import com.rimaro.musify.ui.common.TrackOptionsBottomSheet
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -93,8 +93,9 @@ class PlaylistFragment : Fragment() {
     }
 
     private fun showTrackMenu(trackModel: TrackUiModel, playlistId: String?) {
-        TrackOptionsBottomSheet.newInstance(trackModel, playlistId)
-            .show(childFragmentManager, "TrackOptionsBottomSheet")
+        findNavController().navigate(
+            NavGraphDirections.actionGlobalTrackOptionsSheet(trackModel.track.id, playlistId)
+        )
     }
 
     private fun setupSwipe() {

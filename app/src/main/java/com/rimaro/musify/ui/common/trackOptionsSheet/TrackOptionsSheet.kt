@@ -1,14 +1,20 @@
-package com.rimaro.musify.ui.common
+package com.rimaro.musify.ui.common.trackOptionsSheet
 
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.RequiresApi
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.media3.session.R
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
 import com.rimaro.musify.domain.model.Track
@@ -18,29 +24,21 @@ import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
+class TrackOptionsSheet : BottomSheetDialogFragment() {
 
     private var _binding: FragmentTrackOptionsBinding? = null
     private val binding get() = _binding!!
+
+    private val viewModel: TrackOptionsViewModel by viewModels()
 
     @Inject lateinit var queueManager: QueueManager
     @Inject lateinit var playerController: PlayerController
     @Inject lateinit var previewPlayerController: PreviewPlayerController
     @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
-
-    companion object {
-        private const val ARG_TRACK = "trackModel"
-        private const val ARG_PLAYLIST_ID = "playlist_id"
-        fun newInstance(trackModel: TrackUiModel, playlistId: String?) = TrackOptionsBottomSheet().apply {
-            arguments = Bundle().apply {
-                putParcelable(ARG_TRACK, trackModel)
-                putString(ARG_PLAYLIST_ID, playlistId)
-            }
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTrackOptionsBinding.inflate(inflater, container, false)
@@ -49,9 +47,17 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val trackModel = arguments?.getParcelable(ARG_TRACK, TrackUiModel::class.java) ?: return
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { trackUiModel ->
+                    trackUiModel?.let { setupBottomSheet(it) }
+                }
+            }
+        }
+    }
+
+    private fun setupBottomSheet(trackModel: TrackUiModel) {
         val track = trackModel.track
-        val playlistId = arguments?.getString(ARG_PLAYLIST_ID)
 
         // track metadata
         binding.trackOptTrackName.text = track.title
@@ -68,8 +74,8 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.trackOptLike.setImageResource(
-            if (trackModel.isLiked) androidx.media3.session.R.drawable.media3_icon_heart_filled
-            else androidx.media3.session.R.drawable.media3_icon_heart_unfilled
+            if (trackModel.isLiked) R.drawable.media3_icon_heart_filled
+            else R.drawable.media3_icon_heart_unfilled
         )
         binding.trackOptLike.setOnClickListener {
             if (trackModel.isLiked) {
@@ -97,7 +103,12 @@ class TrackOptionsBottomSheet : BottomSheetDialogFragment() {
             queueManager.enqueue(track)
             dismiss()
         }
-        binding.trackOptSaveToPlaylist.setOnClickListener {  }
+        binding.trackOptSaveToPlaylist.setOnClickListener {
+            findNavController().navigate(
+                TrackOptionsSheetDirections.actionTrackOptionsToAddToPlaylist(track.id)
+            )
+            dismiss()
+        }
         binding.trackOptGotoAlbum.setOnClickListener {  }
         binding.trackOptGotoArtist.setOnClickListener {  }
 

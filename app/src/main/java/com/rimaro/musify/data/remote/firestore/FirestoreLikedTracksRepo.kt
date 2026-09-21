@@ -30,7 +30,7 @@ class FirestoreLikedTracksRepo @Inject constructor(
         val uid = auth.currentUser?.uid
         if (uid == null) {
             trySend(emptySet())
-            awaitClose { } // no listener to remove, but must still call awaitClose
+            awaitClose { }
             return@callbackFlow
         }
 

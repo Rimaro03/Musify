@@ -86,4 +86,6 @@
     <string name="player_top_menu">Player top menu</string>
     <string name="queue">Queue</string>
     <string name="playing_from">Playing from: </string>
+    <string name="done">Done</string>
+    <string name="add_1_song_to_playlist">Add 1 song to playlist</string>
 </resources>
