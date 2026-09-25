@@ -5,8 +5,8 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.rimaro.musify.data.local.db.TrackDao
-import com.rimaro.musify.resolver.TrackUrlResolver
+import com.rimaro.musify.data.local.db.dao.TrackDao
+import com.rimaro.musify.data.local.extractor.TrackUrlResolver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import okio.IOException
@@ -20,22 +20,18 @@ class UrlRefreshWorker @AssistedInject constructor(
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         /*
-        * 0. Mark old tracks as COLD
         * 1. Get tracks expiring in time range
         * 2. For each track, refresh the URL
         * 3. Update the database with the new URL
         * */
 
         try {
-            trackDao.markColdTracks(
-                coldThreshold = System.currentTimeMillis() - COLD_TRACKS_INTERVAL
-            )
-
             val expiringTracks = trackDao.getTracksToRefresh(
                 threshold = System.currentTimeMillis() + REFRESH_INTERVAL,
             )
             expiringTracks.forEach { track ->
-                val (newUrl, _) = trackUrlResolver.getFreshUrl(track.id, track.title, track.artist)
+                val (newUrl, _) = trackUrlResolver.getFreshUrl(track.id, track.sourceUrl!!)
+
                 if(newUrl.isNotBlank()) {
                     trackDao.upsert(track.copy(streamUrl = newUrl))
                 }
@@ -52,7 +48,6 @@ class UrlRefreshWorker @AssistedInject constructor(
     }
 
     companion object {
-        const val COLD_TRACKS_INTERVAL: Long = 28 * 24 * 3600 * 1000L // 4 weeks before track goes cold
-        const val REFRESH_INTERVAL: Long = 30 * 60 * 1000L // 30 minutes
+        const val REFRESH_INTERVAL: Long = 30 * 60 * 1000L
     }
 }

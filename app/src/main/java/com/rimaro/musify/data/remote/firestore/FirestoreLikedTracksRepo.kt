@@ -5,7 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.rimaro.musify.di.AppScope
-import com.rimaro.musify.domain.model.FirestoreTrack
+import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
 import kotlinx.coroutines.CoroutineScope

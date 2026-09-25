@@ -9,7 +9,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemArtistBinding
-import com.rimaro.musify.domain.model.DeezerArtist
+import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
 
 class TrendingArtistsAdapter(
     private val onArtistClick: (DeezerArtist) -> Unit,

@@ -1,6 +1,6 @@
 package com.rimaro.musify.ui.library
 
-import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 
 sealed class LibraryUiState {
     object Idle : LibraryUiState()

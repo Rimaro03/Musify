@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rimaro.musify.databinding.ItemGenreBinding
-import com.rimaro.musify.domain.model.DeezerGenre
+import com.rimaro.musify.data.remote.deezer.dto.DeezerGenre
 
 class GenreAdapter(
     private val onGenreClick: (DeezerGenre) -> Unit

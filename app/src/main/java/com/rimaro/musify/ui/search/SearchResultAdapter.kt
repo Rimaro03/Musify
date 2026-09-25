@@ -10,13 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.rimaro.musify.R
-import com.rimaro.musify.domain.model.DeezerAlbum
-import com.rimaro.musify.domain.model.DeezerArtist
+import com.rimaro.musify.data.remote.deezer.dto.DeezerAlbum
+import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
 import com.rimaro.musify.databinding.ItemSearchAlbumBinding
 import com.rimaro.musify.databinding.ItemSearchArtistBinding
 import com.rimaro.musify.databinding.ItemSearchTrackBinding
-import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import com.rimaro.musify.ui.search.SearchResultItem.AlbumItem
 import com.rimaro.musify.ui.search.SearchResultItem.ArtistItem
 import com.rimaro.musify.ui.search.SearchResultItem.TrackItem

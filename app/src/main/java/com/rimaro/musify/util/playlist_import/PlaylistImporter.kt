@@ -8,10 +8,9 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
-import com.google.firebase.auth.FirebaseAuth
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
-import com.rimaro.musify.domain.model.FirestoreTrack
-import com.rimaro.musify.domain.repository.DeezerRepository
+import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
+import com.rimaro.musify.data.repository.DeezerRepository
 import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.thumbnail.StorageManager
 import com.rimaro.musify.util.thumbnail.ThumbnailManager

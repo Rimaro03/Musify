@@ -1,7 +1,6 @@
 package com.rimaro.musify.ui.player
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -9,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemQueueTrackBinding
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 
 class QueueAdapter(
     private val onTrackClick: (TrackUiModel) -> Unit

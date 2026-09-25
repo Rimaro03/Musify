@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemPlaylistTrackBinding
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 
 class PlaylistTrackAdapter (
     private val onTrackClick: (TrackUiModel) -> Unit,

@@ -12,7 +12,7 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable
 import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemLibraryPlaylistBinding
-import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.util.thumbnail.StorageManager
 import java.io.File
 

@@ -14,7 +14,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.session.R
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
 import com.rimaro.musify.domain.model.Track
@@ -22,7 +21,7 @@ import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.controller.PreviewPlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject

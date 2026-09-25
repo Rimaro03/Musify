@@ -1,7 +1,7 @@
 package com.rimaro.musify.ui.playlist
 
-import com.rimaro.musify.domain.model.FirestorePlaylist
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
+import com.rimaro.musify.domain.model.TrackUiModel
 
 sealed class PlaylistUiState {
     object Idle : PlaylistUiState()

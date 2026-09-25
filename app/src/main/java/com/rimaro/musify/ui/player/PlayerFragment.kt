@@ -2,13 +2,11 @@ package com.rimaro.musify.ui.player
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -38,10 +36,8 @@ import com.bumptech.glide.Glide
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlayerBinding
-import com.rimaro.musify.databinding.ItemQueueTrackBinding
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.ui.common.PlayButtonState
-import com.rimaro.musify.ui.common.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Locale

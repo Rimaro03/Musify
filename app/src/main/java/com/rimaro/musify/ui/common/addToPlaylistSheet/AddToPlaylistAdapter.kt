@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.ItemAddToPlaylistBinding
-import com.rimaro.musify.ui.common.model.AddToPlaylistItem
+import com.rimaro.musify.domain.model.AddToPlaylistItem
 
 class AddToPlaylistAdapter(
     private val toggleAddButton: (AddToPlaylistItem) -> Unit

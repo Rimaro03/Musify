@@ -3,8 +3,8 @@ package com.rimaro.musify.player.queue_manager
 import android.util.Log
 import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.domain.repository.audio_url.AudioUrlRepository
-import com.rimaro.musify.domain.repository.audio_url.ResolutionState
+import com.rimaro.musify.data.repository.audio_url.AudioUrlRepository
+import com.rimaro.musify.data.repository.audio_url.ResolutionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.map
 import kotlin.math.min
 
 @Singleton

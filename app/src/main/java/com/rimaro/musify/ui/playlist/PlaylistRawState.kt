@@ -1,6 +1,6 @@
 package com.rimaro.musify.ui.playlist
 
-import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.domain.model.Track
 
 sealed class PlaylistRawState {

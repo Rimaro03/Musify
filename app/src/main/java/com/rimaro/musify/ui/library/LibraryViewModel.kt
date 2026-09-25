@@ -7,8 +7,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
-import com.rimaro.musify.domain.model.toTrack
-import com.rimaro.musify.domain.repository.DeezerRepository
+import com.rimaro.musify.data.remote.deezer.dto.toTrack
+import com.rimaro.musify.data.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.util.playlist_import.PlaylistImporter

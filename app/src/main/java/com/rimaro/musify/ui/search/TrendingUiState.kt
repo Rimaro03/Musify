@@ -1,7 +1,7 @@
 package com.rimaro.musify.ui.search
 
-import com.rimaro.musify.domain.model.DeezerArtist
-import com.rimaro.musify.domain.model.DeezerGenre
+import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
+import com.rimaro.musify.data.remote.deezer.dto.DeezerGenre
 
 sealed class TrendingUiState {
     object Idle : TrendingUiState()

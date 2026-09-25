@@ -28,9 +28,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentPlaylistBinding
-import com.rimaro.musify.domain.model.FirestorePlaylist
+import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.ui.common.PlayButtonState
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import kotlin.getValue

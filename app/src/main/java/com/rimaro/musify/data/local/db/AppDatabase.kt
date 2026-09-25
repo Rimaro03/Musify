@@ -2,14 +2,15 @@ package com.rimaro.musify.data.local.db
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
+import com.rimaro.musify.data.local.db.dao.TrackDao
+import com.rimaro.musify.data.local.db.entity.CachedTrack
 
 @Database(
     entities = [CachedTrack::class],
-    version = 2,
+    version = 4,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
+
 abstract class AppDatabase : RoomDatabase() {
     abstract fun trackDao(): TrackDao
 }

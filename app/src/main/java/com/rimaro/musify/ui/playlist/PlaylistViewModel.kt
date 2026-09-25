@@ -8,13 +8,13 @@ import androidx.media3.common.Player
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.domain.model.toTrack
-import com.rimaro.musify.domain.repository.audio_url.AudioUrlRepository
-import com.rimaro.musify.domain.repository.audio_url.ResolutionState
+import com.rimaro.musify.data.remote.firestore.model.toTrack
+import com.rimaro.musify.data.repository.audio_url.AudioUrlRepository
+import com.rimaro.musify.data.repository.audio_url.ResolutionState
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.PlayButtonState
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

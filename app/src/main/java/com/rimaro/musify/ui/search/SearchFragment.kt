@@ -30,7 +30,7 @@ import com.rimaro.musify.NavGraphDirections
 import com.rimaro.musify.R
 import com.rimaro.musify.databinding.FragmentSearchBinding
 import com.rimaro.musify.ui.common.SearchbarViewModel
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

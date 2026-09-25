@@ -1,6 +1,6 @@
 package com.rimaro.musify.ui.common.addToPlaylistSheet
 
-import com.rimaro.musify.ui.common.model.AddToPlaylistItem
+import com.rimaro.musify.domain.model.AddToPlaylistItem
 
 sealed class AddToPlaylistUiState {
     data class Success(val items: List<AddToPlaylistItem>) : AddToPlaylistUiState()

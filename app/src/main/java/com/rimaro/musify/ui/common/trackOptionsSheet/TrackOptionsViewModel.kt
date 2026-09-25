@@ -4,11 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
-import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.domain.model.toTrack
-import com.rimaro.musify.domain.repository.DeezerRepository
+import com.rimaro.musify.data.remote.deezer.dto.toTrack
+import com.rimaro.musify.data.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
-import com.rimaro.musify.ui.common.model.TrackUiModel
+import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

@@ -1,6 +1,7 @@
 package com.rimaro.musify.domain.model
 
 import android.os.Parcelable
+import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -25,7 +26,7 @@ fun Track.toFirestoreTrack(): FirestoreTrack = FirestoreTrack(
     artist = artist,
     artistId = artistId,
     artworkUrl = artworkUrl,
-    duration = (durationMs/1000L).toInt(),
+    duration = (durationMs / 1000L).toInt(),
     genres = genre,
     previewUrl = previewUrl
 )
