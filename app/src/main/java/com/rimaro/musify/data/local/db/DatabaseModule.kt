@@ -2,7 +2,8 @@ package com.rimaro.musify.data.local.db
 
 import android.content.Context
 import androidx.room.Room
-import com.rimaro.musify.data.local.db.dao.TrackDao
+import com.rimaro.musify.data.local.db.dao.TrackAudioUrlDao
+import com.rimaro.musify.data.local.db.dao.TrackMetadataDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,5 +28,8 @@ object DatabaseModule {
     }
 
     @Provides
-    fun provideTrackDao(db: AppDatabase): TrackDao = db.trackDao()
+    fun provideTrackAudioUrlDao(db: AppDatabase): TrackAudioUrlDao = db.trackAudioUrlDao()
+
+    @Provides
+    fun provideTrackMetadataDao(db: AppDatabase): TrackMetadataDao = db.trackMetadataDao()
 }

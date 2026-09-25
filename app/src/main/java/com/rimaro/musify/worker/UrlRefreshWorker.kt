@@ -5,7 +5,7 @@ import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.rimaro.musify.data.local.db.dao.TrackDao
+import com.rimaro.musify.data.local.db.dao.TrackAudioUrlDao
 import com.rimaro.musify.data.local.extractor.TrackUrlResolver
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
@@ -15,7 +15,7 @@ import okio.IOException
 class UrlRefreshWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted params: WorkerParameters,
-    private val trackDao: TrackDao,
+    private val trackAudioUrlDao: TrackAudioUrlDao,
     private val trackUrlResolver: TrackUrlResolver
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
@@ -26,14 +26,14 @@ class UrlRefreshWorker @AssistedInject constructor(
         * */
 
         try {
-            val expiringTracks = trackDao.getTracksToRefresh(
+            val expiringTracks = trackAudioUrlDao.getTracksToRefresh(
                 threshold = System.currentTimeMillis() + REFRESH_INTERVAL,
             )
             expiringTracks.forEach { track ->
                 val (newUrl, _) = trackUrlResolver.getFreshUrl(track.id, track.sourceUrl!!)
 
                 if(newUrl.isNotBlank()) {
-                    trackDao.upsert(track.copy(streamUrl = newUrl))
+                    trackAudioUrlDao.upsert(track.copy(streamUrl = newUrl))
                 }
             }
         } catch (e: IOException) {

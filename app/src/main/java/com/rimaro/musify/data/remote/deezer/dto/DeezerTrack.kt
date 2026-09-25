@@ -1,5 +1,7 @@
 package com.rimaro.musify.data.remote.deezer.dto
 
+import com.rimaro.musify.data.local.db.entity.TrackMetadata
+import com.rimaro.musify.data.repository.TrackMetadataRepository
 import com.rimaro.musify.domain.model.Track
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -45,4 +47,16 @@ fun DeezerTrack.toTrack(
     streamUrl = streamUrl,
     sourceUrl = sourceUrl,
     previewUrl = preview
+)
+
+fun DeezerTrack.toTrackMetadata(): TrackMetadata = TrackMetadata(
+    trackId = id,
+    title = title,
+    artist = artist?.name ?: "Unknown Artist",
+    artistId = artist?.id ?: 0L,
+    durationMs = duration * 1000L,
+    genre = album?.genres?.joinToString(", ") ?: "",
+    artworkUrl = album?.coverXl ?: "",
+    albumId = album?.id ?: 0L,
+    previewUrl = preview ?: ""
 )

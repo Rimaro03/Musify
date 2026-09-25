@@ -1,6 +1,8 @@
 package com.rimaro.musify.domain.model
 
 import android.os.Parcelable
+import com.rimaro.musify.data.local.db.dao.TrackMetadataDao
+import com.rimaro.musify.data.local.db.entity.TrackMetadata
 import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import kotlinx.parcelize.Parcelize
 
@@ -19,6 +21,7 @@ data class Track (
     var previewUrl: String?
 ) : Parcelable
 
+// TODO: remove this
 fun Track.toFirestoreTrack(): FirestoreTrack = FirestoreTrack(
     title = title,
     trackId = id,
@@ -29,4 +32,16 @@ fun Track.toFirestoreTrack(): FirestoreTrack = FirestoreTrack(
     duration = (durationMs / 1000L).toInt(),
     genres = genre,
     previewUrl = previewUrl
+)
+
+fun Track.toTrackMetadata(): TrackMetadata = TrackMetadata(
+    trackId = id,
+    title = title,
+    artist = artist,
+    artistId = artistId,
+    durationMs = durationMs,
+    genre = genre ?: "",
+    artworkUrl = artworkUrl ?: "",
+    albumId = albumId ?: 0L,
+    previewUrl = previewUrl ?: ""
 )

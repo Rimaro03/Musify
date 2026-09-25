@@ -1,8 +1,8 @@
 package com.rimaro.musify.data.local.extractor
 
 import android.util.Log
-import com.rimaro.musify.data.local.db.dao.TrackDao
-import com.rimaro.musify.data.local.db.entity.CachedTrack
+import com.rimaro.musify.data.local.db.dao.TrackAudioUrlDao
+import com.rimaro.musify.data.local.db.entity.TrackAudioUrl
 import com.rimaro.musify.data.local.extractor.model.ExtractorResult
 import com.rimaro.musify.domain.model.Track
 import org.schabi.newpipe.extractor.exceptions.ExtractionException
@@ -11,7 +11,7 @@ import javax.inject.Singleton
 
 @Singleton
 class TrackUrlResolver @Inject constructor(
-    private val dao: TrackDao,
+    private val dao: TrackAudioUrlDao,
     private val extractor: TrackExtractor
 ) {
     /**
@@ -59,7 +59,7 @@ class TrackUrlResolver @Inject constructor(
         return when (val result = extractor.extract(title, artist)) {
             is ExtractorResult.Success -> {
                 dao.upsert(
-                    CachedTrack(
+                    TrackAudioUrl(
                         id = trackId,
                         streamUrl = result.streamUrl,
                         sourceUrl = result.sourceUrl,
@@ -84,7 +84,7 @@ class TrackUrlResolver @Inject constructor(
         return when (val result = extractor.extractDirect(sourceUrl)) {
             is ExtractorResult.Success -> {
                 dao.upsert(
-                    CachedTrack(
+                    TrackAudioUrl(
                         id = trackId,
                         streamUrl = result.streamUrl,
                         sourceUrl = result.sourceUrl,

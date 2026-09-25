@@ -7,7 +7,11 @@ import com.rimaro.musify.data.remote.deezer.dto.DeezerGenre
 import com.rimaro.musify.data.remote.deezer.dto.DeezerSearchRes
 import com.rimaro.musify.data.remote.deezer.dto.DeezerSearchTrackRes
 import com.rimaro.musify.data.remote.deezer.dto.DeezerTrack
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
+import kotlin.coroutines.coroutineContext
 
 class DeezerRepository @Inject constructor(
     private val deezerApiService: DeezerApiService
@@ -42,5 +46,15 @@ class DeezerRepository @Inject constructor(
 
     suspend fun getTrackById(trackId: Long): DeezerTrack {
         return deezerApiService.track(trackId.toString())
+    }
+
+    suspend fun getTrackByIds(trackIds: List<Long>, batchSize: Int = 20): List<DeezerTrack> {
+        return trackIds .chunked(batchSize).flatMap { chunk ->
+            coroutineScope {
+                chunk.map { id ->
+                    async { runCatching { getTrackById(id) }.getOrNull() }
+                }.awaitAll().filterNotNull()
+            }
+        }
     }
 }
