@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.playlist
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -9,6 +10,7 @@ import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.data.remote.firestore.model.toTrack
+import com.rimaro.musify.data.repository.TrackMetadataRepository
 import com.rimaro.musify.data.repository.audio_url.AudioUrlRepository
 import com.rimaro.musify.data.repository.audio_url.ResolutionState
 import com.rimaro.musify.player.controller.PlayerController
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,7 +36,8 @@ class PlaylistViewModel @Inject constructor(
     private val playerController: PlayerController,
     private val likedTracksRepo: FirestoreLikedTracksRepo,
     private val queueManager: QueueManager,
-    private val audioUrlRepository: AudioUrlRepository
+    private val audioUrlRepository: AudioUrlRepository,
+    private val trackMetadataRepository: TrackMetadataRepository
 ) : AndroidViewModel(application) {
     private val _playlistState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
         PlaylistUiState.Idle)
@@ -106,11 +110,21 @@ class PlaylistViewModel @Inject constructor(
                 return@launch
             }
 
-            val firestoreTracks = firestorePlaylist.tracks
-            val trackUiModels = firestoreTracks.map {
-                TrackUiModel(track = it.toTrack())
-            }
-            _playlistState.value = PlaylistUiState.Success(firestorePlaylist, trackUiModels)
+            val trackIds = firestorePlaylist.tracks
+            trackMetadataRepository.getTracks(trackIds)
+                .onSuccess { tracks ->
+                    Log.d("PlaylistViewModel", tracks.map { it.title }.toString())
+                    val trackUiModels = tracks.map { TrackUiModel(track = it) }
+                    _playlistState.update {
+                        PlaylistUiState.Success(firestorePlaylist, trackUiModels)
+                    }
+                }
+                .onFailure {
+                    _playlistState.update {
+                        PlaylistUiState.Error("Could not retrieve playlist")
+                    }
+                    return@launch
+                }
         }
     }
 

@@ -1,5 +1,6 @@
 package com.rimaro.musify.data.repository
 
+import android.util.Log
 import com.rimaro.musify.data.local.db.dao.TrackMetadataDao
 import com.rimaro.musify.data.local.db.entity.toTrack
 import com.rimaro.musify.data.remote.deezer.dto.toTrackMetadata
@@ -18,20 +19,20 @@ class TrackMetadataRepository @Inject constructor (
      * @return Result.success with the list of fetched tracks, or Result.failure with the exception if any error occur
      */
     suspend fun getTracks(trackIds: List<Long>): Result<List<Track>> {
-        val tracksMetadata = trackMetadataDao.getByIds(trackIds.map{ it.toString() })
-        val trackMetadataIds = tracksMetadata.map { it.trackId }.toSet()
+        val cached = trackMetadataDao.getByIds(trackIds.map{ it.toString() })
+        val cachedIds = cached.map { it.trackId }.toSet()
         val missingIds = trackIds.filter { id ->
-            id !in trackMetadataIds
+            id !in cachedIds
         }
 
-        if(missingIds.isEmpty()) return Result.success(tracksMetadata.map { it.toTrack() })
+        if(missingIds.isEmpty()) return Result.success(cached.map { it.toTrack() })
 
         return try {
-            val newTracks = deezerRepository.getTrackByIds(missingIds).map { it.toTrackMetadata() }
-            trackMetadataDao.upsertAll(newTracks)
-            val newIds = newTracks.map { it.trackId }.toSet()
-            val cachedTracks = tracksMetadata.filter { it.trackId !in newIds }
-            Result.success((newTracks + cachedTracks).map { it.toTrack() })
+            val fresh = deezerRepository.getTrackByIds(missingIds).map { it.toTrackMetadata() }
+            trackMetadataDao.upsertAll(fresh)
+            val freshIds = fresh.map { it.trackId }.toSet()
+            val stillCached = cached.filter { it.trackId !in freshIds }
+            Result.success((fresh + stillCached).map { it.toTrack() })
         } catch (e: Exception) {
             Result.failure(e)
         }

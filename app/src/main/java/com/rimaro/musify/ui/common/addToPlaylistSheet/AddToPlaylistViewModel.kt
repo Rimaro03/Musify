@@ -28,7 +28,7 @@ class AddToPlaylistViewModel @Inject constructor(
                         id = it.id,
                         name = it.name,
                         coverUrl = it.thumbnailPath,
-                        containsTrack = it.tracks.any { track -> track.trackId == trackId }
+                        containsTrack = it.tracks.any { id -> trackId == id }
                     )
                 }
             )

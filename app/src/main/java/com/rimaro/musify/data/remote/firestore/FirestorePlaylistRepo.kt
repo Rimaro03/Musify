@@ -162,7 +162,7 @@ class FirestorePlaylistRepo @Inject constructor(
                 id       = getString("id") ?: return null,
                 ownerId  = getString("ownerId") ?: return null,
                 name     = getString("name") ?: return null,
-                tracks = (get("tracks") as? List<FirestoreTrack>) ?: emptyList(),
+                tracks = (get("tracks") as? List<Long>) ?: emptyList(),
                 thumbnailPath = getString("thumbnailPath") ?: return null
             )
         } catch (e: Exception) {

@@ -70,9 +70,9 @@ class LibraryViewModel @Inject constructor(
                 return@launch
             }
 
-            val deezerTracks = firestorePlaylist.tracks.take(4).map { track ->
+            val deezerTracks = firestorePlaylist.tracks.take(4).map { trackId ->
                 async {
-                    deezerRepository.getTrackById(track.trackId)
+                    deezerRepository.getTrackById(trackId)
                 }
             }.awaitAll()
 
@@ -131,9 +131,9 @@ class LibraryViewModel @Inject constructor(
                 return@launch
             }
             val trackIds = firestorePlaylist.tracks
-            val deezerTracks = trackIds.map { track ->
+            val deezerTracks = trackIds.map { trackId ->
                 async {
-                    deezerRepository.getTrackById(track.trackId)
+                    deezerRepository.getTrackById(trackId)
                 }
             }.awaitAll()
             val tracks = deezerTracks.map { it.toTrack() }
