@@ -49,7 +49,7 @@ class DeezerRepository @Inject constructor(
     }
 
     suspend fun getTrackByIds(trackIds: List<Long>, batchSize: Int = 20): List<DeezerTrack> {
-        return trackIds .chunked(batchSize).flatMap { chunk ->
+        return trackIds.chunked(batchSize).flatMap { chunk ->
             coroutineScope {
                 chunk.map { id ->
                     async { runCatching { getTrackById(id) }.getOrNull() }

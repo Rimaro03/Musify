@@ -5,7 +5,7 @@ import java.io.InputStream
 object CsvManager {
     fun parseCsvStream(inputStream: InputStream): Sequence<CsvTrack> = sequence {
         inputStream.bufferedReader().useLines { lines ->
-            lines.drop(1) // skip header
+            lines.drop(1)
                 .filter { it.isNotBlank() }
                 .forEach { line ->
                     val cols = line.split(",").map { it.trim().removeSurrounding("\"") }

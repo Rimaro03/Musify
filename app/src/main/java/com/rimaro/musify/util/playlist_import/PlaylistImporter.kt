@@ -8,9 +8,11 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
+import com.rimaro.musify.data.remote.deezer.dto.toTrack
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import com.rimaro.musify.data.repository.DeezerRepository
+import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.thumbnail.StorageManager
 import com.rimaro.musify.util.thumbnail.ThumbnailManager
@@ -18,9 +20,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -43,19 +42,14 @@ class PlaylistImporter @Inject constructor(
         }
     }
 
-    fun importFromCsv(
-        uri: Uri
-    ): Flow<ImportResult> = flow {
+    suspend fun importFromCsv(uri: Uri): ImportResult {
         val inputStream = application.contentResolver.openInputStream(uri)
             ?: run {
-                emit(ImportResult.Error("Could not open file")); return@flow
+                return ImportResult.Error("Could not open file")
             }
 
-        val playlistId = createPlaylist(uri)
-        if (playlistId == null) {
-            emit(ImportResult.Error("Error creating the playlist"))
-            return@flow
-        }
+        val playlistId =
+            createPlaylist(uri) ?: return ImportResult.Error("Error creating the playlist")
 
         var processed = 0
         var failed = 0
@@ -63,67 +57,44 @@ class PlaylistImporter @Inject constructor(
         val covers = mutableListOf<String>()
 
         CsvManager.parseCsvStream(inputStream)
-            .chunked(50)
-            .forEach { chunk ->
-                val tracks = coroutineScope {
-                    chunk.map { track ->
+            .chunked(20)
+            .forEach { csvChunk ->
+                val res = csvChunk.map { track ->
+                    coroutineScope {
                         val query = "${track.title} - ${track.artist}"
-                        Log.d("NewPlaylist", "Query: $query")
-                        async { deezerRepository.searchTrack(query, limit = 1).data.firstOrNull() }
-                    }.awaitAll()
-                }
-
-                tracks.forEach { track ->
-                    if (track != null) {
-                        val firestoreTrack = FirestoreTrack(
-                            title = track.title,
-                            trackId = track.id,
-                            albumId = track.album?.id,
-                            artist = track.artist?.name,
-                            artistId = track.artist?.id,
-                            artworkUrl = track.album?.coverXl,
-                            duration = track.duration,
-                            genres = track.album?.genres?.joinToString(", " ),
-                            previewUrl = track.preview
-                        )
-                        resolvedTracks.add(firestoreTrack)
-                    } else failed++
-                    if (covers.size < 4) {
-                        track?.album?.coverXl?.let {
-                            covers.add(it)
+                        async {
+                            deezerRepository
+                                .searchTrack(query, limit = 1)
+                                .data.firstOrNull()
+                                ?.toTrack()
+                                ?.toFirestoreTrack()
                         }
                     }
-                }
+                }.awaitAll()
 
-                processed += chunk.size
-                emit(ImportResult.Progress(processed, -1, failed)) // -1 = total unknown (streaming)
-
-                // Flush to Firestore every 500 resolved IDs
-                if (resolvedTracks.size >= BATCH_LIMIT) {
-                    Log.d("NewPlaylist", "Flushing to firestore, BATCH LIMIT")
-                    firestorePlaylistRepo.addTracksBatch(playlistId, resolvedTracks.toList())
-                    resolvedTracks.clear()
-                }
+                processed += res.filterNotNull().size
+                failed += res.filter { it == null }.size
+                resolvedTracks += res.filterNotNull()
             }
 
-        // Flush remaining
-        if (resolvedTracks.isNotEmpty()) {
-            firestorePlaylistRepo.addTracksBatch(playlistId, resolvedTracks.toList())
-            Log.d("NewPlaylist", "Flushing to firestore")
+        // Flush to Firestore every 500 tracks
+        resolvedTracks.chunked(500).forEach { chunk ->
+            coroutineScope {
+                firestorePlaylistRepo.addTracksBatch(playlistId, chunk)
+            }
         }
 
         // create thumbnail
         val thumbnailPath = createPlaylistThumbnail(covers, playlistId)
         if (thumbnailPath == null) {
-            emit(ImportResult.Error("Error creating playliust"))
-            return@flow
+            Log.e("PlaylistImporter", "Failed to create playlist thumbnail")
         }
 
         // update playlist with thumbnail
-        firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, thumbnailPath)
+        firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, thumbnailPath ?: "")
 
-        emit(ImportResult.Success(imported = processed - failed, skipped = failed))
-    }.flowOn(Dispatchers.IO)
+        return ImportResult.Success(imported = processed - failed, skipped = failed)
+    }
 
     private suspend fun createPlaylist(uri: Uri): String? {
         val fileName = uri.getFileName(application)?.split(".csv")[0] ?: "New Playlist"
@@ -135,6 +106,7 @@ class PlaylistImporter @Inject constructor(
     }
 
     suspend fun createPlaylistThumbnail(covers: List<String>, fileName: String): String? {
+        if(covers.size < 4) return ""
         val bitmaps = coroutineScope {
             covers.take(4)
                 .map { uri -> async { loadBitmapFromUri(application, uri.toUri()) } }
