@@ -8,7 +8,6 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
-import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -37,7 +36,7 @@ class FirestorePlaylistRepo @Inject constructor(
             "id"         to docRef.id,
             "ownerId"    to uid,
             "name"       to name,
-            "tracks"     to emptyList<FirestoreTrack>(),
+            "tracks"     to emptyList<Long>(),
             "createdAt"  to FieldValue.serverTimestamp(),
             "updatedAt"  to FieldValue.serverTimestamp(),
             "thumbnailPath" to ""
@@ -141,7 +140,7 @@ class FirestorePlaylistRepo @Inject constructor(
         }
     }
 
-    suspend fun addTracksBatch(playlistId: String, tracks: List<FirestoreTrack>) {
+    suspend fun addTracksBatch(playlistId: String, tracks: List<Long>) {
         val playlistRef = firestore
             .collection(PLAYLISTS_COLLECTION)
             .document(playlistId)

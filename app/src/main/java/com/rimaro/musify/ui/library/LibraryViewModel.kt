@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -54,10 +55,8 @@ class LibraryViewModel @Inject constructor(
 
     fun importFromCsv(uri: Uri) {
         viewModelScope.launch {
-            playlistImporter.importFromCsv(uri)
-                .collect { result ->
-                    importState.value = result
-                }
+            val res = playlistImporter.importFromCsv(uri)
+            importState.update { res }
         }
     }
 

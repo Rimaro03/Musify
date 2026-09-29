@@ -8,11 +8,8 @@ import android.provider.OpenableColumns
 import android.util.Log
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
-import com.rimaro.musify.data.remote.deezer.dto.toTrack
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
-import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import com.rimaro.musify.data.repository.DeezerRepository
-import com.rimaro.musify.domain.model.toFirestoreTrack
 import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.thumbnail.StorageManager
 import com.rimaro.musify.util.thumbnail.ThumbnailManager
@@ -51,37 +48,36 @@ class PlaylistImporter @Inject constructor(
         val playlistId =
             createPlaylist(uri) ?: return ImportResult.Error("Error creating the playlist")
 
-        var processed = 0
+        var succeeded = 0
         var failed = 0
-        val resolvedTracks = mutableListOf<FirestoreTrack>()
+        val resolvedTracks = mutableListOf<Long>()
         val covers = mutableListOf<String>()
 
         CsvManager.parseCsvStream(inputStream)
             .chunked(20)
             .forEach { csvChunk ->
-                val res = csvChunk.map { track ->
-                    coroutineScope {
+                val res = coroutineScope {
+                    csvChunk.map { track ->
                         val query = "${track.title} - ${track.artist}"
                         async {
                             deezerRepository
                                 .searchTrack(query, limit = 1)
-                                .data.firstOrNull()
-                                ?.toTrack()
-                                ?.toFirestoreTrack()
+                                .data.firstOrNull()?.id
                         }
                     }
                 }.awaitAll()
 
-                processed += res.filterNotNull().size
+                succeeded += res.filterNotNull().size
                 failed += res.filter { it == null }.size
                 resolvedTracks += res.filterNotNull()
             }
+        withContext(Dispatchers.IO) {
+            inputStream.close()
+        }
 
         // Flush to Firestore every 500 tracks
         resolvedTracks.chunked(500).forEach { chunk ->
-            coroutineScope {
-                firestorePlaylistRepo.addTracksBatch(playlistId, chunk)
-            }
+            firestorePlaylistRepo.addTracksBatch(playlistId, chunk)
         }
 
         // create thumbnail
@@ -93,7 +89,7 @@ class PlaylistImporter @Inject constructor(
         // update playlist with thumbnail
         firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, thumbnailPath ?: "")
 
-        return ImportResult.Success(imported = processed - failed, skipped = failed)
+        return ImportResult.Success(imported = succeeded, skipped = failed)
     }
 
     private suspend fun createPlaylist(uri: Uri): String? {
