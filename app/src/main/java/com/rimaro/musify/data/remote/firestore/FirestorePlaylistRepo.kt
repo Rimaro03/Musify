@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
+import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -104,7 +105,7 @@ class FirestorePlaylistRepo @Inject constructor(
             .await()
     }
 
-    // --- Track ID management --- //
+    // --- Playlist Tracks Management --- //
     suspend fun addTrackId(playlistId: String, trackId: Long) {
         firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
@@ -125,22 +126,7 @@ class FirestorePlaylistRepo @Inject constructor(
             .await()
     }
 
-    // Called during CSV import — flushes a batch of IDs at once
-    suspend fun addTrackIdsBatch(playlistId: String, trackIds: List<Long>) {
-        val playlistRef = firestore
-            .collection(PLAYLISTS_COLLECTION)
-            .document(playlistId)
-
-        // Chunk in case caller passes more than BATCH_LIMIT ids at once
-        trackIds.chunked(BATCH_LIMIT).forEach { chunk ->
-            val batch = firestore.batch()
-            batch.update(playlistRef, "trackIds", FieldValue.arrayUnion(*chunk.toTypedArray()))
-            batch.update(playlistRef, "updatedAt", FieldValue.serverTimestamp())
-            batch.commit().await()
-        }
-    }
-
-    suspend fun addTracksBatch(playlistId: String, tracks: List<Long>) {
+    suspend fun addTrackIdsBatch(playlistId: String, tracks: List<Long>) {
         val playlistRef = firestore
             .collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
@@ -151,6 +137,29 @@ class FirestorePlaylistRepo @Inject constructor(
             batch.update(playlistRef, "updatedAt", FieldValue.serverTimestamp())
             batch.commit().await()
         }
+    }
+
+    fun observePlaylistTracks(playlistId: String) : Flow<FirestorePlaylist> = callbackFlow {
+        val uid = auth.currentUser?.uid
+        if(uid == null){
+            awaitClose {  }
+            return@callbackFlow
+        }
+
+        val registration = firestore.collection(PLAYLISTS_COLLECTION)
+            .document(playlistId)
+            .addSnapshotListener { snapshot, exception ->
+                if (exception != null) {
+                    Log.e("FirestorePlaylistRepo", "Error fetching playlists for UID $uid")
+                    close(exception)
+                    return@addSnapshotListener
+                }
+                if(snapshot != null && snapshot.exists()) {
+                    val playlist = snapshot.toObject(FirestorePlaylist::class.java)
+                    if(playlist != null) trySend(playlist)
+                }
+            }
+        awaitClose { registration.remove() }
     }
 
     // --- Helpers ---

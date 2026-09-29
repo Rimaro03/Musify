@@ -77,7 +77,7 @@ class PlaylistImporter @Inject constructor(
 
         // Flush to Firestore every 500 tracks
         resolvedTracks.chunked(500).forEach { chunk ->
-            firestorePlaylistRepo.addTracksBatch(playlistId, chunk)
+            firestorePlaylistRepo.addTrackIdsBatch(playlistId, chunk)
         }
 
         // create thumbnail
