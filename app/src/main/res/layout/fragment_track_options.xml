@@ -222,6 +222,33 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/track_opt_rm_from_playlist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                style="@style/Widget.Material3.Button.IconButton"
+                android:src="@drawable/bookmark_remove_24px"
+                android:contentDescription="@string/save_to_playlist_icon"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:textSize="@dimen/text_enlarged"
+                android:text="@string/remove_from_playlist" />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/track_opt_goto_album"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

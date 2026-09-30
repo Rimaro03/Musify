@@ -9,7 +9,6 @@ import androidx.media3.common.Player
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.domain.model.Track
-import com.rimaro.musify.data.remote.firestore.model.toTrack
 import com.rimaro.musify.data.repository.TrackMetadataRepository
 import com.rimaro.musify.data.repository.audio_url.AudioUrlRepository
 import com.rimaro.musify.data.repository.audio_url.ResolutionState
@@ -22,7 +21,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,8 +40,29 @@ class PlaylistViewModel @Inject constructor(
     private val audioUrlRepository: AudioUrlRepository,
     private val trackMetadataRepository: TrackMetadataRepository
 ) : AndroidViewModel(application) {
-    private val _playlistState: MutableStateFlow<PlaylistUiState> = MutableStateFlow(
-        PlaylistUiState.Idle)
+    val playlistId = checkNotNull(savedStateHandle["playlistId"]).toString()
+
+    private val _playlistState: StateFlow<PlaylistUiState> = firestorePlaylistRepo
+        .observePlaylistTracks(playlistId)
+        .map { firestorePlaylist ->
+            val trackIds = firestorePlaylist.tracks
+            trackMetadataRepository.getTracks(trackIds).fold(
+                onSuccess = { tracks ->
+                    val trackUiModels = tracks.map { TrackUiModel(track = it) }
+                    PlaylistUiState.Success(firestorePlaylist, trackUiModels)
+                },
+                onFailure = {
+                    PlaylistUiState.Error("Could not retrieve playlist")
+                })
+
+
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = PlaylistUiState.Loading
+        )
+
     private val currentTrack: Flow<Track?> = playerController.currentTrack
     private val currPlaylistId: MutableStateFlow<String?> = MutableStateFlow(checkNotNull(savedStateHandle["playlistId"]))
 
@@ -95,38 +117,6 @@ class PlaylistViewModel @Inject constructor(
                 is PlaylistUiState.Error -> PlaylistUiState.Error(rawState.message)
             }
         }
-
-    init {
-        retrieveTrackIds(currPlaylistId.value)
-    }
-
-    fun retrieveTrackIds(playlistId: String?) {
-        if (playlistId == null) return
-        viewModelScope.launch {
-            _playlistState.value = PlaylistUiState.Loading
-            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
-            if(firestorePlaylist == null) {
-                _playlistState.value = PlaylistUiState.Error("Could not retrieve playlist")
-                return@launch
-            }
-
-            val trackIds = firestorePlaylist.tracks
-            trackMetadataRepository.getTracks(trackIds)
-                .onSuccess { tracks ->
-                    Log.d("PlaylistViewModel", tracks.map { it.title }.toString())
-                    val trackUiModels = tracks.map { TrackUiModel(track = it) }
-                    _playlistState.update {
-                        PlaylistUiState.Success(firestorePlaylist, trackUiModels)
-                    }
-                }
-                .onFailure {
-                    _playlistState.update {
-                        PlaylistUiState.Error("Could not retrieve playlist")
-                    }
-                    return@launch
-                }
-        }
-    }
 
     fun playTrack(track: Track) {
         if(_playlistState.value is PlaylistUiState.Success && currPlaylistId.value != null) {

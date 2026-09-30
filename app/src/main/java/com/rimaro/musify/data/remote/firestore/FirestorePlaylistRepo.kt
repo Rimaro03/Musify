@@ -116,7 +116,7 @@ class FirestorePlaylistRepo @Inject constructor(
             .await()
     }
 
-    suspend fun removeTrackId(playlistId: String, trackId: Long) {
+    suspend fun removeTrack(playlistId: String, trackId: Long) {
         firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
             .update(

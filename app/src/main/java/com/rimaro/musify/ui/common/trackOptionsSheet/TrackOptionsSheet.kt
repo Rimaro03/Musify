@@ -15,6 +15,7 @@ import androidx.media3.session.R
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.databinding.FragmentTrackOptionsBinding
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.domain.model.toFirestoreTrack
@@ -28,7 +29,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class TrackOptionsSheet : BottomSheetDialogFragment() {
-
     private var _binding: FragmentTrackOptionsBinding? = null
     private val binding get() = _binding!!
 
@@ -38,6 +38,7 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
     @Inject lateinit var playerController: PlayerController
     @Inject lateinit var previewPlayerController: PreviewPlayerController
     @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
+    @Inject lateinit var firestorePlaylistRepo: FirestorePlaylistRepo
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTrackOptionsBinding.inflate(inflater, container, false)
@@ -106,6 +107,10 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
             findNavController().navigate(
                 TrackOptionsSheetDirections.actionTrackOptionsToAddToPlaylist(track.id)
             )
+            dismiss()
+        }
+        binding.trackOptRmFromPlaylist.setOnClickListener {
+            //firestorePlaylistRepo.removeTrack(playerController.playingPlaylistId.value, track.id)
             dismiss()
         }
         binding.trackOptGotoAlbum.setOnClickListener {  }

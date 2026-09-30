@@ -92,4 +92,5 @@
     <string name="cancel">Cancel</string>
     <string name="create">Create</string>
     <string name="playlist_name">Playlist name</string>
+    <string name="remove_from_playlist">Remove from playlist</string>
 </resources>
