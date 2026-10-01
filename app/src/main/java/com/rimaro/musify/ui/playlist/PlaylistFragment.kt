@@ -2,6 +2,7 @@ package com.rimaro.musify.ui.playlist
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,6 +92,8 @@ class PlaylistFragment : Fragment() {
                 updateToolbarTitleVisibility(scrollY)
             }
         )
+
+        listenStateHandle()
     }
 
     private fun showTrackMenu(trackModel: TrackUiModel, playlistId: String?) {
@@ -115,9 +118,11 @@ class PlaylistFragment : Fragment() {
     private fun setupPlaylistButtons() {
         val optBtn = binding.playlistOptBtn
         optBtn.setOnClickListener {
-            findNavController().navigate(
-                NavGraphDirections.actionGlobalPlaylistOptionsSheet(viewModel.playlistId)
-            )
+            viewModel.playlistId.value?.let {
+                findNavController().navigate(
+                    NavGraphDirections.actionGlobalPlaylistOptionsSheet(it)
+                )
+            }
         }
     }
 
@@ -257,11 +262,40 @@ class PlaylistFragment : Fragment() {
             .start()
     }
 
+    private fun listenStateHandle() {
+        val handle = findNavController().currentBackStackEntry?.savedStateHandle
+        handle?.getLiveData<Boolean>(KEY_DELETE_REQUESTED)
+            ?.observe(viewLifecycleOwner) { deleteRequested ->
+                Log.d("PlaylistFragment", "Delete request: $deleteRequested")
+                if (deleteRequested == true) {
+                    handle.remove<Boolean>(KEY_DELETE_REQUESTED)
+                    viewModel.deletePlaylist()
+                }
+            }
+
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.deleted.collect {
+                    if(it) {
+                        findNavController().navigate(
+                            PlaylistFragmentDirections.actionPlaylistFragmentToLibraryFragment()
+                        )
+                    }
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         toolbarTitle.text = ""
         toolbarTitle.alpha = 0f
         toolbarTitle.visibility = View.GONE
         _binding = null
         super.onDestroy()
+    }
+
+    companion object {
+        const val KEY_DELETE_REQUESTED = "delete_requested"
     }
 }

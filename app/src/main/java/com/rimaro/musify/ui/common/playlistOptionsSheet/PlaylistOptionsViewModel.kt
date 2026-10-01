@@ -30,12 +30,4 @@ class PlaylistOptionsViewModel @Inject constructor(
             }
         }
     }
-
-    fun deletePlaylist() {
-        viewModelScope.launch {
-            playlistId?.let {
-                firestorePlaylistRepo.deletePlaylist(it)
-            }
-        }
-    }
 }

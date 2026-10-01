@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.databinding.FragmentPlaylistOptionsBinding
+import com.rimaro.musify.ui.playlist.PlaylistFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -47,10 +48,9 @@ class PlaylistOptionsSheet : BottomSheetDialogFragment() {
         binding.playlistOptName.text = firestorePlaylist.name
 
         binding.playlistOptDelete.setOnClickListener {
-            viewModel.deletePlaylist()
-            findNavController().navigate(
-                PlaylistOptionsSheetDirections.actionPlaylistOptionsToLibraryFragment()
-            )
+            findNavController().previousBackStackEntry
+                ?.savedStateHandle
+                ?.set(PlaylistFragment.KEY_DELETE_REQUESTED, true)
             dismiss()
         }
 

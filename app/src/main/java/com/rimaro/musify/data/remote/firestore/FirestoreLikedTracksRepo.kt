@@ -37,7 +37,8 @@ class FirestoreLikedTracksRepo @Inject constructor(
             .addSnapshotListener { snapshots, exception ->
                 if (exception != null) {
                     Log.e("LikedTracksDebug", "uid=$uid, error=${exception.message}")
-                    close(exception); return@addSnapshotListener
+                    close(exception);
+                    return@addSnapshotListener
                 }
                 trySend(snapshots?.toObjects(FirestoreTrack::class.java)?.toSet() ?: emptySet())
             }

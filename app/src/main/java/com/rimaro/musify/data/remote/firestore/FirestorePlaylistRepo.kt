@@ -155,7 +155,7 @@ class FirestorePlaylistRepo @Inject constructor(
             .document(playlistId)
             .addSnapshotListener { snapshot, exception ->
                 if (exception != null) {
-                    Log.e("FirestorePlaylistRepo", "Error fetching playlists for UID $uid")
+                    Log.e("FirestorePlaylistRepo", "Error fetching playlist $playlistId")
                     close(exception)
                     return@addSnapshotListener
                 }

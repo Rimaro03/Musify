@@ -17,12 +17,16 @@ import com.rimaro.musify.player.queue_manager.QueueManager
 import com.rimaro.musify.ui.common.PlayButtonState
 import com.rimaro.musify.domain.model.TrackUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.WhileSubscribed
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -40,22 +44,29 @@ class PlaylistViewModel @Inject constructor(
     private val audioUrlRepository: AudioUrlRepository,
     private val trackMetadataRepository: TrackMetadataRepository
 ) : AndroidViewModel(application) {
-    val playlistId = MutableStateFlow<String?>(savedStateHandle["playlistId"]).toString()
+    private val _playlistId = MutableStateFlow<String?>(savedStateHandle["playlistId"])
+    val playlistId: StateFlow<String?> = _playlistId
 
-    private val _playlistState: StateFlow<PlaylistUiState> = firestorePlaylistRepo
-        .observePlaylistTracks(playlistId)
-        .map { firestorePlaylist ->
-            val trackIds = firestorePlaylist.tracks
-            trackMetadataRepository.getTracks(trackIds).fold(
-                onSuccess = { tracks ->
-                    val trackUiModels = tracks.map { TrackUiModel(track = it) }
-                    PlaylistUiState.Success(firestorePlaylist, trackUiModels)
-                },
-                onFailure = {
-                    PlaylistUiState.Error("Could not retrieve playlist")
-                })
+    val deleted = MutableStateFlow(false)
 
-
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val _playlistState: StateFlow<PlaylistUiState> = _playlistId
+        .flatMapLatest { id ->
+            if(id == null) flowOf(PlaylistUiState.Error("Invalid Playlist ID"))
+            else {
+                firestorePlaylistRepo.observePlaylistTracks(id)
+                    .map { firestorePlaylist ->
+                        val trackIds = firestorePlaylist.tracks
+                        trackMetadataRepository.getTracks(trackIds).fold(
+                            onSuccess = { tracks ->
+                                val trackUiModels = tracks.map { TrackUiModel(track = it) }
+                                PlaylistUiState.Success(firestorePlaylist, trackUiModels)
+                            },
+                            onFailure = {
+                                PlaylistUiState.Error("Could not retrieve playlist")
+                            })
+                    }
+            }
         }
         .stateIn(
             scope = viewModelScope,
@@ -173,4 +184,16 @@ class PlaylistViewModel @Inject constructor(
         }
     }
 
+    fun deletePlaylist() {
+        viewModelScope.launch {
+            val id = _playlistId.value ?: return@launch
+            try {
+                _playlistId.value = null
+                firestorePlaylistRepo.deletePlaylist(id)
+                deleted.emit(true)
+            } catch (e: Exception) {
+                Log.e("PlaylistViewModel", "Error deleting playlist $playlistId: ${e.message}")
+            }
+        }
+    }
 }
