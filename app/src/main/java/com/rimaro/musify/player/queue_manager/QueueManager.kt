@@ -147,10 +147,12 @@ class QueueManager @Inject constructor(
         }
 
         refillJob = scope.launch {
-            toResolve.forEach { track ->
-                coroutineScope {
-                    resolve(track)
-                    flushToPlayer(localGeneration)
+            coroutineScope {
+                toResolve.forEach { track ->
+                    launch {
+                        resolve(track)
+                        flushToPlayer(localGeneration)
+                    }
                 }
             }
         }
@@ -207,7 +209,6 @@ class QueueManager @Inject constructor(
         val base = activeQueue.indexOfFirst { it.id == currTrackId } + 1
         val updatedFrom = base + from
         val updatedTo = base + to
-        Log.d("QueueManager", "$from - $to")
         if (updatedFrom == updatedTo || updatedFrom !in activeQueue.indices || updatedTo !in activeQueue.indices) return
         if(shuffleEnabled.value) {
             shuffledQueue.update {
@@ -222,18 +223,7 @@ class QueueManager @Inject constructor(
                 list
             }
         }
-//        if(shuffleEnabled.value) {
-//            shuffledQueue.update {
-//                newList
-//            }
-//        } else {
-//            originalQueue.update {
-//                newList
-//            }
-//        }
     }
-
-
 
     fun resetAddedUpToCount(currTrackId: String?) {
         if(currTrackId == null) return
