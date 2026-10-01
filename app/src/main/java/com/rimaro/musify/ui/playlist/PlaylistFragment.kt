@@ -73,6 +73,7 @@ class PlaylistFragment : Fragment() {
         trackRv.adapter = trackAdapter
         trackRv.layoutManager = LinearLayoutManager(requireContext())
         setupSwipe()
+        setupPlaylistButtons()
         observePlayerUiState()
 
         val shuffleBtn = binding.playlistShuffleBtn
@@ -109,6 +110,15 @@ class PlaylistFragment : Fragment() {
         )
 
         ItemTouchHelper(swipeCallback).attachToRecyclerView(trackRv)
+    }
+
+    private fun setupPlaylistButtons() {
+        val optBtn = binding.playlistOptBtn
+        optBtn.setOnClickListener {
+            findNavController().navigate(
+                NavGraphDirections.actionGlobalPlaylistOptionsSheet(viewModel.playlistId)
+            )
+        }
     }
 
     private fun observePlayerUiState() {

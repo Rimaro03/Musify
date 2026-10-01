@@ -21,27 +21,6 @@ data class Track (
     var previewUrl: String?
 ) : Parcelable
 
-// TODO: remove this
 fun Track.toFirestoreTrack(): FirestoreTrack = FirestoreTrack(
-    title = title,
     trackId = id,
-    albumId = albumId,
-    artist = artist,
-    artistId = artistId,
-    artworkUrl = artworkUrl,
-    duration = (durationMs / 1000L).toInt(),
-    genres = genre,
-    previewUrl = previewUrl
-)
-
-fun Track.toTrackMetadata(): TrackMetadata = TrackMetadata(
-    trackId = id,
-    title = title,
-    artist = artist,
-    artistId = artistId,
-    durationMs = durationMs,
-    genre = genre ?: "",
-    artworkUrl = artworkUrl ?: "",
-    albumId = albumId ?: 0L,
-    previewUrl = previewUrl ?: ""
 )

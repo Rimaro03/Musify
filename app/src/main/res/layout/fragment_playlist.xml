@@ -131,13 +131,13 @@
                         android:paddingStart="0dp"/>
 
                     <ImageButton
-                        android:id="@+id/playlist_share_btn"
+                        android:id="@+id/playlist_opt_btn"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:scaleType="fitCenter"
-                        android:src="@drawable/share_24px"
+                        android:src="@drawable/more_vert_24px"
                         style="@style/Widget.Material3.Button.IconButton"
-                        android:contentDescription="@string/playlist_like_button"
+                        android:contentDescription="@string/playlist_options_button"
                         android:paddingStart="0dp"/>
 
                     <Space

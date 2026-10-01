@@ -40,7 +40,7 @@ class PlaylistViewModel @Inject constructor(
     private val audioUrlRepository: AudioUrlRepository,
     private val trackMetadataRepository: TrackMetadataRepository
 ) : AndroidViewModel(application) {
-    val playlistId = checkNotNull(savedStateHandle["playlistId"]).toString()
+    val playlistId = MutableStateFlow<String?>(savedStateHandle["playlistId"]).toString()
 
     private val _playlistState: StateFlow<PlaylistUiState> = firestorePlaylistRepo
         .observePlaylistTracks(playlistId)
