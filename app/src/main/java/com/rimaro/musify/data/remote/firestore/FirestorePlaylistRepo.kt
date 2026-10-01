@@ -8,15 +8,18 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
-import com.rimaro.musify.data.remote.firestore.model.FirestoreTrack
+import com.rimaro.musify.di.AppScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 class FirestorePlaylistRepo @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    @AppScope private val appScope: CoroutineScope
 ) {
     private val auth = Firebase.auth
     private val uid = auth.currentUser?.uid
@@ -110,23 +113,25 @@ class FirestorePlaylistRepo @Inject constructor(
         firestore.collection(PLAYLISTS_COLLECTION)
             .document(playlistId)
             .update(
-                "trackIds", FieldValue.arrayUnion(trackId),
+                "tracks", FieldValue.arrayUnion(trackId),
                 "updatedAt", FieldValue.serverTimestamp(),
             )
             .await()
     }
 
-    suspend fun removeTrack(playlistId: String, trackId: Long) {
-        firestore.collection(PLAYLISTS_COLLECTION)
-            .document(playlistId)
-            .update(
-                "trackIds", FieldValue.arrayRemove(trackId),
-                "updatedAt", FieldValue.serverTimestamp(),
-            )
-            .await()
+    fun removeTrack(playlistId: String, trackId: Long) {
+        appScope.launch {
+            firestore.collection(PLAYLISTS_COLLECTION)
+                .document(playlistId)
+                .update(
+                    "tracks", FieldValue.arrayRemove(trackId),
+                    "updatedAt", FieldValue.serverTimestamp(),
+                )
+                .await()
+        }
     }
 
-    suspend fun addTrackIdsBatch(playlistId: String, tracks: List<Long>) {
+    suspend fun addTracksBatch(playlistId: String, tracks: List<Long>) {
         val playlistRef = firestore
             .collection(PLAYLISTS_COLLECTION)
             .document(playlistId)

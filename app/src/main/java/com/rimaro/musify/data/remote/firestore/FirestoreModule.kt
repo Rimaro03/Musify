@@ -3,10 +3,12 @@ package com.rimaro.musify.data.remote.firestore
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestoreSettings
 import com.google.firebase.firestore.persistentCacheSettings
+import com.rimaro.musify.di.AppScope
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import javax.inject.Singleton
 
 @Module
@@ -27,9 +29,19 @@ object FirestoreModule {
 
     @Provides
     @Singleton
-    fun provideFirestorePlaylistDao(
-        firestore: FirebaseFirestore
+    fun provideFirestorePlaylistRepo(
+        firestore: FirebaseFirestore,
+        @AppScope appScope: CoroutineScope
     ): FirestorePlaylistRepo {
-        return FirestorePlaylistRepo(firestore)
+        return FirestorePlaylistRepo(firestore, appScope)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirestoreLikedTracksRepo(
+        firestore: FirebaseFirestore,
+        @AppScope appScope: CoroutineScope
+    ): FirestoreLikedTracksRepo {
+        return FirestoreLikedTracksRepo(firestore, appScope)
     }
 }

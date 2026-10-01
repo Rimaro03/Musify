@@ -19,7 +19,6 @@ import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class FirestoreLikedTracksRepo @Inject constructor(
     private val firestore: FirebaseFirestore,
     @AppScope private val appScope: CoroutineScope

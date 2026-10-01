@@ -3,6 +3,7 @@ package com.rimaro.musify.ui.common.trackOptionsSheet
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -110,7 +111,10 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
             dismiss()
         }
         binding.trackOptRmFromPlaylist.setOnClickListener {
-            //firestorePlaylistRepo.removeTrack(playerController.playingPlaylistId.value, track.id)
+            viewModel.playlistId?.let { playlistId ->
+                firestorePlaylistRepo.removeTrack(playlistId, track.id)
+                Log.d("TrackSheet", "$playlistId, ${track.id}")
+            }
             dismiss()
         }
         binding.trackOptGotoAlbum.setOnClickListener {  }
