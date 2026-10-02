@@ -97,4 +97,14 @@
     <string name="play_playlist">Play playlist</string>
     <string name="delete_playlist">Delete playlist</string>
     <string name="delete_playlist_button">Delete playlist button</string>
+    <string name="icon">Icon</string>
+    <string name="liked_songs">Liked songs</string>
+    <string name="_120_songs">120 songs</string>
+    <string name="downloads">Downloads</string>
+    <string name="albums">Albums</string>
+    <string name="artists">Artists</string>
+    <string name="_18_artists">18 artists</string>
+    <string name="_25_albums">25 albums</string>
+    <string name="playlists">Playlists</string>
+    <string name="_59_playlists">59 playlists</string>
 </resources>

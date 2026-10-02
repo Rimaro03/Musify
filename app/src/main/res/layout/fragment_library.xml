@@ -27,10 +27,149 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:rowCount="2"
+                android:columnCount="2"
+                android:layout_marginBottom="20dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_button_bg"
+                    android:padding="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginBottom="15dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/icon"
+                        android:src="@drawable/media3_icon_heart_unfilled"
+                        android:layout_marginBottom="10dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/liked_songs"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="2dp"/>
+
+                    <TextView
+                        android:id="@+id/library_like_track_count"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_120_songs"
+                        android:textColor="@color/gray_mid"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_button_bg"
+                    android:padding="15dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/icon"
+                        android:src="@drawable/queue_music_24px"
+                        android:layout_marginBottom="10dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/playlists"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="2dp"/>
+
+                    <TextView
+                        android:id="@+id/library_downloads_count"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_59_playlists"
+                        android:textColor="@color/gray_mid"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_button_bg"
+                    android:padding="15dp"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginBottom="15dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/icon"
+                        android:src="@drawable/album_24px"
+                        android:layout_marginBottom="10dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/albums"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="2dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_25_albums"
+                        android:textColor="@color/gray_mid"/>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_columnWeight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/rounded_button_bg"
+                    android:padding="15dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:contentDescription="@string/icon"
+                        android:src="@drawable/artist_24px"
+                        android:layout_marginBottom="10dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/artists"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="2dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/_18_artists"
+                        android:textColor="@color/gray_mid"/>
+
+                </LinearLayout>
+
+            </GridLayout>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/library_rv"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:paddingBottom="@dimen/miniplayer_height"/>
 
         </LinearLayout>
