@@ -34,7 +34,9 @@ class AddToPlaylistSheet : BottomSheetDialogFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         playlistRv = binding.addToPlayRv
-        playlistAdapter = AddToPlaylistAdapter({})
+        playlistAdapter = AddToPlaylistAdapter(
+            toggleAddButton = { playlistId -> viewModel.addTrackToPlaylist(playlistId)}
+        )
         playlistRv.adapter = playlistAdapter
         playlistRv.layoutManager = LinearLayoutManager(requireContext())
         setupSheet()

@@ -12,7 +12,7 @@ import com.rimaro.musify.databinding.ItemAddToPlaylistBinding
 import com.rimaro.musify.domain.model.AddToPlaylistItem
 
 class AddToPlaylistAdapter(
-    private val toggleAddButton: (AddToPlaylistItem) -> Unit
+    private val toggleAddButton: (String) -> Unit
 ) : ListAdapter<AddToPlaylistItem, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AddToPlaylistItem>() {
@@ -28,7 +28,7 @@ class AddToPlaylistAdapter(
         RecyclerView.ViewHolder(binding.root){
             fun bind(
                 playlistItem: AddToPlaylistItem,
-                toggleAddButton: (AddToPlaylistItem) -> Unit
+                toggleAddButton: (String) -> Unit
             ) {
                 binding.addToPlayName.text = playlistItem.name
                 Glide.with(binding.root)
@@ -46,6 +46,7 @@ class AddToPlaylistAdapter(
                         androidx.media3.session.R.drawable.media3_icon_plus_circle_unfilled
                     )
                 }
+                binding.addToPlayBtn.setOnClickListener { toggleAddButton(playlistItem.id) }
             }
         }
 

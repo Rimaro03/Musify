@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,4 +39,8 @@ class AddToPlaylistViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = null
         )
+
+    fun addTrackToPlaylist(playlistId: String) = viewModelScope.launch {
+        firestorePlaylistRepo.addTrack(playlistId, trackId)
+    }
 }
