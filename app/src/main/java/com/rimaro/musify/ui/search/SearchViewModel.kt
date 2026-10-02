@@ -212,7 +212,7 @@ class SearchViewModel @Inject constructor(
 
     /* TRACK LIKE/UNLIKE LOGIC */
     fun unlikeTrack(track: Track) = viewModelScope.launch {
-        likedTracksRepo.removeTrack(track.id)
+        likedTracksRepo.toggleLike(track.id)
     }
 
     companion object {

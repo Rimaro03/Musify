@@ -4,7 +4,6 @@ import com.google.firebase.Timestamp
 
 data class FirestorePlaylist(
     val id: String = "",
-    val ownerId: String = "",
     val name: String = "",
     val tracks: List<Long> = emptyList(),
     val thumbnailPath: String = "",

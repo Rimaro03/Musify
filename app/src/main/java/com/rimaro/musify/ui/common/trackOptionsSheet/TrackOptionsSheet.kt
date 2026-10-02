@@ -38,8 +38,6 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
     @Inject lateinit var queueManager: QueueManager
     @Inject lateinit var playerController: PlayerController
     @Inject lateinit var previewPlayerController: PreviewPlayerController
-    @Inject lateinit var firestoreLikedTracksRepo: FirestoreLikedTracksRepo
-    @Inject lateinit var firestorePlaylistRepo: FirestorePlaylistRepo
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTrackOptionsBinding.inflate(inflater, container, false)
@@ -79,11 +77,7 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
             else R.drawable.media3_icon_heart_unfilled
         )
         binding.trackOptLike.setOnClickListener {
-            if (trackModel.isLiked) {
-                firestoreLikedTracksRepo.removeTrack(track.id)
-            } else {
-                firestoreLikedTracksRepo.addTrack(track.toFirestoreTrack())
-            }
+            viewModel.toggleLike(track.id)
             dismiss()
         }
         binding.trackOptShare.setOnClickListener {
@@ -112,8 +106,7 @@ class TrackOptionsSheet : BottomSheetDialogFragment() {
         }
         binding.trackOptRmFromPlaylist.setOnClickListener {
             viewModel.playlistId?.let { playlistId ->
-                firestorePlaylistRepo.removeTrack(playlistId, track.id)
-                Log.d("TrackSheet", "$playlistId, ${track.id}")
+                viewModel.removeTrackFromPlaylist(playlistId, track.id)
             }
             dismiss()
         }

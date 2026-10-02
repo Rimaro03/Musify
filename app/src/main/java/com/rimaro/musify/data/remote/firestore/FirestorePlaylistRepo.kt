@@ -3,17 +3,14 @@ package com.rimaro.musify.data.remote.firestore
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.di.AppScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
@@ -22,23 +19,26 @@ class FirestorePlaylistRepo @Inject constructor(
     @AppScope private val appScope: CoroutineScope
 ) {
     private val auth = Firebase.auth
-    private val uid = auth.currentUser?.uid
+    private val uid: String
+        get() = auth.currentUser?.uid ?: error("User not signed in")
+
+    private val userDoc
+        get() = firestore.collection(USERS_COLLECTION).document(uid)
+
+    private val playlistCollection
+        get() = userDoc.collection(PLAYLISTS_COLLECTION)
 
     companion object {
-        private const val PLAYLISTS_COLLECTION = "playlists"
         private const val USERS_COLLECTION = "users"
-        private const val USERS_LIKED_COLLECTION = "likedTracks"
+        private const val PLAYLISTS_COLLECTION = "playlists"
         private const val BATCH_LIMIT = 500
     }
 
     // --- Playlist CRUD --- //
-    suspend fun createPlaylist(name: String): String? {
-        if (uid == null) return null
-
-        val docRef = firestore.collection(PLAYLISTS_COLLECTION).document()
+    suspend fun createPlaylist(name: String): String {
+        val docRef = playlistCollection.document()
         val data = mapOf(
             "id"         to docRef.id,
-            "ownerId"    to uid,
             "name"       to name,
             "tracks"     to emptyList<Long>(),
             "createdAt"  to FieldValue.serverTimestamp(),
@@ -50,8 +50,7 @@ class FirestorePlaylistRepo @Inject constructor(
     }
 
     suspend fun getPlaylist(playlistId: String): FirestorePlaylist? {
-        val snapshot = firestore
-            .collection(PLAYLISTS_COLLECTION)
+        val snapshot = playlistCollection
             .document(playlistId)
             .get()
             .await()
@@ -59,28 +58,8 @@ class FirestorePlaylistRepo @Inject constructor(
         return snapshot.toObject(FirestorePlaylist::class.java)
     }
 
-    suspend fun getUserPlaylists(userId: String): List<FirestorePlaylist> {
-        val snapshot = firestore
-            .collection(PLAYLISTS_COLLECTION)
-            .whereEqualTo("ownerId", userId)
-            //.whereNotEqualTo("placeholder", true)
-            .orderBy("updatedAt", Query.Direction.DESCENDING)
-            .get()
-            .await()
-
-        return snapshot.documents.mapNotNull { it.toPlaylist() }
-    }
-
     fun observeUserPlaylists(): Flow<List<FirestorePlaylist>> = callbackFlow {
-        val uid = auth.currentUser?.uid
-        if(uid == null){
-            trySend(emptyList())
-            awaitClose {  }
-            return@callbackFlow
-        }
-
-        val registration = firestore.collection(PLAYLISTS_COLLECTION)
-            .whereEqualTo("ownerId", uid)
+        val registration = playlistCollection
             .addSnapshotListener { snapshots, exception ->
                 if (exception != null) {
                     Log.e("FirestorePlaylistRepo", "Error fetching playlists for UID $uid")
@@ -93,14 +72,14 @@ class FirestorePlaylistRepo @Inject constructor(
     }
 
     suspend fun deletePlaylist(playlistId: String) {
-        firestore.collection(PLAYLISTS_COLLECTION)
+        playlistCollection
             .document(playlistId)
             .delete()
             .await()
     }
 
     suspend fun updatePlaylistThumbnail(playlistId: String, thumbnailPath: String) {
-        firestore.collection(PLAYLISTS_COLLECTION)
+        playlistCollection
             .document(playlistId)
             .update(
                 "thumbnailPath", thumbnailPath
@@ -109,8 +88,8 @@ class FirestorePlaylistRepo @Inject constructor(
     }
 
     // --- Playlist Tracks Management --- //
-    suspend fun addTrackId(playlistId: String, trackId: Long) {
-        firestore.collection(PLAYLISTS_COLLECTION)
+    suspend fun addTrack(playlistId: String, trackId: Long) {
+        playlistCollection
             .document(playlistId)
             .update(
                 "tracks", FieldValue.arrayUnion(trackId),
@@ -119,21 +98,18 @@ class FirestorePlaylistRepo @Inject constructor(
             .await()
     }
 
-    fun removeTrack(playlistId: String, trackId: Long) {
-        appScope.launch {
-            firestore.collection(PLAYLISTS_COLLECTION)
-                .document(playlistId)
-                .update(
-                    "tracks", FieldValue.arrayRemove(trackId),
-                    "updatedAt", FieldValue.serverTimestamp(),
-                )
-                .await()
-        }
+    suspend fun removeTrack(playlistId: String, trackId: Long) {
+        playlistCollection
+            .document(playlistId)
+            .update(
+                "tracks", FieldValue.arrayRemove(trackId),
+                "updatedAt", FieldValue.serverTimestamp(),
+            )
+            .await()
     }
 
     suspend fun addTracksBatch(playlistId: String, tracks: List<Long>) {
-        val playlistRef = firestore
-            .collection(PLAYLISTS_COLLECTION)
+        val playlistRef = playlistCollection
             .document(playlistId)
 
         tracks.chunked(BATCH_LIMIT).forEach { chunk ->
@@ -145,13 +121,7 @@ class FirestorePlaylistRepo @Inject constructor(
     }
 
     fun observePlaylistTracks(playlistId: String) : Flow<FirestorePlaylist> = callbackFlow {
-        val uid = auth.currentUser?.uid
-        if(uid == null){
-            awaitClose {  }
-            return@callbackFlow
-        }
-
-        val registration = firestore.collection(PLAYLISTS_COLLECTION)
+        val registration = playlistCollection
             .document(playlistId)
             .addSnapshotListener { snapshot, exception ->
                 if (exception != null) {
@@ -165,21 +135,5 @@ class FirestorePlaylistRepo @Inject constructor(
                 }
             }
         awaitClose { registration.remove() }
-    }
-
-    // --- Helpers ---
-
-    private fun DocumentSnapshot.toPlaylist(): FirestorePlaylist? {
-        return try {
-            FirestorePlaylist(
-                id       = getString("id") ?: return null,
-                ownerId  = getString("ownerId") ?: return null,
-                name     = getString("name") ?: return null,
-                tracks = (get("tracks") as? List<Long>) ?: emptyList(),
-                thumbnailPath = getString("thumbnailPath") ?: return null
-            )
-        } catch (e: Exception) {
-            null
-        }
     }
 }

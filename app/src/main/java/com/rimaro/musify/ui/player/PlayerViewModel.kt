@@ -119,7 +119,9 @@ class PlayerViewModel @Inject constructor(
     fun addListener(listener: Player.Listener) = playerController.addListener(listener)
     fun removeListener(listener: Player.Listener) = playerController.removeListener(listener)
 
-    fun toggleLike(track: Track) = firestoreLikedTracksRepo.toggleLike(track)
+    fun toggleLike(track: Track) = viewModelScope.launch {
+        firestoreLikedTracksRepo.toggleLike(track.id)
+    }
 
     fun onQueueItemsMoved(from: Int, to: Int) {
         playerController.currentTrack.value?.let {

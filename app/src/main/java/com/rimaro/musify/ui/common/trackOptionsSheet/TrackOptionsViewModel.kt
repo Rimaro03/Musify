@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.remote.firestore.FirestoreLikedTracksRepo
 import com.rimaro.musify.data.remote.deezer.dto.toTrack
+import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.data.repository.DeezerRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.domain.model.TrackUiModel
@@ -14,13 +15,15 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class TrackOptionsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     deezerTrackRepository: DeezerRepository,
-    likedTracksRepo: FirestoreLikedTracksRepo,
+    private val likedTracksRepo: FirestoreLikedTracksRepo,
+    private val firestorePlaylistRepo: FirestorePlaylistRepo,
     playerController: PlayerController
 ) : ViewModel() {
     private val trackId: Long = checkNotNull(savedStateHandle["trackId"])
@@ -41,4 +44,12 @@ class TrackOptionsViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         null
     )
+
+    fun toggleLike(trackId: Long) = viewModelScope.launch {
+        likedTracksRepo.toggleLike(trackId)
+    }
+
+    fun removeTrackFromPlaylist(playlistId: String, trackId: Long) = viewModelScope.launch {
+        firestorePlaylistRepo.removeTrack(playlistId, trackId)
+    }
 }

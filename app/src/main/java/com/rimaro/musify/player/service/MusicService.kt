@@ -176,7 +176,7 @@ class MusicService : MediaSessionService() {
             when(customCommand.customAction) {
                 ACTION_LIKE_TRACK -> {
                     session.player.currentMediaItem?.let {
-                        likedTracksRepo.toggleLike(MediaItemMapper.toTrack(it))
+                        scope.launch { likedTracksRepo.toggleLike(it.mediaId.toLong()) }
                     }
                 }
 
