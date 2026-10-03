@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/authCheckFragment">
+
+    <!-- Global Actions -->
     <action
         android:id="@+id/action_global_trackOptionsSheet"
         app:destination="@id/trackOptionSheet" />
@@ -17,6 +19,8 @@
     <action
         android:id="@+id/action_global_playlistOptionsSheet"
         app:destination="@id/playlistOptSheet" />
+
+    <!-- Fragments -->
     <fragment
         android:id="@+id/signinFragment"
         android:name="com.rimaro.musify.ui.signin.SigninFragment"
@@ -69,14 +73,12 @@
         android:label="@string/your_library"
         tools:layout="@layout/fragment_library" >
         <action
-            android:id="@+id/action_libraryFragment_to_playlistFragment"
-            app:destination="@id/playlistFragment" />
-        <action
-            android:id="@+id/action_libraryFragment_to_new_playlist_sheet"
-            app:destination="@id/newPlaylistSheet" />
-        <action
             android:id="@+id/action_libraryFragment_to_likedTracksFragment"
             app:destination="@id/likedTracksFragment" />
+        <action
+            android:id="@+id/action_libraryFragment_to_playlistsFragment"
+            app:destination="@id/playlistsFragment" />
+
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -131,6 +133,20 @@
         android:name="com.rimaro.musify.ui.library.likedTracks.LikedTracksFragment"
         android:label="Liked tracks"
         tools:layout="@layout/fragment_liked_tracks" />
+    <fragment
+        android:id="@+id/playlistsFragment"
+        android:name="com.rimaro.musify.ui.library.playlists.PlaylistsFragment"
+        android:label="Playlists"
+        tools:layout="@layout/fragment_playlists">
+        <action
+            android:id="@+id/action_playlistsFragment_to_playlistFragment"
+            app:destination="@id/playlistFragment" />
+        <action
+            android:id="@+id/action_playlistsFragment_to_new_playlist_sheet"
+            app:destination="@id/newPlaylistSheet" />
+    </fragment>
+
+    <!-- Dialogs -->
     <dialog
         android:id="@+id/newPlaylistSheet"
         android:name="com.rimaro.musify.ui.library.NewPlaylistBottomSheet"

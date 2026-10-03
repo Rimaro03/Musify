@@ -8,6 +8,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
@@ -31,6 +32,11 @@ class LibraryFragment : Fragment(), MenuProvider {
 
     private val viewModel: LibraryViewModel by viewModels()
 
+    private lateinit var likedTracks: LinearLayout
+    private lateinit var playlists: LinearLayout
+    private lateinit var artists: LinearLayout
+    private lateinit var albums: LinearLayout
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,19 +49,16 @@ class LibraryFragment : Fragment(), MenuProvider {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        likedTracks = binding.libraryLiked
+        playlists = binding.libraryPlaylists
+        artists = binding.libraryArtists
+        albums = binding.libraryAlbums
+        setupDestinations()
+
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
         val libraryRv = binding.libraryRv
-        val libraryAdapter = LibraryAdapter(
-            viewModel::togglePlayButton,
-            ::navigateToPlaylist,
-            viewModel::createThumbnail
-        )
-        libraryRv.adapter = libraryAdapter
-        libraryRv.layoutManager = GridLayoutManager(requireContext(), 2)
-        observeLibraryUiState(libraryAdapter)
-        observePlayerState(libraryAdapter)
 
         observeImportStatus()
     }
@@ -67,54 +70,25 @@ class LibraryFragment : Fragment(), MenuProvider {
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when(menuItem.itemId) {
             R.id.library_add -> {
-                findNavController().navigate(
-                    LibraryFragmentDirections.actionLibraryFragmentToNewPlaylistSheet()
-                )
+//                findNavController().navigate(
+//                    LibraryFragmentDirections.actionLibraryFragmentToNewPlaylistSheet()
+//                )
                 true
             }
             else -> false
         }
     }
 
-    private fun observeLibraryUiState(libraryAdapter: LibraryAdapter) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.libraryUiState.collect { state ->
-                when(state) {
-                    is LibraryUiState.Success -> {
-                        binding.libraryProgress.isVisible = false
-                        binding.libraryContent.isVisible = true
-                        libraryAdapter.submitList(state.res)
-                    }
-                    is LibraryUiState.Error -> {
-                        binding.libraryProgress.isVisible = false
-                        binding.libraryContent.isVisible = false
-                        Toast.makeText(requireContext(), "Failed to load playlists", Toast.LENGTH_SHORT).show()
-                    }
-                    is LibraryUiState.Loading -> {
-                        binding.libraryProgress.isVisible = true
-                        binding.libraryContent.isVisible = false
-                    }
-                    else -> {}
-                }
-            }
+    private fun setupDestinations() {
+        likedTracks.setOnClickListener {
+            findNavController().navigate(
+                LibraryFragmentDirections.actionLibraryFragmentToLikedTracksFragment()
+            )
         }
-    }
-
-    private fun observePlayerState(libraryAdapter: LibraryAdapter) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.playingPlaylistId.collect {
-                libraryAdapter.setPlayingPlaylistId(it)
-            }
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.isPlaying.collect {
-                libraryAdapter.setIsPlaying(it)
-            }
-        }
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.playerState.collect {
-                libraryAdapter.setPlayerState(it)
-            }
+        playlists.setOnClickListener {
+            findNavController().navigate(
+                LibraryFragmentDirections.actionLibraryFragmentToPlaylistsFragment()
+            )
         }
     }
 
@@ -138,14 +112,6 @@ class LibraryFragment : Fragment(), MenuProvider {
                 }
             }
         }
-    }
-
-    private fun navigateToPlaylist(playlistId: String) {
-        val action = LibraryFragmentDirections
-            .actionLibraryFragmentToPlaylistFragment(
-                playlistId = playlistId
-            )
-        findNavController().navigate(action)
     }
 
     override fun onDestroyView() {
