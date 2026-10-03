@@ -74,6 +74,9 @@
         <action
             android:id="@+id/action_libraryFragment_to_new_playlist_sheet"
             app:destination="@id/newPlaylistSheet" />
+        <action
+            android:id="@+id/action_libraryFragment_to_likedTracksFragment"
+            app:destination="@id/likedTracksFragment" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
@@ -123,6 +126,11 @@
             app:popUpTo="@id/playlistOptSheet"
             app:popUpToInclusive="true" />
     </fragment>
+    <fragment
+        android:id="@+id/likedTracksFragment"
+        android:name="com.rimaro.musify.ui.library.likedTracks.LikedTracksFragment"
+        android:label="Liked tracks"
+        tools:layout="@layout/fragment_liked_tracks" />
     <dialog
         android:id="@+id/newPlaylistSheet"
         android:name="com.rimaro.musify.ui.library.NewPlaylistBottomSheet"
