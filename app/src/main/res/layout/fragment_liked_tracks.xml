@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ui.library.likedTracks.LikedTracksFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:padding="20dp">
+    android:paddingTop="20dp">
 
     <ProgressBar
         android:id="@+id/likedtracks_progress"
@@ -15,42 +15,65 @@
         android:layout_gravity="center"
         android:visibility="gone"/>
 
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/likedtracks_content"
-        android:fitsSystemWindows="true"
+    <LinearLayout
+        android:id="@+id/likedtracks_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:visibility="visible">
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/likedtracks_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gray_mid"
+            android:layout_margin="10dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/likedtracks_count"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:textColor="@color/gray_mid"
-                android:text="120 liked tracks" />
-
-            <com.google.android.material.search.SearchBar
-                android:id="@+id/likedtracks_searchbar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:hint="@string/search"
-                android:layout_gravity="center_vertical"
-                style="@style/Custom.SearchBar.Shape"/>
+                app:startIconDrawable="@drawable/search_24px"
+                app:endIconMode="clear_text">
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/likedtracks_rv"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="@dimen/miniplayer_height"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/likedtracks_searchbar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/likedtracks_play_btn"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:icon="@drawable/play_arrow_24px"
+                app:iconSize="28dp"
+                app:iconGravity="textStart"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="5dp"/>
 
         </LinearLayout>
 
-    </androidx.core.widget.NestedScrollView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/likedtracks_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="@dimen/miniplayer_height"
+            android:layout_margin="10dp"/>
+
+    </LinearLayout>
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

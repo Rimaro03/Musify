@@ -396,7 +396,12 @@ class PlayerFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.playingPlaylist.collect { playlist ->
-                    binding.playerCurrPlaylist.text = playlist?.name ?: "Unknown playlist"
+                    binding.playerCurrPlaylist.text =
+                        if (viewModel.playingPlaylistId.value == "__liked__") {
+                            "Liked Tracks"
+                        } else {
+                            playlist?.name ?: "Unknown playlist"
+                        }
                 }
             }
         }

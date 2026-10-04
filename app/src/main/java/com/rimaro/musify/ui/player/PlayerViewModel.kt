@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.player
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.Player
@@ -61,11 +62,23 @@ class PlayerViewModel @Inject constructor(
         if(currTrack != null) currLikedTracks.any { it.trackId == currTrack.id }
         else false
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
-    val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
+    val playingPlaylistId: StateFlow<String?> = playerController
+        .playingPlaylistId
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     val playingPlaylist: StateFlow<FirestorePlaylist?> = playingPlaylistId
         .map { playlistId ->
-            playlistId?.let {
-                firestorePlaylistRepo.getPlaylist(it)
+            if(playlistId == "__liked__") {
+                null
+            }
+            else {
+                playlistId?.let {
+                    firestorePlaylistRepo.getPlaylist(it)
+                }
             }
         }.stateIn(
             scope = viewModelScope,

@@ -101,7 +101,7 @@ class PlaylistViewModel @Inject constructor(
 
     var uiState: Flow<PlaylistUiState> =
         combine(_playlistState, currentTrack, currPlaylistId, likedTracksRepo.likedTracks, audioTrackUrls)
-        { rawState, currTrack, currPlaylistId, likedTrackIds, trackUrls ->
+        { rawState, currTrack, currPlaylistId, likedTracks, trackUrls ->
             when(rawState) {
                 is PlaylistUiState.Success -> {
                     val thisPlaylistActive = currPlaylistId == playingPlaylistId.value
@@ -116,7 +116,7 @@ class PlaylistViewModel @Inject constructor(
                                     } else null
                                 ),
                                 isPlaying = thisPlaylistActive && trackModel.track.id == currTrack?.id,
-                                isLiked = likedTrackIds
+                                isLiked = likedTracks
                                     .map{ it.trackId }
                                     .contains(trackModel.track.id)
                             )

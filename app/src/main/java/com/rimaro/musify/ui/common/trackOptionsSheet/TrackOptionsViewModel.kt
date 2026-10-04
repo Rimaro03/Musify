@@ -50,6 +50,7 @@ class TrackOptionsViewModel @Inject constructor(
     }
 
     fun removeTrackFromPlaylist(playlistId: String, trackId: Long) = viewModelScope.launch {
-        firestorePlaylistRepo.removeTrack(playlistId, trackId)
+        if(playlistId == "__liked__") likedTracksRepo.toggleLike(trackId)
+        else firestorePlaylistRepo.removeTrack(playlistId, trackId)
     }
 }

@@ -52,7 +52,7 @@ class PlayerController @Inject constructor(
     private val _currentTrack = MutableStateFlow<Track?>(null)
     val currentTrack: StateFlow<Track?> = _currentTrack
 
-    private val _playingPlaylistId = MutableStateFlow<String?>("1")
+    private val _playingPlaylistId = MutableStateFlow<String?>(null)
     val playingPlaylistId: StateFlow<String?> = _playingPlaylistId
 
     val currPosition: Long

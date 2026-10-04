@@ -21,14 +21,11 @@ import kotlin.collections.map
 
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
-    private val playerController: PlayerController,
     private val firestorePlaylistRepo: FirestorePlaylistRepo,
     private val deezerRepository: DeezerRepository,
     private val playlistImporter: PlaylistImporter,
 
 ) : ViewModel() {
-    val isPlaying: StateFlow<Boolean> = playerController.isPlaying
-
     val libraryUiState: StateFlow<PlaylistsUiState> = firestorePlaylistRepo
         .observeUserPlaylists()
         .map { userPlaylists ->

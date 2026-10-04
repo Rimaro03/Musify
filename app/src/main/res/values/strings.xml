@@ -107,4 +107,6 @@
     <string name="_25_albums">25 albums</string>
     <string name="playlists">Playlists</string>
     <string name="_59_playlists">59 playlists</string>
+    <string name="liked_tracks">%d liked tracks</string>
+    <string name="playlists_count">%d playlists</string>
 </resources>

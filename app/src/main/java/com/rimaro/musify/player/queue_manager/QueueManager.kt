@@ -246,6 +246,7 @@ class QueueManager @Inject constructor(
         shuffledQueue.value = emptyList()
         windowStartTrackId = 0
         addedUpToId = null
+        refillJob?.cancel()
         refillJob = null
     }
 

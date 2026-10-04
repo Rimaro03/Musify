@@ -68,7 +68,7 @@ class PlaylistFragment : Fragment() {
         trackAdapter = PlaylistTrackAdapter(
             { trackModel -> viewModel.playTrack(trackModel.track) },
             { trackModel -> showTrackMenu(trackModel, playlistId) },
-            { trackModel -> showTrackMenu(trackModel, playlistId) }, //viewModel.playPreview(trackModel.track)
+            { trackModel -> showTrackMenu(trackModel, playlistId) },
             { trackUiModel -> viewModel.unlikeTrack(trackUiModel.track)}
         )
         trackRv.adapter = trackAdapter
@@ -285,6 +285,13 @@ class PlaylistFragment : Fragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        toolbarTitle.text = ""
+        toolbarTitle.alpha = 0f
+        toolbarTitle.visibility = View.GONE
+        super.onDestroyView()
     }
 
     override fun onDestroy() {
