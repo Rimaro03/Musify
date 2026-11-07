@@ -21,8 +21,6 @@ class LibraryFragment : Fragment() {
     private var _binding: FragmentLibraryBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: LibraryViewModel by viewModels()
-
     private lateinit var likedTracks: LinearLayout
     private lateinit var playlists: LinearLayout
     private lateinit var artists: LinearLayout
@@ -47,8 +45,6 @@ class LibraryFragment : Fragment() {
         setupDestinations()
 
         val libraryRv = binding.libraryRv
-
-        observeImportStatus()
     }
 
     private fun setupDestinations() {
@@ -61,28 +57,6 @@ class LibraryFragment : Fragment() {
             findNavController().navigate(
                 LibraryFragmentDirections.actionLibraryFragmentToPlaylistsFragment()
             )
-        }
-    }
-
-    private fun observeImportStatus() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.importState.collect { state ->
-                when(state) {
-                    is ImportResult.Progress -> {
-                        Toast.makeText(requireContext(), "Importing tracks... ", Toast.LENGTH_SHORT).show()
-                    }
-                    is ImportResult.Success -> {
-                        Toast.makeText(requireContext(), "Import finished: ${state.imported} success, ${state.skipped} fails",
-                            Toast.LENGTH_SHORT).show()
-                    }
-                    is ImportResult.Error -> {
-                        Toast.makeText(requireContext(), "Importing failes", Toast.LENGTH_SHORT).show()
-
-                        Log.e("LibraryFragment", "Track import failes: ${state.message}")
-                    }
-                    else -> {}
-                }
-            }
         }
     }
 

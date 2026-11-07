@@ -1,6 +1,7 @@
 package com.rimaro.musify.ui.library.playlists
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -26,6 +27,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.rimaro.musify.R
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.databinding.FragmentPlaylistsBinding
+import com.rimaro.musify.ui.library.ImportResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -75,6 +77,7 @@ class PlaylistsFragment : Fragment(), MenuProvider {
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
 
+        observeImportStatus()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -134,6 +137,28 @@ class PlaylistsFragment : Fragment(), MenuProvider {
                 if (query.isEmpty()) allItems
                 else allItems.filter { it.name.contains(query, ignoreCase = true) }
             )
+        }
+    }
+
+    private fun observeImportStatus() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.importState.collect { state ->
+                when(state) {
+                    is ImportResult.Progress -> {
+                        Toast.makeText(requireContext(), "Importing tracks... ", Toast.LENGTH_SHORT).show()
+                    }
+                    is ImportResult.Success -> {
+                        Toast.makeText(requireContext(), "Import finished: ${state.imported} success, ${state.skipped} fails",
+                            Toast.LENGTH_SHORT).show()
+                    }
+                    is ImportResult.Error -> {
+                        Toast.makeText(requireContext(), "Importing failes", Toast.LENGTH_SHORT).show()
+
+                        Log.e("LibraryFragment", "Track import failes: ${state.message}")
+                    }
+                    else -> {}
+                }
+            }
         }
     }
 

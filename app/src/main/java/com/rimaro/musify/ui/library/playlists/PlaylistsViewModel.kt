@@ -1,20 +1,22 @@
 package com.rimaro.musify.ui.library.playlists
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.data.repository.DeezerRepository
-import com.rimaro.musify.player.controller.PlayerController
-import com.rimaro.musify.ui.library.LibraryUiState
+import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.collections.map
@@ -26,6 +28,8 @@ class PlaylistsViewModel @Inject constructor(
     private val playlistImporter: PlaylistImporter,
 
 ) : ViewModel() {
+    val importState = MutableStateFlow<ImportResult?>(null)
+
     val libraryUiState: StateFlow<PlaylistsUiState> = firestorePlaylistRepo
         .observeUserPlaylists()
         .map { userPlaylists ->
@@ -63,5 +67,12 @@ class PlaylistsViewModel @Inject constructor(
 
         // update playlist with thumbnail
         firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, newThumbnailPath)
+    }
+
+    fun importFromCsv(uri: Uri) {
+        viewModelScope.launch {
+            val res = playlistImporter.importFromCsv(uri)
+            importState.update { res }
+        }
     }
 }

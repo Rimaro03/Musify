@@ -1,144 +1,26 @@
 package com.rimaro.musify.ui.library
 
 import android.app.Application
-import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.media3.common.Player
-import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
-import com.rimaro.musify.data.remote.deezer.dto.toTrack
-import com.rimaro.musify.data.repository.DeezerRepository
+import com.rimaro.musify.data.repository.RecentPlayedRepository
 import com.rimaro.musify.player.controller.PlayerController
 import com.rimaro.musify.player.queue_manager.QueueManager
-import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     application: Application,
-    private val playlistImporter: PlaylistImporter,
-    private val firestorePlaylistRepo: FirestorePlaylistRepo,
     private val playerController: PlayerController,
-    private val deezerRepository: DeezerRepository,
-    private val queueManager: QueueManager
+    private val queueManager: QueueManager,
+    private val recentPlayedRepository: RecentPlayedRepository
 ) : AndroidViewModel(application) {
-    val importState = MutableStateFlow<ImportResult?>(null)
 
-    val playerState: StateFlow<Int> = playerController.playerState
     val isPlaying: StateFlow<Boolean> = playerController.isPlaying
-    val playingPlaylistId: StateFlow<String?> = playerController.playingPlaylistId
-
-    private val _libraryUiState = MutableStateFlow<LibraryUiState>(LibraryUiState.Idle)
-    val libraryUiState: StateFlow<LibraryUiState> = firestorePlaylistRepo
-        .observeUserPlaylists()
-        .map { userPlaylists ->
-            LibraryUiState.Success(userPlaylists)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            LibraryUiState.Loading
-        )
 
     // PLAYLIST IMPORTING METHODS //
 
-    fun importFromCsv(uri: Uri) {
-        viewModelScope.launch {
-            val res = playlistImporter.importFromCsv(uri)
-            importState.update { res }
-        }
-    }
 
-    fun createThumbnail(playlistId: String) {
-        viewModelScope.launch {
-            // get covers
-            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
-            if(firestorePlaylist == null) {
-                Log.e("LibraryViewmodel", "Could not fetch firestore playlist during thumbnail creation")
-                return@launch
-            }
 
-            val deezerTracks = firestorePlaylist.tracks.take(4).map { trackId ->
-                async {
-                    deezerRepository.getTrackById(trackId)
-                }
-            }.awaitAll()
-
-            val covers = if(deezerTracks.size < 4) {
-                listOf(deezerTracks.first().album?.coverXl ?: return@launch)
-            } else {
-                deezerTracks.map { it.album?.coverXl ?: return@launch}
-            }
-
-            // create thumbnail
-            val newThumbnailPath = playlistImporter.createPlaylistThumbnail(covers, playlistId)
-                ?: return@launch
-
-            // update playlist with thumbnail
-            firestorePlaylistRepo.updatePlaylistThumbnail(playlistId, newThumbnailPath)
-
-            // update playlist cover
-            val currentList = _libraryUiState.value as? LibraryUiState.Success ?: return@launch
-
-            val updatedList = currentList.res.map { playlist ->
-                if(playlist.id == playlistId) {
-                    playlist.copy(thumbnailPath = newThumbnailPath)
-                } else {
-                    playlist
-                }
-            }
-
-            _libraryUiState.value = LibraryUiState.Success(updatedList)
-        }
-    }
-
-    // PLAYLIST PLAY METHODS //
-    fun togglePlayButton(playlistId: String) {
-        if(playerState.value == Player.STATE_BUFFERING) return
-
-        if(playerState.value == Player.STATE_READY) {
-            if(playingPlaylistId.value == playlistId) {
-                playerController.togglePlayPause()
-            } else {
-                playerController.clearQueue()
-                playPlaylist(playlistId)
-            }
-        }
-        else {
-            playerController.clearQueue()
-            playPlaylist(playlistId)
-        }
-    }
-
-    private fun playPlaylist(playlistId: String) {
-        viewModelScope.launch {
-            playerController.setPlayingPlaylistId(playlistId)
-            val firestorePlaylist = firestorePlaylistRepo.getPlaylist(playlistId)
-            if (firestorePlaylist == null) {
-                Log.e("LibraryViewmodel", "Could not retrieve playlist")
-                return@launch
-            }
-            val trackIds = firestorePlaylist.tracks
-            val deezerTracks = trackIds.map { trackId ->
-                async {
-                    deezerRepository.getTrackById(trackId)
-                }
-            }.awaitAll()
-            val tracks = deezerTracks.map { it.toTrack() }
-
-            playerController.clearQueue()
-            queueManager.loadQueue(tracks, playerController.shuffleEnabled.value)
-        }
-    }
 }
