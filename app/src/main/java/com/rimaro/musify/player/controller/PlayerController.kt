@@ -9,6 +9,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import com.rimaro.musify.data.repository.RecentPlayedRepository
 import com.rimaro.musify.di.AppScope
 import com.rimaro.musify.domain.model.Track
 import com.rimaro.musify.player.queue_manager.QueueManager
@@ -27,7 +28,8 @@ import javax.inject.Singleton
 class PlayerController @Inject constructor(
     @ApplicationContext private val context: Context,
     private val queueManager: QueueManager,
-    @AppScope private val coroutineScope: CoroutineScope
+    @AppScope private val coroutineScope: CoroutineScope,
+    private val recentPlayedRepository: RecentPlayedRepository
 ) {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private val controller get() = if (controllerFuture?.isDone == true && controllerFuture?.isCancelled == false) {
@@ -78,6 +80,9 @@ class PlayerController @Inject constructor(
             mediaItem?.let {
                 _currentTrack.value =  MediaItemMapper.toTrack(it)
                 queueManager.onCurrentTrackChange(mediaItem.mediaId.toLong())
+                coroutineScope.launch {
+                    recentPlayedRepository.recordPlay(mediaItem.mediaId.toLong())
+                }
             }
         }
 

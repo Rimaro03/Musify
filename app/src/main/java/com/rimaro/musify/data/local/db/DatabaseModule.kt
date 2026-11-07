@@ -2,6 +2,7 @@ package com.rimaro.musify.data.local.db
 
 import android.content.Context
 import androidx.room.Room
+import com.rimaro.musify.data.local.db.dao.RecentPlayDao
 import com.rimaro.musify.data.local.db.dao.TrackAudioUrlDao
 import com.rimaro.musify.data.local.db.dao.TrackMetadataDao
 import dagger.Module
@@ -32,4 +33,7 @@ object DatabaseModule {
 
     @Provides
     fun provideTrackMetadataDao(db: AppDatabase): TrackMetadataDao = db.trackMetadataDao()
+
+    @Provides
+    fun provideRecentPlayDao(db: AppDatabase): RecentPlayDao = db.recentPlayDao()
 }

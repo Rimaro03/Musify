@@ -1,4 +1,4 @@
-package com.rimaro.musify.ui.library
+package com.rimaro.musify.ui.library.playlists
 
 sealed class ImportResult {
     data class Progress(val processed: Int, val total: Int, val failed: Int) : ImportResult()

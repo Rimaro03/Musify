@@ -109,4 +109,5 @@
     <string name="_59_playlists">59 playlists</string>
     <string name="liked_tracks">%d liked tracks</string>
     <string name="playlists_count">%d playlists</string>
+    <string name="recently_played">Recently Played</string>
 </resources>

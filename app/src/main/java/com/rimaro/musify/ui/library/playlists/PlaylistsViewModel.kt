@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.data.repository.DeezerRepository
-import com.rimaro.musify.ui.library.ImportResult
 import com.rimaro.musify.util.playlist_import.PlaylistImporter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async

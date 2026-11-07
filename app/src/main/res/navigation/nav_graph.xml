@@ -149,7 +149,7 @@
     <!-- Dialogs -->
     <dialog
         android:id="@+id/newPlaylistSheet"
-        android:name="com.rimaro.musify.ui.library.NewPlaylistBottomSheet"
+        android:name="com.rimaro.musify.ui.library.playlists.NewPlaylistBottomSheet"
         android:label="NewPlaylistSheet"
         tools:layout="@layout/fragment_new_playlist">
         <action

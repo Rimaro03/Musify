@@ -27,7 +27,6 @@ import com.google.android.material.textfield.TextInputEditText
 import com.rimaro.musify.R
 import com.rimaro.musify.data.remote.firestore.model.FirestorePlaylist
 import com.rimaro.musify.databinding.FragmentPlaylistsBinding
-import com.rimaro.musify.ui.library.ImportResult
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

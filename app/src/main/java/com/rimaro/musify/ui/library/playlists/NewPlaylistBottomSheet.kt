@@ -1,20 +1,16 @@
-package com.rimaro.musify.ui.library
+package com.rimaro.musify.ui.library.playlists
 
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.rimaro.musify.databinding.FragmentNewPlaylistBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class NewPlaylistBottomSheet : BottomSheetDialogFragment() {
@@ -22,7 +18,7 @@ class NewPlaylistBottomSheet : BottomSheetDialogFragment() {
     private var _binding: FragmentNewPlaylistBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: LibraryViewModel by activityViewModels()
+    private val viewModel: PlaylistsViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -56,7 +52,6 @@ class NewPlaylistBottomSheet : BottomSheetDialogFragment() {
         uri?.let { viewModel.importFromCsv(it) }
         dismiss()
     }
-
 
     override fun onDestroyView() {
         super.onDestroyView()

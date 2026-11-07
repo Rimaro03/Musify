@@ -10,7 +10,7 @@ import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.rimaro.musify.data.remote.firestore.FirestorePlaylistRepo
 import com.rimaro.musify.data.repository.DeezerRepository
-import com.rimaro.musify.ui.library.ImportResult
+import com.rimaro.musify.ui.library.playlists.ImportResult
 import com.rimaro.musify.util.thumbnail.StorageManager
 import com.rimaro.musify.util.thumbnail.ThumbnailManager
 import kotlinx.coroutines.Dispatchers
