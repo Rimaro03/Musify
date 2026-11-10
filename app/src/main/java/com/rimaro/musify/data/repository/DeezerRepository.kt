@@ -57,4 +57,8 @@ class DeezerRepository @Inject constructor(
             }
         }
     }
+
+    suspend fun getArtistById(id: Long) : DeezerArtist {
+        return deezerApiService.artist(id.toString())
+    }
 }

@@ -1,5 +1,6 @@
 package com.rimaro.musify.data.remote.deezer
 
+import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
 import com.rimaro.musify.data.remote.deezer.dto.DeezerAutocompleteRes
 import com.rimaro.musify.data.remote.deezer.dto.DeezerChartArtistRes
 import com.rimaro.musify.data.remote.deezer.dto.DeezerGenreRes
@@ -40,4 +41,9 @@ interface DeezerApiService {
     suspend fun track(
         @Path("track_id") trackId: String
     ) : DeezerTrack
+
+    @GET("/artist/{artist_id}")
+    suspend fun artist(
+        @Path("artist_id") artistId: String
+    ) : DeezerArtist
 }

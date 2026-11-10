@@ -78,6 +78,9 @@
         <action
             android:id="@+id/action_libraryFragment_to_playlistsFragment"
             app:destination="@id/playlistsFragment" />
+        <action
+            android:id="@+id/action_libraryFragment_to_artistsFragment"
+            app:destination="@id/artistsFragment" />
 
     </fragment>
     <fragment
@@ -144,6 +147,15 @@
         <action
             android:id="@+id/action_playlistsFragment_to_newPlaylistSheet"
             app:destination="@id/newPlaylistSheet" />
+    </fragment>
+    <fragment
+        android:id="@+id/artistsFragment"
+        android:name="com.rimaro.musify.ui.library.followedArtists.ArtistsFragment"
+        android:label="Artists"
+        tools:layout="@layout/fragment_artists">
+<!--        <action-->
+<!--            android:id="@+id/action_artistsFragment_to_ArtistFragment"-->
+<!--            app:destination="@+id/artistFragment" />-->
     </fragment>
 
     <!-- Dialogs -->
