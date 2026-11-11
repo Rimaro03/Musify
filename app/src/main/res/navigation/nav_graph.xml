@@ -81,6 +81,9 @@
         <action
             android:id="@+id/action_libraryFragment_to_artistsFragment"
             app:destination="@id/artistsFragment" />
+        <action
+            android:id="@+id/action_libraryFragment_to_albumsFragment"
+            app:destination="@+id/albumsFragment" />
 
     </fragment>
     <fragment
@@ -150,13 +153,32 @@
     </fragment>
     <fragment
         android:id="@+id/artistsFragment"
-        android:name="com.rimaro.musify.ui.library.followedArtists.ArtistsFragment"
+        android:name="com.rimaro.musify.ui.library.artists.ArtistsFragment"
         android:label="Artists"
         tools:layout="@layout/fragment_artists">
 <!--        <action-->
 <!--            android:id="@+id/action_artistsFragment_to_ArtistFragment"-->
 <!--            app:destination="@+id/artistFragment" />-->
     </fragment>
+    <fragment
+        android:id="@+id/albumsFragment"
+        android:name="com.rimaro.musify.ui.library.albums.AlbumsFragment"
+        android:label="Albums"
+        tools:layout="@layout/fragment_albums">
+        <action
+            android:id="@+id/action_albumsFragment_to_AlbumFragment"
+            app:destination="@+id/albumFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/albumFragment"
+        android:name="com.rimaro.musify.ui.album.AlbumFragment"
+        android:label=""
+        tools:layout="@layout/fragment_album">
+        <argument
+            android:name="albumId"
+            app:argType="string" />
+    </fragment>
+
 
     <!-- Dialogs -->
     <dialog

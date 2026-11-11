@@ -17,7 +17,7 @@ data class DeezerAlbum (
     @SerialName("cover_xl") val coverXl: String,
     @SerialName("md5_image") val md5Image: String,
     @SerialName("genre_id") val genreId: Int? = null,
-    val genres: List<DeezerGenre>? = null,
+    val genres: ListRes<DeezerGenre>? = null,
     val label: String? = null,
     @SerialName("nb_tracks") val nbTracks: Int? = null,
     val duration: Int? = null,
@@ -32,6 +32,6 @@ data class DeezerAlbum (
     val artist: DeezerArtist? = null,
     val type: String = "album",
     // Only in full response
-    val tracks: List<DeezerTrack>? = null,
+    val tracks: ListRes<DeezerTrack>? = null,
     val contributors: List<DeezerContributor>? = null
 )

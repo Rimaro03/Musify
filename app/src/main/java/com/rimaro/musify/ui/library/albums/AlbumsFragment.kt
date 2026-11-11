@@ -1,4 +1,4 @@
-package com.rimaro.musify.ui.library.followedArtists
+package com.rimaro.musify.ui.library.albums
 
 import android.os.Bundle
 import android.util.Log
@@ -16,68 +16,67 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import com.rimaro.musify.R
-import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
-import com.rimaro.musify.databinding.FragmentArtistsBinding
+import com.rimaro.musify.data.remote.deezer.dto.DeezerAlbum
+import com.rimaro.musify.databinding.FragmentAlbumsBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class ArtistsFragment : Fragment() {
-    private var _binding: FragmentArtistsBinding? = null
+class AlbumsFragment : Fragment() {
+    private var _binding: FragmentAlbumsBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: ArtistsViewModel by viewModels()
+    private val viewModel: AlbumsViewModel by viewModels()
 
-    private var allItems: List<DeezerArtist> = emptyList()
+    private var allItems: List<DeezerAlbum> = emptyList()
 
-    private lateinit var artistsProgress: ProgressBar
-    private lateinit var artistsContent: LinearLayout
-    private lateinit var artistsCount: TextView
-    private lateinit var artistsRv: RecyclerView
-    private lateinit var artistsAdapter: ArtistsAdapter
-    private lateinit var artistsSearch: TextInputEditText
+    private lateinit var albumsProgress: ProgressBar
+    private lateinit var albumsContent: LinearLayout
+    private lateinit var albumsCount: TextView
+    private lateinit var albumsRv: RecyclerView
+    private lateinit var albumsAdapter: AlbumsAdapter
+    private lateinit var albumsSearch: TextInputEditText
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        _binding = FragmentArtistsBinding.inflate(inflater, container, false)
+        _binding = FragmentAlbumsBinding.inflate(inflater, container, false)
         return _binding?.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        artistsProgress = binding.artistsProgress
-        artistsContent = binding.artistsContent
-        artistsCount = binding.artistsCount
-        artistsRv = binding.artistsRv
-        artistsAdapter = ArtistsAdapter(
-            onArtistClick = {
+        albumsProgress = binding.albumsProgress
+        albumsContent = binding.albumsContent
+        albumsCount = binding.albumsCount
+        albumsRv = binding.albumsRv
+        albumsAdapter = AlbumsAdapter(
+            onAlbumClick = {
 //                findNavController().navigate(
-//                    ArtistsFragmentDirections.
+//                    albumsFragmentDirections.
 //                )
             }
         )
-        artistsRv.adapter = artistsAdapter
-        artistsRv.layoutManager = GridLayoutManager(requireContext(), 2)
-        artistsSearch = binding.artistsSearchbar
+        albumsRv.adapter = albumsAdapter
+        albumsRv.layoutManager = GridLayoutManager(requireContext(), 2)
+        albumsSearch = binding.albumsSearchbar
         setupSearchBar()
         observeUiState()
     }
 
     private fun setupSearchBar() {
-        artistsSearch.doAfterTextChanged { text ->
+        albumsSearch.doAfterTextChanged { text ->
             val query = text?.toString().orEmpty()
-            artistsAdapter.submitList(
+            albumsAdapter.submitList(
                 if (query.isEmpty()) allItems
-                else allItems.filter { it.name.contains(query, ignoreCase = true) }
+                else allItems.filter { it.title.contains(query, ignoreCase = true) }
             )
         }
     }
@@ -85,33 +84,33 @@ class ArtistsFragment : Fragment() {
     private fun observeUiState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.artistUiState.collect { state ->
+                viewModel.albumsUiState.collect { state ->
                     when (state) {
-                        is ArtistUiState.Success -> {
+                        is AlbumsUiState.Success -> {
                             Log.d("ArtistsFragment", "Success")
-                            artistsProgress.isVisible = false
-                            artistsContent.isVisible = true
-                            artistsCount.text =
-                                getString(R.string.artists_count, state.artists.size)
-                            artistsAdapter.submitList(state.artists)
-                            allItems = state.artists
+                            albumsProgress.isVisible = false
+                            albumsContent.isVisible = true
+                            albumsCount.text =
+                                getString(R.string.artists_count, state.albums.size)
+                            albumsAdapter.submitList(state.albums)
+                            allItems = state.albums
                         }
 
-                        is ArtistUiState.Error -> {
+                        is AlbumsUiState.Error -> {
                             Log.d("ArtistsFragment", "Err")
-                            artistsProgress.isVisible = false
-                            artistsContent.isVisible = false
+                            albumsProgress.isVisible = false
+                            albumsContent.isVisible = false
                             Toast.makeText(
                                 requireContext(),
-                                "Failed to load artists",
+                                "Failed to load albums",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
 
-                        is ArtistUiState.Loading -> {
+                        is AlbumsUiState.Loading -> {
                             Log.d("ArtistsFragment", "Load")
-                            artistsProgress.isVisible = true
-                            artistsContent.isVisible = false
+                            albumsProgress.isVisible = true
+                            albumsContent.isVisible = false
                         }
 
                         else -> {
@@ -127,4 +126,5 @@ class ArtistsFragment : Fragment() {
         _binding = null
         super.onDestroy()
     }
+
 }

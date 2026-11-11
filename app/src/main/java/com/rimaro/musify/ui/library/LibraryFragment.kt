@@ -80,6 +80,11 @@ class LibraryFragment : Fragment() {
                 LibraryFragmentDirections.actionLibraryFragmentToArtistsFragment()
             )
         }
+        albums.setOnClickListener {
+            findNavController().navigate(
+                LibraryFragmentDirections.actionLibraryFragmentToAlbumsFragment()
+            )
+        }
     }
 
     private fun observeRecentPlayedTracks() {

@@ -1,6 +1,5 @@
 package com.rimaro.musify.data.remote.firestore
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
@@ -18,11 +17,9 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
-class NotSignedInException : IllegalStateException("User is not signed in")
 
 class FirestoreArtistsRepo @Inject constructor(
     private val firestore: FirebaseFirestore,
@@ -50,11 +47,9 @@ class FirestoreArtistsRepo @Inject constructor(
     // collection functions
     @OptIn(ExperimentalCoroutinesApi::class)
     fun observeArtists(): Flow<List<FirestoreFollowedArtist>> = uidFlow
-        .onEach { Log.d("Repo", "uid = $it") }
         .flatMapLatest { uid ->
         if (uid == null) flowOf(emptyList())
         else artistsCol(uid).snapshots()
-            .onEach { Log.d("Repo", "snapshot: ${it.size()} docs, fromCache=${it.metadata.isFromCache}") }
             .map { it.toObjects(FirestoreFollowedArtist::class.java) }
     }
 

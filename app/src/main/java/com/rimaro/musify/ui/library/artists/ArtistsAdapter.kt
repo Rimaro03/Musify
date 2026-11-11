@@ -1,4 +1,4 @@
-package com.rimaro.musify.ui.library.followedArtists
+package com.rimaro.musify.ui.library.artists
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -24,7 +24,7 @@ class ArtistsAdapter (
         }
     }
 
-    class LibraryViewHolder(
+    class ArtistViewHolder(
         val binding: ItemArtistsBinding,
         private val onArtistClick: (Long) -> Unit
     ) :
@@ -42,15 +42,15 @@ class ArtistsAdapter (
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LibraryViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArtistViewHolder {
         val binding = ItemArtistsBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return LibraryViewHolder(binding, onArtistClick)
+        return ArtistViewHolder(binding, onArtistClick)
     }
 
     override fun onBindViewHolder(p0: RecyclerView.ViewHolder, p1: Int) {
-        if (p0 is LibraryViewHolder) {
+        if (p0 is ArtistViewHolder) {
             p0.bind(getItem(p1))
         }
     }

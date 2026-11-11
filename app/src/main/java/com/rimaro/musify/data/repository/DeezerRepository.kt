@@ -1,6 +1,7 @@
 package com.rimaro.musify.data.repository
 
 import com.rimaro.musify.data.remote.deezer.DeezerApiService
+import com.rimaro.musify.data.remote.deezer.dto.DeezerAlbum
 import com.rimaro.musify.data.remote.deezer.dto.DeezerArtist
 import com.rimaro.musify.data.remote.deezer.dto.DeezerAutocompleteRes
 import com.rimaro.musify.data.remote.deezer.dto.DeezerGenre
@@ -60,5 +61,9 @@ class DeezerRepository @Inject constructor(
 
     suspend fun getArtistById(id: Long) : DeezerArtist {
         return deezerApiService.artist(id.toString())
+    }
+
+    suspend fun getAlbumById(id: Long) : DeezerAlbum {
+        return deezerApiService.album(id.toString())
     }
 }
